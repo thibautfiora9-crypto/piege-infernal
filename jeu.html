@@ -70,6 +70,44 @@ canvas{width:100%;max-width:800px;border:3px solid var(--line);display:block;mar
 <div id="pad"><button id="bl" aria-label="Gauche">◀</button><button id="bj" aria-label="Saut">⤒</button><button id="br" aria-label="Droite">▶</button></div>
 <div class="bar2"><span id="gst"></span><button id="rf" hidden>Rejoindre son niveau</button></div>
 </main>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+/* Salle à deux en pair à pair (WebRTC via PeerJS), sans compte ni serveur à nous. Imite la petite API de salle utilisée par le jeu. */
+(function(){
+ if(window.claude||typeof Peer==='undefined')return;
+ function join(name){
+  return new Promise(function(res,rej){
+   var id='pgi9-'+name,me={},others={},subs=[],errs=[],conns=[],hostConn=null,peer=null,isHost=false,done=false,t0;
+   function emit(){var a=[{isMe:true,presence:me}],k;for(k in others)a.push({isMe:false,presence:others[k]});subs.forEach(function(f){try{f({peers:a})}catch(e){}})}
+   function send(){var k;if(isHost){conns.forEach(function(c){if(c.open)c.send({t:'p',id:'host',d:me})})}else if(hostConn&&hostConn.open)hostConn.send({t:'p',d:me})}
+   function ok(){if(done)return;done=true;clearTimeout(t0);res(api)}
+   function fail(e){if(done)return;done=true;clearTimeout(t0);try{peer.destroy()}catch(x){}rej(e)}
+   function drop(c){conns=conns.filter(function(o){return o!==c});delete others[c.peer];conns.forEach(function(o){if(o.open)o.send({t:'l',id:c.peer})});emit()}
+   function startHost(){
+    peer=new Peer(id);
+    peer.on('open',function(){isHost=true;ok()});
+    peer.on('connection',function(c){
+     c.on('open',function(){conns.push(c);c.send({t:'p',id:'host',d:me});for(var k in others)if(k!==c.peer)c.send({t:'p',id:k,d:others[k]})});
+     c.on('data',function(m){if(m&&m.t==='p'&&m.d&&typeof m.d==='object'){others[c.peer]=m.d;conns.forEach(function(o){if(o!==c&&o.open)o.send({t:'p',id:c.peer,d:m.d})});emit()}});
+     c.on('close',function(){drop(c)});c.on('error',function(){drop(c)})});
+    peer.on('error',function(e){if(!done&&e&&e.type==='unavailable-id'){try{peer.destroy()}catch(x){}startGuest()}else if(!done)fail(e)})}
+   function startGuest(){
+    peer=new Peer();
+    peer.on('open',function(){
+     var c=peer.connect(id,{reliable:true});hostConn=c;
+     c.on('open',function(){ok();c.send({t:'p',d:me})});
+     c.on('data',function(m){if(!m)return;if(m.t==='p'&&m.d&&typeof m.d==='object'){others[m.id]=m.d;emit()}else if(m.t==='l'){delete others[m.id];emit()}});
+     c.on('close',function(){others={};emit();errs.forEach(function(f){f({code:'upstream_error'})})})});
+    peer.on('error',function(e){if(!done)fail(e)})}
+   var api={
+    presence:function(p){var k;for(k in p){if(p[k]===null)delete me[k];else me[k]=p[k]}send();return Promise.resolve()},
+    onPeers:function(h,eh){subs.push(h);if(eh)errs.push(eh);setTimeout(emit,0);return function(){subs=subs.filter(function(f){return f!==h})}},
+    leave:function(){try{peer.destroy()}catch(e){}return Promise.resolve()}};
+   t0=setTimeout(function(){fail(new Error('timeout'))},12000);
+   startHost()})}
+ window.claude={use:function(n){return Promise.resolve(n==='room'?{join:join}:null)}};
+})();
+</script>
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d'),G=380,N=1000;
 let save={lvl:0,deaths:0};
@@ -265,7 +303,7 @@ function renderHome(){
  $('m-pick-sub').textContent='Niveaux 1 à '+lv+' débloqués';
  $('lv').max=lv;
  $('m-duo').disabled=!roomNs;
- $('m-duo-sub').textContent=acct.state==='loading'?'Connexion...':roomNs?'Vois ton ami jouer dans ton niveau, en direct':'Disponible uniquement dans la version claude.ai du jeu'}
+ $('m-duo-sub').textContent=acct.state==='loading'?'Connexion...':roomNs?'Vois ton ami jouer dans ton niveau, en direct':'Indisponible pour le moment, recharge la page'}
 function snapKey(){return save.lvl+'|'+save.deaths+'|'+nick}
 function schedSave(){if(!acct.doc||acct.ro)return;clearTimeout(stT);stT=setTimeout(flushSave,2500)}
 async function flushSave(){
