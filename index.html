@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Piège Infernal : jeu de plateforme gratuit dans le navigateur. 1000 niveaux, pièges qui mentent, boss tous les 10 niveaux.">
+<meta property="og:title" content="Piège Infernal">
+<meta property="og:description" content="Piège Infernal : jeu de plateforme gratuit dans le navigateur. 1000 niveaux, pièges qui mentent, boss tous les 10 niveaux.">
+<meta property="og:type" content="website">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Piège Infernal, jeu de plateforme à 1000 niveaux</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow:wght@400;600&display=swap">
+<style>
+/* Page d'accueil à une colonne : titre Bungee géant, scène animée du jeu, puis grille de pièges. Palette du jeu : sol noir, pointes rouges, héros bleu ciel, porte orange. */
+:root{--bg:#f2f2f0;--fg:#111114;--mut:#55555e;--spike:#e0252a;--sky:#6fc9f5;--door:#f5a300;--card:#ffffff;--line:#d6d6d1;--ground:#111114;--edge:#55555e;--on:#111114;--btn:#111114;--btnfg:#f2f2f0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13131a;--fg:#ececf2;--mut:#a4a4b4;--spike:#ff5058;--card:#1c1c26;--line:#2f2f3d;--ground:#2a2a38;--edge:#6fc9f5;--btn:#6fc9f5;--btnfg:#10101a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#13131a;--fg:#ececf2;--mut:#a4a4b4;--spike:#ff5058;--card:#1c1c26;--line:#2f2f3d;--ground:#2a2a38;--edge:#6fc9f5;--btn:#6fc9f5;--btnfg:#10101a;color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Barlow,system-ui,sans-serif;font-size:17px;line-height:1.5;padding-block:0 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:880px;margin:0 auto}
+h1,h2{font-family:Bungee,Impact,system-ui,sans-serif;font-weight:400;text-wrap:balance;margin:0}
+h1{font-size:clamp(52px,16vw,128px);line-height:.9;margin-top:36px}
+h1 span{color:var(--spike)}
+h2{font-size:clamp(24px,5vw,34px);line-height:1.1}
+.eyebrow{margin:32px 0 0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.lead{max-width:34em;font-size:clamp(18px,3.4vw,22px);margin:18px 0 24px}
+.cta{display:inline-block;background:var(--btn);color:var(--btnfg);font-family:Bungee,Impact,sans-serif;font-size:18px;padding:14px 26px;border-radius:8px;text-decoration:none}
+.cta:hover{filter:brightness(1.1)}
+a:focus-visible{outline:3px solid var(--spike);outline-offset:3px}
+#hero{display:block;width:100%;max-width:880px;height:auto;margin-top:34px;border-radius:10px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 36px;margin:30px 0 0;padding:0;list-style:none}
+.facts li{display:flex;align-items:baseline;gap:8px}
+.facts b{font-family:Bungee,Impact,sans-serif;font-weight:400;font-size:30px}
+.facts span{color:var(--mut)}
+section{margin-top:72px}
+section>p{max-width:36em;color:var(--mut);margin:10px 0 0}
+.traps{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:26px}
+.trap{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.trap svg{display:block;height:44px;width:auto;margin-bottom:10px}
+.trap h3{margin:0 0 4px;font-size:18px}
+.trap p{margin:0;color:var(--mut);font-size:16px}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:26px}
+.mode{border-top:3px solid var(--fg);padding-top:12px}
+.mode h3{margin:0 0 4px;font-family:Bungee,Impact,sans-serif;font-weight:400;font-size:20px}
+.mode p{margin:0;color:var(--mut)}
+.end{text-align:center;padding:56px 0 8px}
+.end p{color:var(--mut);margin:14px 0 0;font-size:15px}
+</style>
+
+<header class="wrap">
+<p class="eyebrow">Plateformer · navigateur · 1 ou 2 joueurs</p>
+<h1>Piège<br><span>Infernal</span></h1>
+<p class="lead">Tu vois une porte. Tu avances. Le sol disparaît, une pointe jaillit, la porte s'enfuit. 1000 niveaux où tout ce qui te fait face a une bonne raison de te tuer.</p>
+<a class="cta" href="jeu.html">Jouer maintenant</a>
+<canvas id="hero" width="880" height="260" aria-label="Le petit bleu court, saute une pointe, et finit par ne pas sauter"></canvas>
+<ul class="facts">
+<li><b>1000</b><span>niveaux</span></li>
+<li><b>100</b><span>boss, un tous les 10 niveaux</span></li>
+<li><b>8</b><span>ambiances graphiques</span></li>
+</ul>
+</header>
+
+<main class="wrap">
+<section>
+<h2>Rien n'est ce qu'il paraît</h2>
+<p>Les niveaux sont assemblés pour ne jamais se ressembler. Plus tu avances, plus ils mélangent de nouveaux pièges.</p>
+<div class="traps" id="traps"></div>
+</section>
+
+<section>
+<h2>Un boss tous les dix niveaux</h2>
+<p>Pas question de rester sur une plateforme en faisant gauche, droite. Le boss te marque une colonne rouge, puis y lâche une pointe. Il lance des pointes rasantes, des scies qui roulent et des murs de pointes avec une seule brèche. Plus tu montes, plus il enchaîne vite. La porte reste verrouillée tant qu'il n'est pas vaincu.</p>
+</section>
+
+<section>
+<h2>Trois façons de jouer</h2>
+<div class="modes">
+<div class="mode"><h3>Solo</h3><p>Reprends exactement là où tu t'es arrêté. Ta progression est sauvegardée sur ton appareil.</p></div>
+<div class="mode"><h3>À deux en ligne</h3><p>Disponible uniquement dans la version claude.ai du jeu : tu vois ton ami courir dans ton niveau.</p></div>
+<div class="mode"><h3>Niveau au choix</h3><p>Retourne à n'importe quel niveau déjà débloqué pour retenter un passage qui t'a fait rager.</p></div>
+</div>
+</section>
+
+<div class="end">
+<a class="cta" href="jeu.html">Essayer le niveau 1</a>
+<p>Gratuit, dans ton navigateur, sur ordinateur et sur téléphone.</p>
+</div>
+</main>
+
+<script>
+(function(){
+var spk='<polygon points="2,34 12,10 22,34" fill="var(--spike)"/><polygon points="22,34 32,10 42,34" fill="var(--spike)"/><line x1="0" y1="35" x2="44" y2="35" stroke="var(--fg)" stroke-width="3"/>';
+function saw(){var p=[],i,r,a;for(i=0;i<16;i++){r=i%2?13:19;a=i*Math.PI/8;p.push((22+Math.cos(a)*r).toFixed(1)+','+(22+Math.sin(a)*r).toFixed(1))}return '<polygon points="'+p.join(' ')+'" fill="var(--mut)"/><circle cx="22" cy="22" r="5" fill="var(--bg)"/>'}
+var T=[
+['Pointes traîtresses',spk,'Elles surgissent du sol, tombent du plafond ou foncent sur toi dès que tu t\'approches.'],
+['Scies qui changent de taille',saw(),'Elles patrouillent sur un rail et grossissent au dernier moment. Certaines montent et descendent.'],
+['Sols qui s\'effondrent','<rect x="0" y="22" width="12" height="14" fill="var(--fg)"/><rect x="16" y="26" width="10" height="10" fill="var(--fg)" opacity=".6"/><rect x="31" y="32" width="8" height="8" fill="var(--fg)" opacity=".3"/>','Le sol se découpe sous tes pieds. Parfois il cède avant même que tu le touches.'],
+['Trampolines','<rect x="2" y="34" width="4" height="8" fill="var(--fg)"/><rect x="38" y="34" width="4" height="8" fill="var(--fg)"/><rect x="0" y="28" width="44" height="6" rx="3" fill="#2cc88a"/>','Ils te propulsent au-dessus des trous et des pièges. Ils t\'envoient aussi parfois au mauvais endroit.'],
+['Boutons qui te transforment','<rect x="4" y="30" width="36" height="8" fill="#a88000"/><rect x="8" y="24" width="28" height="7" rx="3" fill="#ffc533"/>','Marche dessus et tu deviens gros, minuscule ou tout large, juste avant le passage qui ne le permet pas.'],
+['Portes qui mentent','<rect x="8" y="2" width="28" height="38" fill="var(--door)"/><rect x="28" y="20" width="4" height="4" fill="#111"/>','Elles fuient quand tu approches. Certaines sont fausses. D\'autres restent cachées tant que tu n\'as pas pris la clé.']
+];
+var h='',k;
+for(k=0;k<T.length;k++)h+='<div class="trap"><svg viewBox="0 0 44 44" role="img" aria-label="'+T[k][0]+'">'+T[k][1]+'</svg><h3>'+T[k][0]+'</h3><p>'+T[k][2]+'</p></div>';
+document.getElementById('traps').innerHTML=h;
+
+var cv=document.getElementById('hero'),c=cv.getContext('2d'),W=880,H=260,G=205;
+var bg,gr,ed,sk,sp,tk=0,pass=0,x=-20,y=G-18,vy=0,dead=0,sx=520,sh=0,jmp=0,parts=[];
+function cols(){var s=getComputedStyle(document.documentElement);bg=s.getPropertyValue('--card').trim();gr=s.getPropertyValue('--ground').trim();ed=s.getPropertyValue('--edge').trim();sk=s.getPropertyValue('--sky').trim();sp=s.getPropertyValue('--spike').trim()}
+function reset(){x=-20;y=G-18;vy=0;sh=0;jmp=0;sx=430+Math.random()*220;pass++;dead=0}
+function frame(){
+ if(tk++%30===0)cols();
+ c.clearRect(0,0,W,H);c.fillStyle=bg;c.fillRect(0,0,W,H);
+ c.fillStyle=gr;c.fillRect(0,G,W,H-G);c.fillStyle=ed;c.fillRect(0,G,W,3);
+ var d=sx-x;
+ if(!dead){
+  x+=2.6;
+  if(d<120)sh=Math.min(1,sh+.12);
+  if(pass%3!==2&&d<48&&d>0&&!jmp&&y>=G-18){vy=-8;jmp=1}
+  vy+=.5;y+=vy;if(y>G-18){y=G-18;vy=0}
+  if(sh>.6&&Math.abs(sx-x)<20&&y>G-32){dead=1;for(var i=0;i<26;i++)parts.push({x:x,y:y,vx:(Math.random()-.5)*8,vy:-Math.random()*7,l:50})}
+  if(x>W+20)reset();
+ }else{dead++;if(dead>80)reset()}
+ if(sh>0){c.fillStyle=sp;var hh=26*sh;c.beginPath();c.moveTo(sx-18,G);c.lineTo(sx-6,G-hh);c.lineTo(sx,G);c.lineTo(sx+6,G-hh);c.lineTo(sx+18,G);c.closePath();c.fill()}
+ if(!dead){var lg=Math.sin(x*.25)*3;c.fillStyle=sk;c.fillRect(x-5,y+12-Math.max(0,lg),3,6+Math.max(0,lg));c.fillRect(x+2,y+12-Math.max(0,-lg),3,6+Math.max(0,-lg));
+  c.beginPath();c.roundRect(x-7,y,14,14,4);c.fill();c.fillStyle='#fff';c.fillRect(x-1,y+3,3,4);c.fillRect(x+4,y+3,3,4);c.fillStyle='#000';c.fillRect(x+1,y+5,1.5,2);c.fillRect(x+6,y+5,1.5,2)}
+ parts=parts.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.4;p.l--;c.globalAlpha=Math.min(1,p.l/30);c.fillStyle=sk;c.fillRect(p.x,p.y,5,5);c.globalAlpha=1;return p.l>0});
+ if(!reduce)requestAnimationFrame(frame)}
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+cols();
+if(reduce){x=sx-60;sh=1;frame()}else requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
