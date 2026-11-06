@@ -134,16 +134,21 @@ const sk=(x,y,wd,h,a,b,m,o)=>Object.assign({x,y,w:wd,h,t:[a,b],mode:m,on:false,l
 function gen(i){
  const n=i+1,R=rng(n),w=Math.floor(i/10),d=Math.min(1,n/700),p=[],s=[],sw=[],tr=[],bt=[],pits=[],cand=[];
  const hid=n>=12&&n%6==0,fkH=n>=10&&n%4==3;
- let F=0,Y=G,x=150,up=0,last=[-1,-1],need=hid,key=null;
+ let F=0,Y=G,x=150,up=0,last=[-1,-1],need=hid,key=null,sy=G,need2=n>=2&&R()<.5;
+ if(n>=4&&R()<.25){F=1;Y=240;sy=240;need2=false;p.push({x:0,y:240,w:150,h:16})}
  const str=(x0,wd)=>{if(F)p.push({x:x0,y:Y,w:wd,h:16})};
- const ex=Math.max(0,Math.log2(n/700)),nm=Math.min(14,3+Math.floor(n/45)+(R()<.5?1:0))+(n>600?Math.min(16,Math.floor(Math.log2(n/600)*5)):0),ORD=[0,12,15,1,2,16,3,5,13,4,6,7,8,9,11],av=Math.min(ORD.length,2+w);
+ const ex=Math.max(0,Math.log2(n/700)),nm=Math.min(14,3+Math.floor(n/45)+(R()<.5?1:0))+(n>600?Math.min(16,Math.floor(Math.log2(n/600)*5)):0),ORD=[0,18,12,19,9,15,1,20,17,2,16,21,3,5,13,4,6,7,8,11],av=Math.min(ORD.length,3+w);
+ let terr=false;const mt=Math.floor(R()*Math.max(1,nm-1));
  for(let m=0;m<nm;m++){
   let k;
   if(F&&(up>=2||(up>=1&&R()<.4)))k=10;
+  else if(!terr&&!F&&(m===mt||m>=nm-1)){const T=w>=2?[18,19,20,21]:w==1?[18,19,21]:[18,19];k=T[Math.floor(R()*T.length)]}
   else if(need&&!F&&m>=1)k=9;
+  else if(need2&&!F&&m>=1){k=9;need2=false}
   else if(F==1&&n>=30&&R()<.35)k=14;
   else{for(let t=0;t<6;t++){k=ORD[Math.floor(R()*av)];if(k!=last[0]&&k!=last[1])break}
-   if(F&&(k==5||k==9||k==13||k==15||k==16))k=0}
+   if(F&&(k==5||k==9||k==13||k==15||k==16||k==17||k==18||k==19||k==20||k==21))k=0}
+  if(k>=18&&k<=21)terr=true;
   let wd=210;
   if(k==0){const a=x+110+(R()*40|0),ww=30+(R()*14|0)+(d*14|0);s.push(sk(a,Y-24,ww,24,a-80,a-45,'appear'));wd=220}
   else if(k==1){const a=x+90+(R()*50|0);s.push(sk(a,0,40,34,a-40,a+10,'drop',{ly:Y}))}
@@ -155,6 +160,11 @@ function gen(i){
   else if(k==7){const a=x+100;s.push(sk(a,Y-24,32,24,a-90,a-60,'slide',{on:true,a:1,dm:60+(R()*30|0)}));wd=240}
   else if(k==8){const a=x+100,A=sk(a,Y-24,32,24,a-80,a-50,'swap',{on:true,a:1}),B=sk(a+70,Y-24,32,24,1e9,1e9,'swap');A.lnk=B;s.push(A,B);wd=240}
   else if(k==9){[345,310,275].forEach((yy,j)=>p.push({x:x+20+j*86,y:yy,w:56,h:14}));F=1;Y=240;wd=278;if(need){key={x:x+348,y:Y-30,w:18,h:18};need=false}}
+  else if(k==18){[[60,30,50],[110,60,70],[180,30,50]].forEach(b=>p.push({x:x+b[0],y:Y-b[1],w:b[2],h:b[1]}));wd=290}
+  else if(k==19){p.push({x:x+90,y:Y-45,w:40,h:45});wd=230}
+  else if(k==20){pits.push([x+40,x+305]);[[65,35],[150,65],[235,35]].forEach(b=>p.push({x:x+b[0],y:Y-b[1],w:60,h:14}));wd=345}
+  else if(k==21){p.push({x:x+80,y:14,w:140,h:Y-14-55});wd=260}
+  else if(k==17){tr.push({x:x+40,y:Y-10,w:44,h:10,p:-14});p.push({x:x+130,y:240,w:110,h:16});F=1;Y=240;wd=240}
   else if(k==15){const v=220;pits.push([x+50,x+50+v]);p.push({x:x+30,y:Y,w:70,h:16,mv:{x0:x+140,y0:Y,rx:110,ry:0,sp:Math.min(.06,.022+R()*.012+d*.015+ex*.004),ph:R()*6.28}});wd=320}
   else if(k==16){pits.push([x+50,x+190]);p.push({x:x+80,y:Y,w:60,h:16,mv:{x0:x+80,y0:Y,rx:0,ry:35,sp:Math.min(.075,.035+R()*.015+ex*.006),ph:R()*6.28}});wd=240}
   else if(k==12){const a=x+90+(R()*30|0),ww=34+(R()*3|0)*10;s.push(sk(a,Y-24,ww,24,1e9,1e9,'appear',{on:true,a:1,st:1}));wd=240}
@@ -163,10 +173,11 @@ function gen(i){
   else if(k==10){str(x,60);F=0;Y=G;wd=160}
   else if(R()<.5){bt.push({x:x+30,y:Y-8,w:22,h:8,k:'big'},{x:x+95,y:Y-8,w:22,h:8,k:'small'},{x:x+225,y:Y-8,w:22,h:8,k:'normal'});p.push({x:x+130,y:Y-44,w:80,h:30});wd=260}
   else{bt.push({x:x+60,y:Y-8,w:22,h:8,k:'big'},{x:x+215,y:Y-8,w:22,h:8,k:'normal'});const a=x+140;s.push(sk(a,Y-24,30,24,a-60,a-30,'appear'));wd=250}
-  if(k!=2&&k!=10&&k!=9&&k!=14)str(x,wd);
-  if(k==9||k==14)up=0;else if(F)up++;
+  if(k!=2&&k!=10&&k!=9&&k!=14&&k!=17)str(x,wd);
+  if(k==9||k==14||k==17)up=0;else if(F)up++;
   if([0,1,3,4,6,7,8].includes(k))cand.push({x:x+8,y:Y-40});
   last=[k,last[0]];x+=wd}
+ if(!terr){p.push({x:x+20,y:Y-45,w:40,h:45});terr=true}
  const nfS=n>=8?(n>=100?2:1):0,L=x+(nfS>=2?430:340),fd=[];
  if(F)str(x,L-x);
  const M=frand,nf=n>=8?(M()<.75?1:0)+(n>=60&&M()<.5?1:0)+(n>=200&&M()<.4?1:0):0,slots=nfS>=2?[100,190,270]:[100,190];
@@ -177,11 +188,20 @@ function gen(i){
  for(const q of pits){if(q[0]>c)p.push({x:c,y:G,w:q[0]-c,h:70});c=q[1]}
  if(c<L)p.push({x:c,y:G,w:L-c,h:70});
  s.forEach(q=>{if(q.x==-1)q.x=L+20});
- if(fkH){s.forEach(q=>{if(q.mode!='rush'&&q.mode!='swap'&&!q.st&&R()<.4)q.fake=1});sw.forEach(q=>{if(R()<.4)q.fake=1})}
- return{p,s,sw,tr,bt,fd,L,d:{x:L-70,y:Y-40,w:26,h:40},key:hid?key:null,kfd:hid?{x:L-130,y:Y-40,w:26,h:40}:null}}
-function boss(i){const n=i+1,t=n/10,h=Math.min(3600,600+Math.floor(t*60))+Math.max(0,Math.floor((t-100)*4));
- return{p:[{x:0,y:G,w:800,h:70},{x:150,y:340,w:80,h:14},{x:570,y:340,w:80,h:14}],s:[],sw:[],tr:[],bt:[],fd:[],L:800,d:{x:745,y:G-40,w:26,h:40},
- boss:{n:t,x:600,t:0,hp:h,m:h,iv:Math.max(16,95-Math.floor(t*.6)),na:Math.min(7,2+Math.floor(t/3)),warn:[]}}}
+ if(fkH){
+  const hz=[...s.filter(q=>q.mode!='drop'&&q.mode!='rush').map(q=>[q.x,q.x+q.w]),...sw.map(q=>[q.x0-q.rx-q.r,q.x0+q.rx+q.r]),...pits];
+  const near=b=>hz.some(h=>h[0]>b&&h[0]<b+130);
+  s.forEach(q=>{if((q.mode=='appear'||q.mode=='slide')&&!q.st&&near(q.x+q.w)&&R()<.5)q.fake=1});
+  sw.forEach(q=>{if(!q.ry&&near(q.x0+q.rx+q.r)&&R()<.5)q.fake=1})}
+ return{p,s,sw,tr,bt,fd,L,d:{x:L-70,y:Y-40,w:26,h:40},key:hid?key:null,kfd:hid?{x:L-130,y:Y-40,w:26,h:40}:null,sy}}
+const BV=[
+ [{x:330,y:G-30,w:140,h:30},{x:370,y:G-60,w:60,h:60},{x:150,y:340,w:80,h:14},{x:570,y:340,w:80,h:14}],
+ [{x:200,y:G-45,w:40,h:45},{x:560,y:G-45,w:40,h:45},{x:320,y:300,w:160,h:14}],
+ [{x:100,y:G-30,w:60,h:30},{x:160,y:G-60,w:120,h:60},{x:560,y:G-45,w:60,h:45},{x:600,y:300,w:80,h:14}],
+ [{x:110,y:G-30,w:70,h:30},{x:365,y:G-30,w:70,h:30},{x:620,y:G-30,w:70,h:30},{x:240,y:330,w:80,h:14},{x:480,y:330,w:80,h:14}]];
+function boss(i){const n=i+1,t=n/10,h=Math.round(600+2400*(1-Math.exp(-t/60)));
+ return{p:[{x:0,y:G,w:800,h:70},...BV[t%4]],s:[],sw:[],tr:[],bt:[],fd:[],L:800,d:{x:745,y:G-40,w:26,h:40},
+ boss:{n:t,x:600,t:0,hp:h,m:h,iv:Math.round(40+55*Math.exp(-t/45)),na:Math.min(7,2+Math.floor(t/3)),warn:[]}}}
 let W,P,cur,won=false,msg='',cam=0,shk=0,parts=[],fx=[],keys={};
 let evs=[],applied=new Set(),waitDoor=false,frand=Math.random,toastT=0;
 const ds=(x,ly)=>({x,y:0,w:40,h:34,t:[1e9,1e9],mode:'drop',on:true,a:1,dyn:1,ly});
@@ -195,7 +215,7 @@ function bossStep(){const b=W.boss;if(b.hp<=0)return;b.t++;b.hp--;b.x=Math.max(4
   else if(k==2)W.s.push(rs(318));
   else if(k==3)W.sw.push(rsw(G-12));
   else if(k==4)W.sw.push(rsw(328));
-  else if(k==5){const g=Math.floor(Math.random()*19);for(let c=0;c<20;c++)if(c!=g&&c!=g+1)b.warn.push({x:c*40,t:45,ly:G})}
+  else if(k==5){const g=Math.floor(Math.random()*18);for(let c=0;c<20;c++)if(c!=g&&c!=g+1&&c!=g+2)b.warn.push({x:c*40,t:45,ly:G})}
   else b.warn.push({x:px,t:30,ly},{x:Math.random()*760,t:30,ly:G},{x:Math.random()*760,t:38,ly:G})}
  for(const w of b.warn){w.t--;if(w.t==0)W.s.push(ds(w.x,w.ly))}
  b.warn=b.warn.filter(w=>w.t>0)}
@@ -216,7 +236,7 @@ function setSize(k){const D={normal:[14,18],big:[22,28],small:[8,10],wide:[30,14
 function dust(x,y,n){for(let i=0;i<n;i++)parts.push({x:x+(Math.random()-.5)*8,y:y-2,vx:(Math.random()-.5)*2.5,vy:-Math.random()*1.5,l:22,c:'#999'})}
 function load(i){cur=i;evs=[];applied=new Set();waitDoor=false;frand=(mode==='duo'&&roomCode)?rng(hs(roomCode)*7919+i+1):Math.random;W=i%10==9?boss(i):gen(i);W.s.forEach((s,k)=>s.id=k);W.th=TH[Math.floor(i/10)%TH.length];
  W.p=W.p.flatMap(q=>{if(!q.vanish||q.w<=40)return[q];const o=[];for(let x=0;x<q.w;x+=40)o.push({...q,x:q.x+x,w:Math.min(40,q.w-x)});return o});
- P={x:30,y:G-18,w:14,h:18,vx:0,vy:0,g:false,f:1,t:0,sq:0,jr:1,cy:0,cd:0};won=false;cam=0;
+ P={x:30,y:(W.sy||G)-18,w:14,h:18,vx:0,vy:0,g:false,f:1,t:0,sq:0,jr:1,cy:0,cd:0};won=false;cam=0;
  fx=Array.from({length:40},()=>({x:Math.random()*800,y:Math.random()*450,s:1+Math.random()*2,v:FV[W.th.f]*(.6+Math.random()*.8)}));draw()}
 function die(){if(!testMode){save.deaths++;persist()}shk=12;for(let i=0;i<30;i++)parts.push({x:P.x+P.w/2,y:P.y+P.h/2,vx:(Math.random()-.5)*9,vy:-Math.random()*8,l:50,c:'#7fd4ff'});load(cur)}
 function step(){
