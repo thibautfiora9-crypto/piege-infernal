@@ -30,10 +30,16 @@
 .cm{max-width:80%;padding:8px 12px;border-radius:14px;font-size:14px;word-break:break-word;background:var(--btn)}.cm.me{align-self:flex-end;background:#1a8f4a;color:#fff}
 #sotoast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:400;background:#111;color:#fff;border:2px solid #2bd16a;border-radius:12px;padding:10px 16px;font-size:14px;max-width:90vw}
 #sotoast[hidden]{display:none}
-#game:fullscreen{background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto}
-#game:-webkit-full-screen{background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:auto}
-#game:fullscreen canvas{max-width:none;width:min(100vw,calc((100vh - 80px)*16/9));height:auto}
-#game:-webkit-full-screen canvas{max-width:none;width:min(100vw,calc((100vh - 80px)*16/9));height:auto}
+#game.pfs{position:fixed;inset:0;z-index:5000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#game.pfs[hidden]{display:none}
+#game.pfs canvas{max-width:none;width:min(100%,calc((100dvh - 64px)*16/9));height:auto}
+#game:fullscreen #pad,#game:-webkit-full-screen #pad,#game.pfs #pad,#game:fullscreen .bar2,#game:-webkit-full-screen .bar2,#game.pfs .bar2{display:none!important}
+#game:fullscreen,#game:-webkit-full-screen,#game.pfs{box-sizing:border-box;width:100%;height:100vh;height:100dvh;padding:4px;margin:0;max-width:none;overflow:hidden;gap:4px}
+#game:fullscreen .bar,#game:-webkit-full-screen .bar,#game.pfs .bar{width:100%;justify-content:center;box-sizing:border-box}
+#game:fullscreen{background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#game:-webkit-full-screen{background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+#game:fullscreen canvas{max-width:none;width:min(100%,calc((100dvh - 64px)*16/9));height:auto}
+#game:-webkit-full-screen canvas{max-width:none;width:min(100%,calc((100dvh - 64px)*16/9));height:auto}
 #ambs{display:flex;gap:8px;overflow-x:auto;padding:6px 0}#ambs .tile canvas{width:96px;height:54px}#ambs .tile{width:108px}
 </style>
 <link rel="manifest" href="manifest.json"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="theme-color" content="#14141c"><link rel="icon" type="image/png" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="Piège Infernal"><title>Piège Infernal, le jeu</title>
@@ -932,12 +938,12 @@ function renderAmb(){const host=$('ambs');if(!host)return;if(AV<0)AV=save.amb|0;
  AMBP.forEach(f=>f())}
 clearInterval(ambTimer);ambTimer=setInterval(()=>{if(SHT==='amb'&&!$('shopcard').hidden)AMBP.forEach(f=>f())},80);
 /* ===== Plein écran (ordinateur / iPad avec clavier) ===== */
-const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement||$('game').classList.contains('pfs');
 const fsOk=()=>!!(document.fullscreenEnabled||document.webkitFullscreenEnabled);
 let kbd=false;
 function fsUpd(){const b=$('fs');if(b)b.textContent=fsEl()?'⛶ Quitter le plein écran':'⛶ Plein écran'}
-function fsShow(){const b=$('fs');if(b)b.hidden=!fsOk()}
-function fsToggle(){const e=$('game');try{if(fsEl())(document.exitFullscreen||document.webkitExitFullscreen).call(document);else(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}catch(x){}}
+function fsShow(){const b=$('fs');if(b)b.hidden=false}
+function fsToggle(){const e=$('game');if(!fsOk()){e.classList.toggle('pfs');fsUpd();return}try{if(fsEl())(document.exitFullscreen||document.webkitExitFullscreen).call(document);else(e.requestFullscreen||e.webkitRequestFullscreen).call(e)}catch(x){}}
 addEventListener('keydown',()=>{if(!kbd){kbd=true;fsShow()}});
 ['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,fsUpd));
 $('fs').onclick=fsToggle;fsShow();fsUpd();
