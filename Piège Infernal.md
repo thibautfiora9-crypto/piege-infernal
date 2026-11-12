@@ -1,0 +1,1 @@
+Flèches / WASD / Espace. Méfie-toi de tout.
