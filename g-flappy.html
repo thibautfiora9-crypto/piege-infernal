@@ -1,0 +1,26 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover"><title>Oiseau</title>
+<style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;background:#14122b;color:#fff;font-family:-apple-system,system-ui,sans-serif;overflow:hidden;touch-action:none}
+body{display:flex;flex-direction:column;align-items:center}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:10px}
+header a{color:#fff;text-decoration:none;background:#2d2a5a;padding:8px 14px;border-radius:20px;font-weight:600;font-size:15px}
+header b{font-size:18px}#sc{font-variant-numeric:tabular-nums;background:#2d2a5a;padding:8px 14px;border-radius:20px;font-weight:600}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;padding:0 10px 16px}
+canvas{background:#1d1b3d;border-radius:14px;max-width:100%;touch-action:none}
+button.r{background:#ffb703;color:#222;border:0;border-radius:20px;padding:10px 22px;font-weight:700;font-size:16px}
+p.h{margin:0;color:#aab;font-size:14px;text-align:center}</style></head><body>
+<header><a href="index.html">← Accueil</a><b>Oiseau</b><span id="sc">0</span></header>
+<main><canvas id="c" width="320" height="480"></canvas><button class="r" onclick="location.reload()">Rejouer</button><p class="h">Touche l'écran (ou Espace) pour battre des ailes</p></main>
+<script>const GK="g-flappy",best=()=>+(localStorage.getItem(GK)||0),setBest=s=>{try{if(s>best())localStorage.setItem(GK,s)}catch(e){}},sc=v=>document.getElementById('sc').textContent=v+' · record '+Math.max(v,best());sc(0);
+
+const c=document.getElementById('c'),x=c.getContext('2d');let y=240,v=0,P=[],s=0,dead=0,t=0,started=0;
+function fl(){if(dead)return;started=1;v=-6.2}
+addEventListener('touchstart',e=>{e.preventDefault();fl()},{passive:false});addEventListener('mousedown',fl);addEventListener('keydown',e=>{if(e.code=='Space')fl()});
+function loop(){x.fillStyle='#4cc9f0';x.fillRect(0,0,320,480);
+if(started&&!dead){v+=.35;y+=v;t++;if(t%90==1)P.push({x:330,g:110+Math.random()*190,s:0});P.forEach(p=>p.x-=2.2);P=P.filter(p=>p.x>-60);
+P.forEach(p=>{if(!p.s&&p.x<60){p.s=1;s++;sc(s)}if(60+12>p.x&&60-12<p.x+50&&(y-12<p.g-60||y+12>p.g+60))dead=1});if(y>470||y<0)dead=1;if(dead)setBest(s)}
+x.fillStyle='#2dc653';P.forEach(p=>{x.fillRect(p.x,0,50,p.g-60);x.fillRect(p.x,p.g+60,50,480);});
+x.fillStyle='#ffd60a';x.beginPath();x.arc(60,y,12,0,7);x.fill();x.fillStyle='#fff';x.fillRect(64,y-6,5,5);
+if(!started){x.fillStyle='#fff';x.font='bold 22px sans-serif';x.textAlign='center';x.fillText('Touche pour commencer',160,150)}
+if(dead){x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,0,320,480);x.fillStyle='#fff';x.font='bold 30px sans-serif';x.textAlign='center';x.fillText('Perdu ! '+s,160,240)}
+requestAnimationFrame(loop)}loop()</script></body></html>

@@ -1,0 +1,17 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover"><title>Mémoire</title>
+<style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;background:#14122b;color:#fff;font-family:-apple-system,system-ui,sans-serif;overflow:hidden;touch-action:none}
+body{display:flex;flex-direction:column;align-items:center}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:10px}
+header a{color:#fff;text-decoration:none;background:#2d2a5a;padding:8px 14px;border-radius:20px;font-weight:600;font-size:15px}
+header b{font-size:18px}#sc{font-variant-numeric:tabular-nums;background:#2d2a5a;padding:8px 14px;border-radius:20px;font-weight:600}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;padding:0 10px 16px}
+canvas{background:#1d1b3d;border-radius:14px;max-width:100%;touch-action:none}
+button.r{background:#ffb703;color:#222;border:0;border-radius:20px;padding:10px 22px;font-weight:700;font-size:16px}
+p.h{margin:0;color:#aab;font-size:14px;text-align:center}#gr{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(92vw,380px)}.cd{aspect-ratio:1;border-radius:12px;background:#2d2a5a;font-size:34px;display:flex;align-items:center;justify-content:center;transition:.2s}.cd.o{background:#ffb703}.cd.m{background:#2a9d8f}</style></head><body>
+<header><a href="index.html">← Accueil</a><b>Mémoire</b><span id="sc">0</span></header>
+<main><div id="gr"></div><button class="r" onclick="location.reload()">Rejouer</button><p class="h">Trouve toutes les paires en un minimum de coups</p></main>
+<script>const GK="g-memoire",best=()=>+(localStorage.getItem(GK)||0),setBest=s=>{try{if(s>best())localStorage.setItem(GK,s)}catch(e){}},sc=v=>document.getElementById('sc').textContent=v+' · record '+Math.max(v,best());sc(0);
+
+const E=['🍎','🐱','🚀','⭐','🎲','🍕','🐸','💎'];let a=[...E,...E].sort(()=>Math.random()-.5),open=[],mv=0,ok=0,lock=0;const gr=document.getElementById('gr');
+a.forEach((e,i)=>{const d=document.createElement('div');d.className='cd';d.onclick=()=>{if(lock||d.classList.contains('o')||d.classList.contains('m'))return;d.classList.add('o');d.textContent=e;open.push([d,e]);if(open.length==2){mv++;lock=1;const[p,q]=open;if(p[1]==q[1]){p[0].className=q[0].className='cd m';ok++;open=[];lock=0;if(ok==8){const sco=Math.max(1,200-mv*8);sc(sco);setBest(sco)}}else setTimeout(()=>{[p,q].forEach(z=>{z[0].className='cd';z[0].textContent=''});open=[];lock=0},700);}};gr.appendChild(d)})</script></body></html>

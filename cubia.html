@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#2b2118">
+<link rel="icon" type="image/png" href="icon-192.png"><title>Cubia, menu principal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#2b2118;color:#fff;font-family:'VT323',ui-monospace,monospace;font-size:22px;overflow:hidden}
+#bg{position:fixed;inset:0;background:
+ linear-gradient(rgba(10,8,6,.55),rgba(10,8,6,.55)),
+ repeating-conic-gradient(#5a4632 0 25%,#4b3a29 0 50%) 0 0/64px 64px;image-rendering:pixelated}
+#bg::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.6))}
+main{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;overflow:auto}
+.logo{font-size:min(16vw,110px);line-height:.9;letter-spacing:4px;text-align:center;color:#d9d9d9;
+ text-shadow:0 5px 0 #555,0 8px 0 #333,0 12px 14px #000;margin-bottom:6px}
+.logo span{color:#7ed957;text-shadow:0 5px 0 #2f7a1f,0 8px 0 #1c4a12,0 12px 14px #000}
+.sub{color:#ffe36b;font-size:24px;text-shadow:2px 2px #3f3200;transform:rotate(-3deg);margin:-4px 0 10px}
+.b{display:block;width:min(86vw,420px);padding:10px 12px;margin:0;text-align:center;color:#e0e0e0;font:inherit;font-size:26px;cursor:pointer;
+ background:#6f6f6f;border:2px solid #000;box-shadow:inset 3px 3px 0 #a5a5a5,inset -3px -3px 0 #3d3d3d;text-shadow:2px 2px #262626;text-decoration:none}
+.b:hover,.b:active,.b:focus{background:#7b8ad1;box-shadow:inset 3px 3px 0 #b6c0f5,inset -3px -3px 0 #3b4686;color:#fff;outline:none}
+.b[disabled]{opacity:.5;pointer-events:none}
+.row{display:flex;gap:8px;width:min(86vw,420px)}.row .b{width:50%;font-size:22px}
+.foot{position:fixed;left:0;right:0;bottom:6px;display:flex;justify-content:space-between;padding:0 12px;font-size:18px;color:#bbb;text-shadow:1px 1px #000}
+.pn{display:none;flex-direction:column;align-items:center;gap:8px;width:100%}
+.pn.on{display:flex}
+h2{margin:0 0 4px;font-weight:400;font-size:34px;text-shadow:2px 2px #000}
+.in{width:min(86vw,420px);padding:8px 10px;font:inherit;font-size:24px;color:#fff;background:#000;border:2px solid #a0a0a0;outline:none}
+.in:focus{border-color:#fff}
+.lst{width:min(92vw,560px);max-height:34vh;overflow:auto;background:rgba(0,0,0,.55);border:2px solid #000;box-shadow:inset 0 0 0 2px #333}
+.it{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid #222;cursor:pointer}
+.it:hover,.it.sel{background:rgba(255,255,255,.14);outline:2px solid #fff;outline-offset:-2px}
+.it i{width:44px;height:44px;flex:none;background:linear-gradient(#6bbf3a 0 30%,#7a5a3a 30%);border:2px solid #000;image-rendering:pixelated}
+.it b{font-weight:400;font-size:26px;display:block}.it small{color:#aaa;font-size:19px}
+.it .x{margin-left:auto;color:#f66;font-size:26px;padding:0 8px}
+.msg{min-height:26px;color:#ffd24a;text-align:center;text-shadow:1px 1px #000;max-width:92vw}
+.card{width:min(92vw,560px);background:rgba(0,0,0,.55);border:2px solid #000;padding:12px 16px;font-size:21px;line-height:1.25}
+.card table{width:100%;border-collapse:collapse}.card td{padding:2px 4px;border-bottom:1px solid #333}
+kbd{background:#3a3a3a;border:2px solid #000;border-bottom-width:4px;padding:0 6px;color:#fff;font-family:inherit}
+.who{font-size:20px;color:#9fe27a;text-shadow:1px 1px #000}
+</style></head><body>
+<div id="bg"></div>
+<main>
+
+<section class="pn on" id="p-main">
+ <div class="logo">CUB<span>IA</span></div><div class="sub">Construis. Explore. Joue entre potes !</div>
+ <button class="b" id="bSolo">Jeu solo</button>
+ <button class="b" id="bMulti">Multijoueur</button>
+ <button class="b" id="bAcc">Compte Cubia</button>
+ <div class="row"><button class="b" id="bOpt">Options…</button><a class="b" href="index.html">Quitter</a></div>
+ <div class="who" id="who"></div><div class="msg" id="m0"></div>
+</section>
+
+<section class="pn" id="p-multi">
+ <h2>Jouer en multijoueur</h2>
+ <div class="lst" id="srvl"><div class="it"><small>Chargement…</small></div></div>
+ <div class="row"><button class="b" id="mJoin" disabled>Rejoindre</button><button class="b" id="mNew">Créer un serveur</button></div>
+ <div class="row"><button class="b" id="mCode">Par code</button><button class="b" id="mBack">Retour</button></div>
+ <div class="msg" id="m1"></div>
+</section>
+
+<section class="pn" id="p-new">
+ <h2>Créer un serveur</h2>
+ <input class="in" id="nName" maxlength="24" placeholder="Nom du serveur (ex : Les potes)">
+ <button class="b" id="nGo">Créer et jouer</button><button class="b" id="nBack">Annuler</button>
+ <div class="msg" id="m2"></div>
+</section>
+
+<section class="pn" id="p-code">
+ <h2>Rejoindre par code</h2>
+ <input class="in" id="cIn" maxlength="6" placeholder="Code à 6 caractères" autocapitalize="characters" style="text-transform:uppercase;text-align:center;letter-spacing:6px">
+ <button class="b" id="cGo">Rejoindre</button><button class="b" id="cBack">Annuler</button>
+ <div class="msg" id="m3"></div>
+</section>
+
+<section class="pn" id="p-acc">
+ <h2>Compte Cubia</h2>
+ <div class="card" id="accInfo"></div>
+ <input class="in" id="aP" maxlength="16" placeholder="Pseudo" autocapitalize="off" autocomplete="username">
+ <input class="in" id="aN" maxlength="8" placeholder="Code PIN (chiffres)" inputmode="numeric" type="password" autocomplete="current-password">
+ <div class="row"><button class="b" id="aIn">Connexion</button><button class="b" id="aReg">Créer</button></div>
+ <div class="row"><button class="b" id="aOut">Déconnexion</button><button class="b" id="aBack">Retour</button></div>
+ <div class="msg" id="m4"></div>
+</section>
+
+<section class="pn" id="p-opt">
+ <h2>Contrôles</h2>
+ <div class="card"><table>
+ <tr><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Avancer / gauche / reculer / droite</td></tr>
+ <tr><td><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></td><td>Tourner la caméra</td></tr>
+ <tr><td><kbd>Shift droit</kbd></td><td>Casser (maintenir)</td></tr>
+ <tr><td><kbd>Entrée</kbd></td><td>Poser un bloc</td></tr>
+ <tr><td><kbd>Shift gauche</kbd></td><td>Sneak (s'accroupir)</td></tr>
+ <tr><td><kbd>Espace</kbd></td><td>Sauter (double = voler en créatif)</td></tr>
+ <tr><td><kbd>Ctrl</kbd> / <kbd>W</kbd>×2</td><td>Courir</td></tr>
+ <tr><td><kbd>,</kbd> <kbd>.</kbd></td><td>Objet précédent / suivant</td></tr>
+ <tr><td><kbd>E</kbd> <kbd>T</kbd> <kbd>Échap</kbd></td><td>Inventaire / tchat / menu</td></tr>
+ </table></div>
+ <button class="b" id="oBack">Terminé</button>
+</section>
+</main>
+<div class="foot"><span>Cubia — jeu de blocs original</span><span>Piège Infernal Games</span></div>
+
+<script src="cbcloud.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id),LS=window.localStorage;
+const show=n=>{document.querySelectorAll('.pn').forEach(e=>e.classList.toggle('on',e.id==='p-'+n));if(n==='acc')accRender();if(n==='multi')multiLoad()};
+const say=(id,t)=>{$(id).textContent=t||''};
+const ERR={bad:'Pseudo ou PIN incorrect.',noacct:'Connecte-toi d\'abord (Compte Cubia).',max:'Maximum 5 serveurs par compte.',nofound:'Serveur introuvable.',toobig:'Monde trop gros.',retry:'Réessaie.'};
+const er=r=>ERR[r&&r.err]||'Erreur de connexion, réessaie.';
+function who(){const a=CB.acct();$('who').textContent=a?'Connecté : '+a.p+' · progression sauvegardée en ligne':'Non connecté · progression sauvegardée sur cet appareil seulement'}
+who();
+// ---- Solo
+$('bSolo').onclick=async()=>{
+ const b=$('bSolo');b.disabled=true;say('m0','');
+ if(CB.acct()){say('m0','Synchronisation de ta progression…');
+  try{const r=await CB.sync(async()=>confirm('Ta sauvegarde en ligne et celle de cet appareil sont différentes.\n\nOK = garder celle EN LIGNE\nAnnuler = garder celle de CET APPAREIL'));
+   if(r==='err')say('m0','Sync impossible (hors ligne ?), on joue avec la sauvegarde locale.')}catch(e){}}
+ try{sessionStorage.removeItem('cubia-srvinfo')}catch(e){}
+ location.href='blocs.html'};
+// ---- Compte
+function accRender(){const a=CB.acct();say('m4','');
+ $('accInfo').innerHTML=a?'Connecté en tant que <b>'+a.p.replace(/[<>&]/g,'')+'</b>.<br>Ta progression Cubia (monde, inventaire, réglages) est sauvegardée en ligne automatiquement et suit ton compte sur tous tes appareils.<br><small style="color:#aaa">C\'est le même compte que Piège Infernal (pseudo + PIN). Un compte Microsoft/Mojang ne peut pas être relié : Cubia est un jeu indépendant.</small>'
+  :'Utilise le même pseudo + PIN que sur Piège Infernal, ou crée un compte. Il sert à sauvegarder ta progression et à créer des serveurs.';
+ $('aP').style.display=$('aN').style.display=$('aIn').style.display=$('aReg').style.display=a?'none':'';$('aOut').style.display=a?'':'none'}
+async function auth(fn){const p=$('aP').value.trim(),n=$('aN').value.trim();
+ if(!/^[\w\-\. ]{2,16}$/.test(p)){say('m4','Pseudo : 2 à 16 caractères.');return}
+ if(!/^\d{4,8}$/.test(n)){say('m4','PIN : 4 à 8 chiffres.');return}
+ say('m4','…');try{const r=await fn(p,n);if(r.ok){$('aN').value='';who();accRender();say('m4','Connecté !')}else say('m4',r.err==='exists'||r.err==='taken'?'Ce pseudo existe déjà : utilise Connexion.':er(r))}catch(e){say('m4','Erreur réseau.')}}
+$('aIn').onclick=()=>auth(CB.login);$('aReg').onclick=()=>auth(CB.register);
+$('aOut').onclick=()=>{CB.logout();who();accRender()};
+$('bAcc').onclick=()=>show('acc');$('aBack').onclick=()=>show('main');
+$('bOpt').onclick=()=>show('opt');$('oBack').onclick=()=>show('main');
+// ---- Multi
+const FAV='cubia-favsrv';let list=[],sel=null;
+const favs=()=>{try{return JSON.parse(LS.getItem(FAV)||'[]')}catch(e){return[]}};
+const saveFav=(c,n)=>{const f=favs().filter(x=>x.code!==c);f.unshift({code:c,name:n});try{LS.setItem(FAV,JSON.stringify(f.slice(0,12)))}catch(e){}};
+$('bMulti').onclick=()=>{if(!CB.acct()){say('m0','Connecte-toi d\'abord avec le Compte Cubia pour jouer en multijoueur.');show('acc');return}show('multi')};
+async function multiLoad(){sel=null;$('mJoin').disabled=true;say('m1','');const L=$('srvl');L.innerHTML='<div class="it"><small>Chargement…</small></div>';
+ const mine={};let r=null;try{r=await CB.srv.mine()}catch(e){}
+ const out=[];if(r&&r.ok)for(const s of r.list){mine[s.code]=1;out.push({code:s.code,name:s.name,own:1})}
+ for(const f of favs())if(!mine[f.code])out.push({code:f.code,name:f.name,own:0});
+ list=out;L.innerHTML='';
+ if(!out.length)L.innerHTML='<div class="it"><small>Aucun serveur. Crée-en un ou rejoins un ami avec son code.</small></div>';
+ out.forEach(s=>{const d=document.createElement('div');d.className='it';
+  d.innerHTML='<i></i><div><b></b><small></small></div>'+(s.own?'<span class="x" title="Supprimer">✕</span>':'');
+  d.querySelector('b').textContent=s.name;d.querySelector('small').textContent='Code : '+s.code+(s.own?' · à toi':'');
+  d.onclick=()=>{sel=s;[...L.children].forEach(c=>c.classList.remove('sel'));d.classList.add('sel');$('mJoin').disabled=false};
+  d.ondblclick=()=>launch(s.code);
+  const x=d.querySelector('.x');if(x)x.onclick=async e=>{e.stopPropagation();if(!confirm('Supprimer le serveur « '+s.name+' » ? Le monde sera perdu.'))return;const q=await CB.srv.del(s.code);if(q&&q.ok){multiLoad()}else say('m1',er(q))};
+  L.appendChild(d)})}
+$('mBack').onclick=()=>show('main');$('mJoin').onclick=()=>sel&&launch(sel.code);
+$('mNew').onclick=()=>{$('nName').value='';say('m2','');show('new')};$('nBack').onclick=()=>show('multi');
+$('mCode').onclick=()=>{$('cIn').value='';say('m3','');show('code')};$('cBack').onclick=()=>show('multi');
+$('nGo').onclick=async()=>{const n=$('nName').value.trim().slice(0,24);if(!n){say('m2','Donne un nom au serveur.');return}
+ say('m2','Création…');try{const r=await CB.srv.create(n);if(r&&r.ok){saveFav(r.code,n);launch(r.code)}else say('m2',er(r))}catch(e){say('m2','Erreur réseau.')}};
+$('cGo').onclick=()=>{const c=$('cIn').value.trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(c)){say('m3','Le code a 6 caractères.');return}launch(c,'m3')};
+async function launch(code,mid){mid=mid||'m1';say(mid,'Connexion au serveur…');
+ try{const r=await CB.srv.get(code);if(!r||!r.ok){say(mid,r&&r.err==='nofound'?'Aucun serveur avec ce code.':er(r));return}
+  let ej='[]';if(r.edits){try{ej=await CB.unpack(r.edits)||'[]'}catch(e){ej='[]'}}
+  saveFav(r.code,r.name);
+  sessionStorage.setItem('cubia-srvinfo',JSON.stringify({code:r.code,name:r.name,seed:r.seed,editsJson:ej}));
+  location.href='blocs.html?srv='+encodeURIComponent(r.code)}
+ catch(e){say(mid,'Erreur réseau.')}}
+})();
+</script></body></html>

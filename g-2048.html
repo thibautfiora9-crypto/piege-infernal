@@ -1,0 +1,26 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover"><title>2048</title>
+<style>*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;background:#14122b;color:#fff;font-family:-apple-system,system-ui,sans-serif;overflow:hidden;touch-action:none}
+body{display:flex;flex-direction:column;align-items:center}
+header{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:10px}
+header a{color:#fff;text-decoration:none;background:#2d2a5a;padding:8px 14px;border-radius:20px;font-weight:600;font-size:15px}
+header b{font-size:18px}#sc{font-variant-numeric:tabular-nums;background:#2d2a5a;padding:8px 14px;border-radius:20px;font-weight:600}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;padding:0 10px 16px}
+canvas{background:#1d1b3d;border-radius:14px;max-width:100%;touch-action:none}
+button.r{background:#ffb703;color:#222;border:0;border-radius:20px;padding:10px 22px;font-weight:700;font-size:16px}
+p.h{margin:0;color:#aab;font-size:14px;text-align:center}</style></head><body>
+<header><a href="index.html">← Accueil</a><b>2048</b><span id="sc">0</span></header>
+<main><canvas id="c" width="340" height="340"></canvas><button class="r" onclick="location.reload()">Rejouer</button><p class="h">Glisse pour fusionner les tuiles</p></main>
+<script>const GK="g-2048",best=()=>+(localStorage.getItem(GK)||0),setBest=s=>{try{if(s>best())localStorage.setItem(GK,s)}catch(e){}},sc=v=>document.getElementById('sc').textContent=v+' · record '+Math.max(v,best());sc(0);
+
+const c=document.getElementById('c'),x=c.getContext('2d');let g,s=0,over=0;const COL={0:'#2d2a5a',2:'#8ecae6',4:'#6fc3a8',8:'#ffb703',16:'#fb8500',32:'#ff6b6b',64:'#e63946',128:'#c77dff',256:'#9d4edd',512:'#7b2cbf',1024:'#5a189a',2048:'#ffd60a'};
+function add(){const e=[];g.forEach((v,i)=>v||e.push(i));if(e.length)g[e[Math.random()*e.length|0]]=Math.random()<.9?2:4}
+function init(){g=Array(16).fill(0);add();add();draw()}
+function line(a){let r=a.filter(v=>v),o=[];for(let i=0;i<r.length;i++){if(r[i]==r[i+1]){o.push(r[i]*2);s+=r[i]*2;i++}else o.push(r[i])}while(o.length<4)o.push(0);return o}
+function mv(dir){const old=g.join();for(let k=0;k<4;k++){let idx=[0,1,2,3].map(j=>dir==0?k*4+j:dir==1?k*4+3-j:dir==2?j*4+k:(3-j)*4+k);const l=line(idx.map(i=>g[i]));idx.forEach((i,j)=>g[i]=l[j])}
+if(g.join()!=old){add();sc(s);setBest(s)}draw()}
+function can(){if(g.includes(0))return 1;for(let i=0;i<16;i++){if(i%4<3&&g[i]==g[i+1])return 1;if(i<12&&g[i]==g[i+4])return 1}return 0}
+function draw(){x.clearRect(0,0,340,340);g.forEach((v,i)=>{const X=(i%4)*85+4,Y=(i/4|0)*85+4;x.fillStyle=COL[v]||'#fff';x.beginPath();x.roundRect(X,Y,77,77,10);x.fill();if(v){x.fillStyle=v<8?'#123':'#fff';x.font='bold '+(v>999?24:v>99?30:36)+'px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(v,X+38,Y+40)}});
+if(!can()){x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,0,340,340);x.fillStyle='#fff';x.font='bold 30px sans-serif';x.textAlign='center';x.fillText('Fini ! '+s,170,170)}}
+addEventListener('keydown',e=>{const m={ArrowLeft:0,ArrowRight:1,ArrowUp:2,ArrowDown:3}[e.key];if(m!=null)mv(m)});
+let t0;addEventListener('touchstart',e=>t0=[e.touches[0].clientX,e.touches[0].clientY]);addEventListener('touchend',e=>{if(!t0)return;const dx=e.changedTouches[0].clientX-t0[0],dy=e.changedTouches[0].clientY-t0[1];if(Math.abs(dx)+Math.abs(dy)<30)return;Math.abs(dx)>Math.abs(dy)?mv(dx<0?0:1):mv(dy<0?2:3)});init()</script></body></html>
