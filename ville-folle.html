@@ -790,7 +790,7 @@ function roadsGen(){
 // =====================================================================
 //  LIEUX SPÉCIAUX : armurerie, concession auto, cabaret (intérieurs praticables)
 // =====================================================================
-const PLACE_SIDE={'6,5':3,'5,6':1,'5,5':1}; // côté du bloc où se trouve la façade : 0 nord, 1 est, 2 sud, 3 ouest
+const PLACE_SIDE={'6,8':0,'2,8':1,'5,5':1}; // côté du bloc où se trouve la façade : 0 nord, 1 est, 2 sud, 3 ouest
 const FACE_N={0:[0,-1],1:[1,0],2:[0,1],3:[-1,0]};
 const PLACES={},POIS=[],GUIDES=[],DISPLAY=[];
 const CLUB={paid:false,rope:null,ropeMesh:null,ball:null,floor:[],beams:[],cx:0,cz:0};
@@ -1051,7 +1051,7 @@ function clubRope(open){const c=CLUB.rope;if(!c)return;const it=c.it;if(open){it
 // =====================================================================
 //  PLAN DE LA VILLE (16 × 16 blocs) : quartiers, bâtiments, relief
 // =====================================================================
-const SPECIAL={'5,5':'club','5,6':'garage','6,5':'gun','10,9':'hosp','4,9':'pol','8,4':'bank','7,4':'shops','3,6':'shops','10,5':'shops','6,11':'shops','9,7':'gas','3,12':'gas','7,8':'gas','12,4':'gas','2,3':'style','8,10':'style','13,9':'style'};
+const SPECIAL={'5,5':'club','2,8':'garage','6,8':'gun','10,9':'hosp','4,9':'pol','8,4':'bank','6,2':'shops','3,6':'shops','10,5':'shops','6,11':'shops','9,7':'gas','3,12':'gas','9,12':'gas','12,4':'gas','2,3':'style','8,10':'style','13,9':'style'};
 const PARKS=new Set(['2,5','3,10','5,12','8,12','12,10','11,2','1,8']);
 const LAKES=new Set(['5,0','10,1']);
 const HIDEOUTS=['13,3','14,6','12,8'];
@@ -1259,8 +1259,9 @@ GEN.gang=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c,hide=HIDEOUTS.includes(bx+','+bz);
 GEN.shops=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c;
   S.flat.mb(cx,cz).addMesh(cylMB(3.4,3.4,.6,12),sMat(cx,CURB,cz,1,1,1),[.8,.8,.78]);S.flat.mb(cx,cz).addMesh(cylMB(2.9,2.9,.62,12),sMat(cx,CURB,cz,1,1,1),[.22,.55,.78]);addCirc(cx,cz,3.4,.7);
   for(const[dx,dz]of[[-9,-9],[9,9],[-9,9],[9,-9]]){bench(cx+dx,cz+dz,((dx+dz)&1)===0);tree(cx+dx*.5,cz+dz*1.3,wr(.8,1))}
-  const kinds=['conv','jewel','pharma','electro','pizza','conv'];const k0=(bx*3+bz)%kinds.length;
-  for(let s=0;s<4;s++)if(typeof buildStore==='function')buildStore(s,bx,bz,kinds[(k0+s)%kinds.length]);
+  const NF=['conv','jewel','pharma','electro'],FD=['pizza','burger','resto'],k0=bx*3+bz;
+  const kinds=[FD[k0%3],NF[k0%4],FD[(k0+1)%3],NF[(k0+1)%4]];
+  for(let s=0;s<4;s++)if(typeof buildStore==='function')buildStore(s,bx,bz,kinds[s]);
   };
 GEN.bank=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c;
   for(const[dx,dz]of[[-14,0],[14,0]])bench(cx+dx,cz+dz,false);
@@ -1335,11 +1336,9 @@ function worldGenSteps(){
   return st}
 function worldGenFinish(){
   roadsGen();
-  {const EE=SIZE+960,ES=SIZE+740,gz=8*CELL+HALF,gx=8*CELL+HALF;
-    addAABB(-60,-60,-1.2,ES+60,50);addAABB(-60,-60,EE+60,-1.2,50);
-    addAABB(SIZE+1.2,-1.2,SIZE+60,gz-13,50);addAABB(SIZE+1.2,gz+13,SIZE+60,SIZE+1.2,50); // mur est (porte vers la montagne)
-    addAABB(-1.2,SIZE+1.2,gx-13,SIZE+60,50);addAABB(gx+13,SIZE+1.2,SIZE+1.2,SIZE+60,50); // mur sud (porte vers l'aéroport)
-    addAABB(EE,-60,EE+60,ES+60,50);addAABB(-60,ES,EE+60,ES+60,50)}
+  {const EE=SIZE+2000,ES=SIZE+2000,EN=-1900; // bout du monde (loin) ; à l'ouest, la mer après la plage
+    addAABB(-132,EN-60,-72,ES+60,50);addAABB(-132,EN-60,EE+60,EN,50);
+    addAABB(EE,EN-60,EE+60,ES+60,50);addAABB(-132,ES,EE+60,ES+60,50)}
   for(const k in S){const v=S[k];if(v instanceof Stat)v.build()}for(const a of S.tl)for(const s of a)s.build();
   SPAWN.x=6*CELL+HALF+HALF+2.2;SPAWN.z=6*CELL+HALF+HALF+2.2;SPAWN.yaw=PI}
 function worldGen(){for(const f of worldGenSteps())f();worldGenFinish()}
@@ -1364,7 +1363,14 @@ const STORE_DEF={
   jewel:{name:'Bijouterie Éclat',out:'#3a3340',trim:'#c9a227',roof:'#303036',inCb:[.2,.14,.3],inCt:[.55,.4,.7],tile:[.8,.76,.85],sh:[.55,.4,.7],sign:['BIJOUTERIE\nÉCLAT','#2a1d3a','#ffd76a'],cash:700},
   pharma:{name:'Pharmacie du Coin',out:'#e8ebe8',trim:'#1b8a3c',roof:'#666',inCb:[.7,.78,.72],inCt:[.95,.98,.95],tile:[.95,1,.96],sh:[.9,.92,.9],sign:['PHARMACIE','#13803c','#fff'],cash:350},
   electro:{name:'Électro-Folle',out:'#2f4a7a',trim:'#e6e6e6',roof:'#444',inCb:[.3,.36,.5],inCt:[.82,.86,.95],tile:[.85,.88,.95],sh:[.2,.25,.35],sign:['ÉLECTRO\nFOLLE','#1f3a8a','#ffe066'],cash:500},
-  pizza:{name:'Pizza Pronto',out:'#b5412f',trim:'#f1e3c2',roof:'#4a2a22',inCb:[.7,.4,.3],inCt:[.98,.9,.78],tile:[.9,.6,.45],sh:[.7,.3,.2],sign:['PIZZA\nPRONTO','#2a7f3f','#fff'],cash:250}};
+  burger:{name:'Burger Fou',out:'#f2c230',trim:'#c0392b',roof:'#4a3020',inCb:[.75,.55,.25],inCt:[.98,.92,.75],tile:[.95,.85,.6],sh:[.75,.25,.15],sign:['BURGER\nFOU','#c0392b','#ffe066'],cash:280,food:{n:'Menu Burger Fou',p:40,hp:70}},
+  resto:{name:'Chez Mamie',out:'#7a4a2a',trim:'#f1e3c2',roof:'#3a2418',inCb:[.55,.35,.22],inCt:[.95,.88,.75],tile:[.85,.75,.6],sh:[.5,.3,.18],sign:['CHEZ\nMAMIE','#5a2a14','#ffe9b0'],cash:320,food:{n:'Plat du jour',p:70,hp:100}},
+  pizza:{name:'Pizza Pronto',out:'#b5412f',trim:'#f1e3c2',roof:'#4a2a22',inCb:[.7,.4,.3],inCt:[.98,.9,.78],tile:[.9,.6,.45],sh:[.7,.3,.2],sign:['PIZZA\nPRONTO','#2a7f3f','#fff'],cash:250,food:{n:'Part de pizza',p:25,hp:45}}};
+const RESTOS=[];
+function eatAt(r){
+  const f=r.food;if(P.hp>=100){say('Tu n’as plus faim, ta vie est au max !',2);return}
+  if(game.money<f.p){say(f.n+' : '+f.p+' $. Pas assez d’argent !',2.2);sfx('fail');return}
+  const g=min(f.hp,100-P.hp);game.money-=f.p;P.hp=min(100,P.hp+f.hp);say(f.n+' : miam ! +'+Math.round(g)+' de vie (−'+f.p+' $)',2.8);sfx('cash')}
 function buildStore(side,bx,bz,kind){
   const d=STORE_DEF[kind],R=new Room(side,bx,bz,8.6,13,4.4),I=R.I,hw=R.hw,D=R.D,t=R.t,H=R.H;
   shell(R,{out:hexs(d.out),trim:hexs(d.trim),roof:hexs(d.roof),inCb:d.inCb,inCt:d.inCt,tile:d.tile,du:1.5,dh:3,wins:[[-7.4,-2.6],[2.6,7.4]],wy0:.9,wy1:3.3});
@@ -1380,6 +1386,8 @@ function buildStore(side,bx,bz,kind){
   const door=R.pt(0,-3),inn=R.pt(0,2.5),cash=R.pt(-2.2,D-5.6),cx=R.X(0,D/2),cz=R.Z(0,D/2);
   const s={kind,name:d.name,bx,bz,side,R,cashier:cl,cashPos:cash,door,inside:inn,cash:d.cash,x:cx,z:cz,pays:d.cash};
   STORES.push(s);
+  if(d.food){const ep=R.pt(0,D-5.3),r={name:d.name,food:d.food,x:ep.x,z:ep.z,door,s};RESTOS.push(r);
+    POIS.push({id:'eat',x:ep.x,z:ep.z,r:2.8,prompt:d.name+' : '+d.food.n+' ('+d.food.p+' $) — redonne de la vie',act:()=>eatAt(r),y:2.2,l:-1})}
   return s}
 // ---------- banque centrale (grande salle, coffre au fond) ----------
 function buildBank(bx,bz,X0,Z0,X1,Z1){
@@ -2376,9 +2384,22 @@ function copFoot(p,dt){
   const sp0=hyp(p.vx,p.vz);p.sp=lerp(p.sp,clamp(sp0/5.2,0,1.2),min(1,dt*10));p.ph+=sp0*dt*2.4;
   moveCollide(p,.3,dt);p.y=lerp(p.y,groundH(p.x,p.z),min(1,dt*12));personVsCars(p,.3,false,dt)}
 const tracers=[];
+// premier obstacle entre deux points (murs, poteaux, arbres, voitures) → {x,y,z} ou null
+function shotBlocked(x0,y0,z0,x1,y1,z1,skipCar){
+  const dx=x1-x0,dy=y1-y0,dz=z1-z0,L=hyp(dx,dy,dz);if(L<.8)return null;const ux=dx/L,uy=dy/L,uz=dz/L,end=L-.12,endS=L-.26;
+  let best=end;
+  for(const c of cars){if(c===P.car||c===skipCar)continue;if(abs(c.x-(x0+x1)/2)>L/2+6||abs(c.z-(z0+z1)/2)>L/2+6)continue;circlesOf(c,_pc);const r=c.s.W*.5;
+    for(let k=0;k<3;k++){const ex=x0-_pc[k*2],ez=z0-_pc[k*2+1],a=ux*ux+uz*uz;if(a<1e-6)continue;const b=2*(ex*ux+ez*uz),cc=ex*ex+ez*ez-r*r,disc=b*b-4*a*cc;if(disc<0)continue;
+      const t=(-b-sqrt(disc))/(2*a);if(t<.5||t>=best)continue;if(y0+uy*t<c.y+(c.s.air?2.5:1.45))best=t}}
+  for(let t=.5;t<min(best,endS);t+=.2){const x=x0+ux*t,y=y0+uy*t,z=z0+uz*t;const a=queryNear(x,z,.05);
+    for(const it of a){if(y>=it.h)continue;if(it.circ){if((x-it.cx)*(x-it.cx)+(z-it.cz)*(z-it.cz)<max(it.r+.1,.38)**2){best=t;break}}
+      else if(x>it.x0-.05&&x<it.x1+.05&&z>it.z0-.05&&z<it.z1+.05){best=t;break}}}
+  return best<end?{x:x0+ux*best,y:y0+uy*best,z:z0+uz*best}:null}
 function cowShoot(p,px,pz,d){
-  const acc=clamp(.44-d/90,.05,.26)*(P.car?.75:1)*(.8+.2*wantedLevel()),hit=Math.random()<acc;
-  const hx=px+(hit?0:rnd(-1.6,1.6)),hy=1.1,hz=pz+(hit?0:rnd(-1.6,1.6)),mx=p.x+sin(p.yaw)*.5,mz=p.z+cos(p.yaw)*.5;
+  const acc=clamp(.44-d/90,.05,.26)*(P.car?.75:1)*(.8+.2*wantedLevel());let hit=Math.random()<acc;
+  let hx=px+(hit?0:rnd(-1.6,1.6)),hy=1.1,hz=pz+(hit?0:rnd(-1.6,1.6));const mx=p.x+sin(p.yaw)*.5,mz=p.z+cos(p.yaw)*.5;
+  const bl=shotBlocked(mx,1.35,mz,hx,hy,hz,p.car||null);
+  if(bl){hit=false;hx=bl.x;hy=bl.y;hz=bl.z;fxSpark(hx,hy,hz,3);fxDust(hx,hy,hz,2)}
   tracers.push({a:[mx,1.35,mz],b:[hx,hy,hz],t:0});fxSpark(mx,1.35,mz,2);gunSound(p.x,p.z,.7);
   if(hit){if(P.car){const c=P.car;hurtCar(c,8+wantedLevel()*3);P.hp-=1.5+wantedLevel()*.5;P.hitFlash=.6;if(P.hp<=0)killPlayer()}else hurtPlayer(3.5+wantedLevel()*1.3)}}
 let gunSound=()=>{};
@@ -4117,7 +4138,10 @@ function routeUpdate(dt){
 function routeLine(g,pts,tx,tz,sx,sz,ox,oz,col,w){ // trace joueur -> noeuds -> cible
   if(!pts.length&&tx===undefined)return;
   const px=P.car?P.car.x:P.x,pz=P.car?P.car.z:P.z,all=[{x:px,z:pz}];
-  for(const p of pts)if(hyp(p.x-px,p.z-pz)>14)all.push(p);
+  let q=pts.slice();
+  while(q.length>=2&&((q[1].x-q[0].x)*(px-q[0].x)+(q[1].z-q[0].z)*(pz-q[0].z))>0)q.shift(); // on a déjà passé le 1er carrefour
+  while(q.length>=2){const a=q[q.length-1],b=q[q.length-2];if((b.x-a.x)*(tx-a.x)+(b.z-a.z)*(tz-a.z)>0)q.pop();else break} // la cible est avant le dernier carrefour
+  for(const p of q)if(hyp(p.x-px,p.z-pz)>14)all.push(p);
   all.push({x:tx,z:tz});
   g.save();g.lineJoin='round';g.lineCap='round';
   for(const[c,ww]of[['#000a',w+3],[col,w]]){g.strokeStyle=c;g.lineWidth=ww;g.beginPath();all.forEach((p,i)=>{const X=(p.x-ox)*sx,Z=(p.z-oz)*sz;i?g.lineTo(X,Z):g.moveTo(X,Z)});g.stroke()}
@@ -4233,6 +4257,7 @@ function drawRadar(){
   for(const g of GUIDES)blip(g.x,g.z,rgb(g.c),5.5,true);
   for(const s of GASST)blip(s.x,s.z,'#f2a33a',5,false);
   for(const s of STYLEST)blip(s.x,s.z,'#d26ad1',5,false);
+  for(const r of RESTOS)blip(r.door.x,r.door.z,'#ff7a3d',4.5,false);
   for(const t in P.garage){const c=OWN[t];if(c&&c!==P.car&&cars.includes(c))blip(c.x,c.z,'#40e0ff',4.5,false)}
   if(game.mission)for(const t of game.mission.targets||[]){const c=t.c;blip(t.x,t.z,'rgb('+(c[0]*255|0)+','+(c[1]*255|0)+','+(c[2]*255|0)+')',t.small?5:8,true)}
   if(ROUTE.m.length&&game.mission){const tg=(game.mission.targets||[]).find(t=>!t.small);if(tg)routeLine(g,ROUTE.m,tg.x,tg.z,k,k,P.x,P.z,'#3fd0ff',4)}
@@ -4339,6 +4364,7 @@ function drawBigMap(){
   for(const q of GUIDES)dot(q.x,q.z,rgb(q.c),13,MLET[q.l],false);
   for(const s of GASST)dot(s.x,s.z,'#f2a33a',11,'E',false);
   for(const s of STYLEST)dot(s.x,s.z,'#d26ad1',11,'C',false);
+  for(const r of RESTOS)dot(r.door.x,r.door.z,'#ff7a3d',10,'R',false);
   dot(HOSP.x,HOSP.z,'#e33',11,'+',false);dot(POLS.x,POLS.z,'#3a6ae0',11,'★',false);
   for(const t in P.garage){const c=OWN[t];if(c&&cars.includes(c)&&c!==P.car)dot(c.x,c.z,'#40e0ff',7,'',false)}
   for(const c of cars)if(c.s.air&&c!==P.car&&c.mode!=='wreck')dot(c.x,c.z,'#ffffff',5,'',false);
@@ -4349,12 +4375,13 @@ function drawBigMap(){
     if(ml.start){dot(ml.start.x,ml.start.z,'#fff',9,'D',false);lab(ml.start.x,ml.start.z,'DÉPART')}
     for(const t of ml.targets||[]){dot(t.x,t.z,rgb(t.c),t.small?6:11,t.small?'':'★',false);if(!t.small){g.save();g.strokeStyle=rgb(t.c);g.lineWidth=3;g.beginPath();g.arc(t.x*k,t.z*k,17+3*sin(performance.now()/250),0,TAU);g.stroke();g.restore();lab(t.x,t.z,tg.length>1?'OBJECTIF':'ARRIVÉE')}}}
   if(game.wp){const x=game.wp.x*k,z=game.wp.z*k;g.save();routeLine(g,ROUTE.wp,game.wp.x,game.wp.z,k,k,0,0,'#ffd400',5);
-    g.translate(x,z);g.fillStyle='#ffd400';g.strokeStyle='#000';g.lineWidth=3;g.beginPath();g.arc(0,-16,10,PI*.8,PI*.2+TAU);g.lineTo(0,0);g.closePath();g.fill();g.stroke();g.fillStyle='#000';g.beginPath();g.arc(0,-16,3.5,0,TAU);g.fill();g.restore()}
+    g.translate(x,z);g.fillStyle='#ffd400';g.strokeStyle='#000';g.lineWidth=3;g.beginPath();g.arc(0,-16,10,PI*.8,PI*.2+TAU);g.lineTo(0,0);g.closePath();g.fill();g.stroke();g.fillStyle='#000';g.beginPath();g.arc(0,-16,3.5,0,TAU);g.fill();
+    if(game.wp.name){g.font='bold 14px Oswald,Impact,sans-serif';g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000';g.fillStyle='#ffd400';g.strokeText(game.wp.name,0,-32);g.fillText(game.wp.name,0,-32)}g.restore()}
   g.save();g.translate(P.x*k,P.z*k);g.rotate(PI-P.yaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=3;g.beginPath();g.moveTo(0,-14);g.lineTo(10,11);g.lineTo(0,6);g.lineTo(-10,11);g.closePath();g.fill();g.stroke();g.restore()}
 (function(){let h='';for(const k in CATS){const m=CATS[k],c=m.c;h+='<span><b style="background:rgb('+(c[0]*255|0)+','+(c[1]*255|0)+','+(c[2]*255|0)+')">'+MLET[m.l]+'</b>'+m.name+'</span>'}
   h+='<span><b style="background:#ffb703">A</b>Armurerie</span><span><b style="background:#4aa3ff">$</b>Concessionnaire</span><span><b style="background:#ff4dd6">N</b>Cabaret Le Néon</span><span><b style="background:#e33">+</b>Hôpital · <b style="background:#3a6ae0">★</b>Police</span>';
-  h+='<span><b style="background:#f2a33a">E</b>Station-service (essence)</span><span><b style="background:#d26ad1">C</b>Coiffeur &amp; mode</span>';
-  h+='<span><b style="background:#ffd400;color:#000">◆</b>Ton point (touche la carte pour en placer/retirer un)</span><span><b style="background:#fff;color:#000">D</b>Départ de mission · <b style="background:#2c2">★</b>Arrivée</span>';
+  h+='<span><b style="background:#f2a33a">E</b>Station-service (essence)</span><span><b style="background:#d26ad1">C</b>Coiffeur &amp; mode</span><span><b style="background:#ff7a3d">R</b>Restaurant (vie +)</span>';
+  h+='<span><b style="background:#ffd400;color:#000">◆</b>Ton point (touche un lieu)</span><span><b style="background:#fff;color:#000">D</b>Départ de mission · <b style="background:#2c2">★</b>Arrivée</span>';
   $('pleg').innerHTML=h})();
 function togglePause(forceOn){
   if(game.state==='title')return;
@@ -4362,9 +4389,24 @@ function togglePause(forceOn){
   if(on){drawBigMap();$('pinfo').textContent='Missions réussies : '+game.done+' · Argent : '+game.money.toLocaleString('fr-FR')+' $ · Voitures : '+Object.keys(P.garage).length+'/'+SHOPCARS.length}
   if(on&&AU.ctx&&AU.ctx.state==='running')AU.ctx.suspend();if(!on&&AU.ctx&&AU.ctx.state==='suspended')AU.ctx.resume()}
 $('resume').addEventListener('click',()=>togglePause(false));
-{const bm=$('bigmap');let lt=0;const tap=e=>{e.preventDefault();const n=performance.now();if(n-lt<250)return;lt=n;const r=bm.getBoundingClientRect(),t=e.changedTouches?e.changedTouches[0]:e,k=bm.width/EXTW,wx=(t.clientX-r.left)/r.width*bm.width/k,wz=(t.clientY-r.top)/r.height*bm.height/k;
-  if(game.wp&&hyp(game.wp.x-wx,game.wp.z-wz)<30/k*(bm.width/r.width)*.6+14){game.wp=null;say('Point retiré.',1.5)}
-  else{game.wp={x:wx,z:wz};say('Point placé sur la carte.',1.5)}drawBigMap()};
+// lieux sur lesquels le point de la carte « s'aimante »
+function mapSnapTargets(){const L=[],add=(x,z,name)=>{if(isFinite(x)&&isFinite(z))L.push({x,z,name})};
+  const GN={[GUN_L]:'Armurerie',[GAR_L]:'Concessionnaire',[CLUB_L]:'Cabaret Le Néon'};
+  for(const q of GUIDES)add(q.x,q.z,GN[q.l]||'Boutique');
+  for(const s of STORES)add(s.door.x,s.door.z,s.name);
+  for(const b of BANKS)add(b.door.x,b.door.z,b.name);
+  for(const s of GASST)add(s.x,s.z,'Station-service');
+  for(const s of STYLEST)add(s.x,s.z,'Coiffeur & mode');
+  add(HOSP.x,HOSP.z,'Hôpital');add(POLS.x,POLS.z,'Commissariat');
+  for(const m of markers)add(m.x,m.z,m.name||'Mission');
+  return L}
+{const bm=$('bigmap');let lt=0;const tap=e=>{e.preventDefault();const n=performance.now();if(n-lt<250)return;lt=n;const r=bm.getBoundingClientRect(),t=e.changedTouches?e.changedTouches[0]:e,k=bm.width/EXTW;
+  if(!r.width||!r.height)return;
+  const wx=(t.clientX-r.left)/r.width*bm.width/k,wz=(t.clientY-r.top)/r.height*bm.height/k,pxW=bm.width/r.width/k; // 1 pixel écran = pxW mètres
+  if(game.wp&&hyp(game.wp.x-wx,game.wp.z-wz)<16*pxW){game.wp=null;say('Point retiré.',1.5);drawBigMap();return}
+  let best=null,bd=26*pxW;for(const q of mapSnapTargets()){const d=hyp(q.x-wx,q.z-wz);if(d<bd){bd=d;best=q}}
+  game.wp=best?{x:best.x,z:best.z,name:best.name}:{x:clamp(wx,0,EXTW),z:clamp(wz,0,EXTH)};
+  ROUTE.wk='';ROUTE.t=0;say(best?'Point placé : '+best.name:'Point placé sur la carte.',1.8);drawBigMap()};
  bm.addEventListener('click',tap);bm.style.cursor='crosshair'}
 {const rd=$('radar');let rt=0;const op=e=>{e.preventDefault();e.stopPropagation();const n=performance.now();if(n-rt<300)return;rt=n;if(game.state==='play'&&!game.paused)togglePause(true)};
  rd.addEventListener('click',op);rd.addEventListener('touchstart',op,{passive:false});rd.addEventListener('pointerdown',e=>e.stopPropagation());}
