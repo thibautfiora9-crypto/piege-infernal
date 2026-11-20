@@ -104,7 +104,7 @@ a.lnk{color:#ffb703;text-decoration:none;font-size:16px}
 .mpbox{flex-direction:column;align-items:center;gap:12px;max-width:520px;display:flex;padding:22px}
 .mpbox h1{margin:0;font-size:40px}.mpbox p{margin:0;font-size:15px;color:#c8c8e0}.mpbox .row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
 #mpName{font:700 24px Oswald,Impact,sans-serif;color:#ffd166}
-#mpCode{font:700 30px Oswald,Impact,sans-serif;letter-spacing:6px;text-transform:uppercase;text-align:center;width:190px;padding:6px;border-radius:6px;border:2px solid #fff6;background:#0007;color:#fff}
+#mpNick{font:700 24px Oswald,Impact,sans-serif;letter-spacing:1px;text-align:center;width:240px;padding:6px;border-radius:6px;border:2px solid #fff6;background:#0007;color:#fff}
 #prof{background:#000b;overflow:auto;z-index:12;justify-content:flex-start}#profName,#profPin,#profCode{font:600 18px Inter,sans-serif;padding:8px;border-radius:6px;border:2px solid #fff6;background:#0007;color:#fff}#profList{display:flex;flex-direction:column;gap:8px}#profMsg{min-height:20px;font-size:14px}#mpMsg{min-height:20px;color:#ffd166;font-size:14px}
 #dlg{position:fixed;left:0;right:0;bottom:0;z-index:8;display:none;justify-content:center;padding:14px;pointer-events:auto}
 #dlg .dbox{background:#0c0b1ef2;border:2px solid #ffb703;border-radius:10px;padding:12px 18px;max-width:640px;width:100%;color:#fff;box-shadow:0 6px 30px #000a}
@@ -164,11 +164,10 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <div id="profMsg"></div>
  <div class="row"><button class="btn" id="profBack">Fermer</button></div></div></div>
 <div class="ov" id="mp"><div class="pbox mpbox"><h1>MULTIJOUEUR</h1>
- <p>Retrouve tes amis dans la même ville : choisis le même code de salle. Messages rapides uniquement (pas de chat libre).</p>
- <div class="row"><span id="mpName">Renard Rapide</span><button class="btn g" id="mpDice">Autre pseudo</button></div>
- <div class="row"><input id="mpCode" maxlength="6" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn g" id="mpNew">Créer un code</button></div>
+ <p>Tous les joueurs en ligne sont dans la même ville ! Choisis ton pseudo. Messages rapides uniquement (pas de chat libre).</p>
+ <div class="row"><input id="mpNick" maxlength="14" placeholder="Ton pseudo" autocomplete="off" spellcheck="false"><button class="btn g" id="mpDice">🎲 Au hasard</button></div>
  <div id="mpMsg"></div>
- <div class="row"><button class="btn" id="mpJoin">Rejoindre</button><button class="btn g" id="mpBack">Retour</button></div></div></div>
+ <div class="row"><button class="btn" id="mpJoin">Jouer en ligne</button><button class="btn g" id="mpBack">Retour</button></div></div></div>
 <div id="cine"><div class="cbar t"></div><div class="cbar b"></div><div id="cfade"></div><div id="ctitle"></div><div id="ctap"></div><div id="csub"><b id="cwho"></b><span id="ctxt"></span></div><button id="cskip">Passer ⏭</button></div>
 <div id="dlg"><div class="dbox"><b id="dlgWho"></b><p id="dlgTxt"></p><button id="dlgNext">Suivant ▶</button></div></div>
 <div id="mpHud"></div><div id="mpTags"></div>
@@ -1719,7 +1718,10 @@ function airportGen(col,road,mark,FL){
   fence(A.fx0,A.fz0,gW[0],A.fz0);fence(gW[1],A.fz0,540,A.fz0);fence(730,A.fz0,gM[0],A.fz0);fence(gM[1],A.fz0,A.fx1,A.fz0);
   fence(A.fx0,A.fz0,A.fx0,A.fz1);fence(A.fx1,A.fz0,A.fx1,A.fz1);fence(A.fx0,A.fz1,A.fx1,A.fz1);
   // terminal (verre), parvis, tour de contrôle, hangars
-  building(540,A.fz0+12,730,A.fz0+52,16,{kind:'glass',tint:[.8,.88,.98],shop:false,roof:hexc(0x6d7480)});
+  building(540,A.fz0+12,616,A.fz0+52,16,{kind:'glass',tint:[.8,.88,.98],shop:false,roof:hexc(0x6d7480)});
+  building(654,A.fz0+12,730,A.fz0+52,16,{kind:'glass',tint:[.8,.88,.98],shop:false,roof:hexc(0x6d7480)});
+  FL(635,A.fz0+32).box(616,8.5,A.fz0+12,654,16,A.fz0+52,[.72,.8,.9],{ao:.9,bottom:true}); // passerelle au-dessus de l'entrée
+  for(let z=A.fz0+2;z<A.apz0;z+=8)FL(635,z).box(634.85,.02,z,635.15,.05,z+4,[.95,.85,.2],{ao:1}); // ligne jaune vers les avions
   bannerPlane('AÉROPORT MILITAIRE\nMONT FOLLE','#10243f','#ffe08a',635,12,A.fz0+11.8,22,5,0,-1,'#ffe08a');
   bannerPlane('AÉROPORT MILITAIRE\nMONT FOLLE','#10243f','#ffe08a',635,12,A.fz0+52.2,22,5,0,1,'#ffe08a');
   building(745,A.apz0+4,758,A.apz0+17,30,{kind:'conc',tint:[.9,.9,.88],shop:false,roof:hexc(0x666a70)});
@@ -3975,7 +3977,10 @@ const MP_ANI=['Renard','Panda','Lynx','Tigre','Hibou','Dauphin','Koala','Faucon'
 const MP_MSGS=['Salut !','Bien joué !','Suis-moi !','Attention !','Merci !','Aïe !','Rendez-vous ici !','On fait une course ?'];
 const MP={ride:null,on:false,ws:null,room:'',id:'',a:0,b:0,ref:1,hb:0,players:new Map(),sendT:0,ready:false,onClose:null,lastRx:0};
 function mpNameOf(a,b){return MP_ANI[b%MP_ANI.length]+' '+MP_ADJ[a%MP_ADJ.length]}
-function mpRandomName(){MP.a=rint(0,MP_ADJ.length-1);MP.b=rint(0,MP_ANI.length-1);$('mpName').textContent=mpNameOf(MP.a,MP.b)}
+function mpRandomName(){MP.a=rint(0,MP_ADJ.length-1);MP.b=rint(0,MP_ANI.length-1);$('mpNick').value=mpNameOf(MP.a,MP.b)}
+function mpCleanName(v){return String(v||'').replace(/[^A-Za-zÀ-ÖØ-öø-ÿ0-9 _\-]/g,'').replace(/\s+/g,' ').trim().slice(0,14)}
+const pN=p=>p.n||pN(p);
+const MP_ROOM='MONDE';
 function mpCleanCode(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)}
 function mpNewCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=A[rint(0,A.length-1)];return s}
 function mpSend(ev,payload){if(!MP.ws||MP.ws.readyState!==1)return;
@@ -3999,11 +4004,11 @@ function mpRecv(ev,d){
   if(!d||typeof d.i!=='string'||d.i===MP.id||d.i.length>12)return;
   if(ev==='bye'){MP.players.delete(d.i);return}
   let p=MP.players.get(d.i);
-  if(!p){if(MP.players.size>=11)return;p={id:d.i,x:0,z:0,y:0,yaw:0,tx:0,tz:0,ty:0,tyaw:0,sp:0,ph:0,car:null,col:'#cc2222',wp:0,say:'',sayT:0,look:mpLook(d.i),a:0,b:0,rx:0,fresh:true,ghost:null};MP.players.set(d.i,p);mpSend('hi',{i:MP.id,a:MP.a,b:MP.b})}
-  p.rx=performance.now();
+  if(!p){if(MP.players.size>=15)return;p={id:d.i,x:0,z:0,y:0,yaw:0,tx:0,tz:0,ty:0,tyaw:0,sp:0,ph:0,car:null,col:'#cc2222',wp:0,say:'',sayT:0,look:mpLook(d.i),a:0,b:0,rx:0,fresh:true,ghost:null};MP.players.set(d.i,p);mpSend('hi',{i:MP.id,a:MP.a,b:MP.b,n:MP.nick})}
+  p.rx=performance.now();if(typeof d.n==='string'){const n=mpCleanName(d.n);if(n.length>=2)p.n=n}
   if(ev==='hi'){p.a=(d.a|0)%MP_ADJ.length;p.b=(d.b|0)%MP_ANI.length;return}
-  if(ev==='ride'){if(d.t===MP.id&&P.car)say('👤 '+mpNameOf(p.a,p.b)+' est monté dans ta voiture',2.5);p.ride=d.t===MP.id||MP.players.has(d.t)?d.t:null;return}
-  if(ev==='unride'){if(p.ride===MP.id)say('👤 '+mpNameOf(p.a,p.b)+' est descendu',2);p.ride=null;return}
+  if(ev==='ride'){if(d.t===MP.id&&P.car)say('👤 '+pN(p)+' est monté dans ta voiture',2.5);p.ride=d.t===MP.id||MP.players.has(d.t)?d.t:null;return}
+  if(ev==='unride'){if(p.ride===MP.id)say('👤 '+pN(p)+' est descendu',2);p.ride=null;return}
   if(ev==='say'){const k=d.k|0;if(k>=0&&k<MP_MSGS.length){p.say=MP_MSGS[k];p.sayT=4.5}return}
   if(ev==='pos'){const f=v=>(typeof v==='number'&&isFinite(v))?v:0;
     p.tx=clamp(f(d.x),-2000,SIZE+2100);p.tz=clamp(f(d.z),-2000,SIZE+2100);p.lock=!!d.l;p.ride=(typeof d.r==='string'&&d.r.length<=12)?d.r:null;p.ty=clamp(f(d.y),-5,60);p.tyaw=f(d.w);p.sp=clamp(f(d.s),0,1.2);p.wp=clamp(d.p|0,0,5);
@@ -4013,16 +4018,16 @@ function mpUpdate(dt){
   if(!MP.on)return;const now=performance.now();
   for(const[id,p]of MP.players){if(now-p.rx>7000){MP.players.delete(id);continue}
     const k=1-Math.exp(-9*dt);p.x+=(p.tx-p.x)*k;p.z+=(p.tz-p.z)*k;p.y+=(p.ty-p.y)*k;p.yaw+=angd(p.yaw,p.tyaw)*k;p.ph+=dt*p.sp*9;if(p.sayT>0)p.sayT-=dt}
-  MP.sendT-=dt;if(MP.sendT<=0&&MP.ready){MP.sendT=.14;const c=P.car;
-    mpSend('pos',{i:MP.id,x:+(c?c.x:P.x).toFixed(1),z:+(c?c.z:P.z).toFixed(1),y:+(c?c.y:P.y).toFixed(1),w:+(c?c.yaw:P.yaw).toFixed(2),s:c?0:+(P.sp||0).toFixed(2),p:c?0:P.wpn,c:c?c.type:null,k:c?c.col:null,l:c&&c.locked?1:0,r:MP.ride||null,a:MP.a,b:MP.b})}
+  MP.sendT-=dt;if(MP.sendT<=0&&MP.ready){MP.sendT=.2;const c=P.car;
+    mpSend('pos',{i:MP.id,x:+(c?c.x:P.x).toFixed(1),z:+(c?c.z:P.z).toFixed(1),y:+(c?c.y:P.y).toFixed(1),w:+(c?c.yaw:P.yaw).toFixed(2),s:c?0:+(P.sp||0).toFixed(2),p:c?0:P.wpn,c:c?c.type:null,k:c?c.col:null,l:c&&c.locked?1:0,r:MP.ride||null,n:MP.nick,a:MP.a,b:MP.b})}
   mpHud()}
 // ---------- passager / verrou (multijoueur) ----------
 function mpNearCar(){if(!MP.on||P.car||MP.ride)return null;let best=null,bd=4.2;
   for(const p of MP.players.values()){if(!p.car)continue;const d=hyp(p.x-P.x,p.z-P.z);if(d<bd){bd=d;best=p}}return best}
 function mpRideEnter(p){
-  if(p.lock){say('🔒 '+mpNameOf(p.a,p.b)+' a verrouillé sa voiture.',2.2);sfx('fail');return}
+  if(p.lock){say('🔒 '+pN(p)+' a verrouillé sa voiture.',2.2);sfx('fail');return}
   let n=0;for(const q of MP.players.values())if(q.ride===p.id)n++;if(n>=3){say('La voiture est pleine !',2);return}
-  MP.ride=p.id;P.hidden=true;P.vx=P.vz=0;P.aim=0;sfx('door');mpSend('ride',{i:MP.id,t:p.id});say('Tu es passager de '+mpNameOf(p.a,p.b)+' · F pour descendre',3)}
+  MP.ride=p.id;P.hidden=true;P.vx=P.vz=0;P.aim=0;sfx('door');mpSend('ride',{i:MP.id,t:p.id});say('Tu es passager de '+pN(p)+' · F pour descendre',3)}
 function mpRideExit(msg){const p=MP.players.get(MP.ride);MP.ride=null;P.hidden=false;
   if(p){const lx=cos(p.yaw),lz=-sin(p.yaw);P.x=p.x-lx*2.2;P.z=p.z-lz*2.2;P.yaw=p.yaw}
   P.y=groundH(P.x,P.z);P.vx=P.vz=0;P.ground=true;sfx('door');mpSend('unride',{i:MP.id});if(msg)say(msg,2.5)}
@@ -4048,11 +4053,11 @@ function mpTags(){
     const sx=(x*VP[0]+y*VP[4]+z*VP[8]+VP[12])/cw,sy=(x*VP[1]+y*VP[5]+z*VP[9]+VP[13])/cw;if(abs(sx)>1.1||abs(sy)>1.1)continue;
     let el=_tagEls[i];if(!el){el=document.createElement('div');el.innerHTML='<i></i><span></span>';box.appendChild(el);_tagEls[i]=el}
     el.style.display='block';el.style.left=((sx+1)/2*W)+'px';el.style.top=((1-sy)/2*H)+'px';
-    const bi=el.firstChild;if(p.sayT>0){bi.style.display='block';bi.textContent=p.say}else bi.style.display='none';el.lastChild.textContent=mpNameOf(p.a,p.b);i++}
+    const bi=el.firstChild;if(p.sayT>0){bi.style.display='block';bi.textContent=p.say}else bi.style.display='none';el.lastChild.textContent=pN(p);i++}
   for(;i<_tagEls.length;i++)_tagEls[i].style.display='none'}
 let _hudT=0;
-function mpHud(){if((_hudT++%20)!==0)return;const names=[mpNameOf(MP.a,MP.b)+' (toi)'];for(const p of MP.players.values())names.push(mpNameOf(p.a,p.b));
-  $('mpHud').innerHTML='<b>Salle '+MP.room+'</b> · '+names.length+' joueur'+(names.length>1?'s':'')+'<br>'+names.join('<br>')}
+function mpHud(){if((_hudT++%20)!==0)return;const names=[(MP.nick||mpNameOf(MP.a,MP.b))+' (toi)'];for(const p of MP.players.values())names.push(pN(p));
+  $('mpHud').innerHTML='<b>Ville en ligne</b> · '+names.length+' joueur'+(names.length>1?'s':'')+'<br>'+names.join('<br>')}
 // ---------- messages rapides ----------
 function qchatToggle(){const q=$('qchat');if(!MP.on)return;if(q.style.display==='flex'){q.style.display='none';return}
   q.innerHTML='';MP_MSGS.forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{mpSend('say',{i:MP.id,k});q.style.display='none';say('Toi : '+t,1.8)};q.appendChild(b)});q.style.display='flex'}
@@ -4064,15 +4069,16 @@ setInterval(()=>{document.body.classList.toggle('incar',!!P.car)},250);
 addEventListener('pagehide',()=>{if(MP.on)mpSend('bye',{i:MP.id})});
 // ---------- panneau du titre ----------
 $('mpDice').onclick=mpRandomName;
-$('mpNew').onclick=()=>{$('mpCode').value=mpNewCode()};
 $('mpBack').onclick=()=>{$('mp').style.display='none';$('title').style.display='flex'};
-$('mpJoin').onclick=()=>{const code=mpCleanCode($('mpCode').value);if(code.length<3){$('mpMsg').textContent='Choisis un code de 3 à 6 lettres ou chiffres.';return}
-  $('mpMsg').textContent='Connexion à la salle '+code+'…';$('mpJoin').disabled=true;
+$('mpJoin').onclick=()=>{const code=MP_ROOM,nick=mpCleanName($('mpNick').value);
+  if(nick.length<2){$('mpMsg').textContent='Choisis un pseudo de 2 à 14 caractères (lettres, chiffres, espace, - ou _).';return}
+  $('mpNick').value=nick;MP.nick=nick;try{localStorage.setItem('vf-nick',nick)}catch(e){}
+  $('mpMsg').textContent='Connexion à la ville en ligne…';$('mpJoin').disabled=true;
   mpConnect(code,ok=>{$('mpJoin').disabled=false;
     if(!ok){$('mpMsg').textContent='Connexion impossible pour le moment (réseau ?). Tu peux jouer en solo.';try{MP.ws&&MP.ws.close()}catch(e){}MP.ws=null;return}
     MP.on=true;MP.onClose=()=>{if(MP.on){MP.on=false;say('Connexion multijoueur perdue — tu continues en solo.',4);document.body.classList.remove('mp');MP.players.clear()}};
-    $('mp').style.display='none';document.body.classList.add('mp');startGame('multi');mpSend('hi',{i:MP.id,a:MP.a,b:MP.b})})};
-$('goMulti').onclick=()=>{if($('goMulti').disabled)return;$('title').style.display='none';$('mp').style.display='flex';mpRandomName();if(!$('mpCode').value)$('mpCode').value=''};
+    $('mp').style.display='none';document.body.classList.add('mp');startGame('multi');mpSend('hi',{i:MP.id,a:MP.a,b:MP.b,n:MP.nick})})};
+$('goMulti').onclick=()=>{if($('goMulti').disabled)return;$('title').style.display='none';$('mp').style.display='flex';let n='';try{n=localStorage.getItem('vf-nick')||''}catch(e){}if(n)$('mpNick').value=mpCleanName(n);else mpRandomName()};
 
 // =====================================================================
 //  MISSIONS v3 : des dizaines de variantes (lieux, ennemis, véhicules, récits différents)
@@ -4389,7 +4395,7 @@ function promptText(){
   if(P.car&&MP.on&&hyp(P.car.vx,P.car.vz)<9&&!(atGas(P.car.x,P.car.z)))return k+' : descendre · '+(IN.touch?'🔒':'L')+' : '+(P.car.locked?'déverrouiller':'verrouiller');
   if(P.car){const gs=!P.car.s.air&&atGas(P.car.x,P.car.z);if(gs&&hyp(P.car.vx,P.car.vz)<3&&P.car.fuel<.999)return'Plein d’essence en cours… (0,50 $ le %)';return hyp(P.car.vx,P.car.vz)<9?k+' : descendre':''}
   if(q)return k+' : '+poiPrompt(q);
-  {const rc=mpNearCar();if(rc)return k+' : monter en passager avec '+mpNameOf(rc.a,rc.b)+(rc.lock?' (🔒 verrouillée)':'')}
+  {const rc=mpNearCar();if(rc)return k+' : monter en passager avec '+pN(rc)+(rc.lock?' (🔒 verrouillée)':'')}
   const c=nearestCar(P.x,P.z,3.2);if(c)return k+' : '+(c.hasDriver?'voler ':'monter dans ')+(c.cop?'la voiture de police':c.s.air?'l’'+c.s.name.toLowerCase():'la '+c.s.name.toLowerCase());
   return''}
 function updateHUD(dt){
