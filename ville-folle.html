@@ -115,7 +115,7 @@ a.lnk{color:#ffb703;text-decoration:none;font-size:16px}
 #mpTags i{display:block;font-style:normal;background:#fff;color:#111;border-radius:10px;padding:2px 9px;margin-bottom:2px;text-shadow:none;font-weight:700}
 #qchat{position:fixed;right:70px;top:calc(60px + env(safe-area-inset-top));z-index:9;display:none;flex-direction:column;gap:6px}
 #qchat button{background:#0b0a1ee8;color:#fff;border:2px solid #ffb703;border-radius:8px;padding:8px 14px;font:600 15px system-ui,sans-serif;text-align:left;cursor:pointer}
-body.mp #bChat{display:flex}#bChat{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(222px + env(safe-area-inset-top))}
+body.mp #bChat{display:flex}#bLock{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(276px + env(safe-area-inset-top))}body.mp.incar #bLock{display:flex}#bChat{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(222px + env(safe-area-inset-top))}
 body.mp #mpHud{display:block}
 #cine{position:fixed;inset:0;z-index:40;display:none;pointer-events:none;font-family:Inter,system-ui,sans-serif}
 .cbar{position:absolute;left:0;right:0;height:11vh;background:#000}.cbar.t{top:0}.cbar.b{bottom:0}
@@ -140,7 +140,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
 <div id="touch">
  <div id="stick"><div id="knob"></div></div>
  <div class="bt act" id="bA">🔫</div><div class="bt" id="bB">⤴</div><div class="bt" id="bC">🚗</div><div class="bt" id="bD">🏃</div><div class="bt" id="bE">🔫</div>
- <div class="tb" id="bPause">⏸</div><div class="tb" id="bView">📷</div><div class="tb" id="bRadio">📻</div><div class="tb" id="bPhone">📱</div><div class="tb" id="bChat">💬</div>
+ <div class="tb" id="bPause">⏸</div><div class="tb" id="bView">📷</div><div class="tb" id="bRadio">📻</div><div class="tb" id="bPhone">📱</div><div class="tb" id="bChat">💬</div><div class="tb" id="bLock">🔒</div>
 </div>
 <div class="ov" id="title">
  <h1>VILLE<br><span>FOLLE</span></h1>
@@ -2589,7 +2589,7 @@ function spawnParked(){
       for(let i=0;i<n;i++){const t=max(last+7,9+R()*34);if(t>47)break;last=t;let x,z,yaw;
         if(side===0){x=X0+t;z=Z0-11+PARKOFF;yaw=PI/2}else if(side===1){x=X1+11-PARKOFF;z=Z0+t;yaw=0}else if(side===2){x=X1-t;z=Z1+11-PARKOFF;yaw=-PI/2}else{x=X0-11+PARKOFF;z=Z1-t;yaw=PI}
         if(x<10||z<10||x>SIZE-10||z>SIZE-10)continue;
-        const c=mkCar(pickT(),x,z,yaw+rnd(-.03,.03),'parked');c.sleep=true;c.hasDriver=false}}}}
+        const c=mkCar(pickT(),x,z,yaw+rnd(-.03,.03),'parked');c.sleep=true;c.hasDriver=false;c.street=true}}}}
 // ---------- circulation ----------
 function carTypeRoll(){const r=Math.random();return r<.3?'sedan':r<.43?'suv':r<.5?'van':r<.58?'taxi':r<.64?'sport':r<.69?'moto':r<.71?'motoS':r<.78?'mini':r<.86?'pickup':r<.91?'muscle':r<.95?'limo':r<.97?'super':'sedan'}
 function trafficSpawn(){
@@ -2726,7 +2726,7 @@ function playerPunch(dt){
 
 
 // ---------- vol d'une voiture au bord de la route : on casse la vitre puis on ouvre la portière de l'intérieur ----------
-function needsBreak(c){return(c.mode==='parked'||c.mode==='idle')&&!c.hasDriver&&!c.owned&&!c.broken&&!c.s.air&&!c.s.bike&&!game.steal&&!P.dead}
+function needsBreak(c){return c.street&&(c.mode==='parked'||c.mode==='idle')&&!c.hasDriver&&!c.owned&&!c.broken&&!c.s.air&&!c.s.bike&&!game.steal&&!P.dead}
 function startBreakIn(c){game.steal={c,t:0,broke:false,open:false,x0:P.x,z0:P.z,y0:P.y};P.vx=P.vz=0;P.aim=0;P.punchHit=true}
 function breakInStep(dt){
   const S=game.steal,c=S.c;
@@ -2757,6 +2757,7 @@ function playerUpdate(dt){
   if(IN.wpn){IN.wpn=false;let n=P.wpn;for(let i=0;i<6;i++){n=(n+1)%6;if(n===0||(P.own[n]&&P.ammo[n]>0)){P.wpn=n;break}}say(WEAPONS[P.wpn].n,1)}
   if(IN.sel>=0){const n=IN.sel;IN.sel=-1;if(n===0||(P.own[n]&&P.ammo[n]>0)){P.wpn=n;say(WEAPONS[n].n,1)}else if(P.own[n])say('Plus de munitions pour cette arme',1.6);else say('Tu n’as pas cette arme : va à l’armurerie !',2)}
   if(P.car){playerDrive(dt);return}
+  if(MP.ride){mpRideStep(dt);return}
   // à pied
   if(game.steal){breakInStep(dt);return}
   P.busted=max(0,P.busted-dt*.5);
@@ -2782,8 +2783,10 @@ function playerUpdate(dt){
   // entrer dans une voiture
   if(IN.use){IN.use=false;
     const q=nearPOI();
+    const rc=mpNearCar(),lc=nearestCar(P.x,P.z,3.2);
     if(q){q.act()}
-    else{const c=nearestCar(P.x,P.z,3.2);if(c&&P.enterT<=0){if(needsBreak(c))startBreakIn(c);else enterCar(c)}}}
+    else if(rc&&(!lc||hyp(rc.x-P.x,rc.z-P.z)<hyp(lc.x-P.x,lc.z-P.z)))mpRideEnter(rc);
+    else{const c=lc;if(c&&P.enterT<=0){if(needsBreak(c))startBreakIn(c);else enterCar(c)}}}
   P.enterT=max(0,P.enterT-dt)}
 function playerDrive(dt){
   const c=P.car;P.enterT=max(0,P.enterT-dt);
@@ -3882,7 +3885,7 @@ const MP_URL='wss://sbnkndyvmhmfyijilmqd.supabase.co/realtime/v1/websocket',MP_K
 const MP_ADJ=['Rapide','Malin','Fou','Brave','Rusé','Joyeux','Calme','Super','Turbo','Zen','Cosmique','Épique'];
 const MP_ANI=['Renard','Panda','Lynx','Tigre','Hibou','Dauphin','Koala','Faucon','Loup','Ours','Lapin','Requin'];
 const MP_MSGS=['Salut !','Bien joué !','Suis-moi !','Attention !','Merci !','Aïe !','Rendez-vous ici !','On fait une course ?'];
-const MP={on:false,ws:null,room:'',id:'',a:0,b:0,ref:1,hb:0,players:new Map(),sendT:0,ready:false,onClose:null,lastRx:0};
+const MP={ride:null,on:false,ws:null,room:'',id:'',a:0,b:0,ref:1,hb:0,players:new Map(),sendT:0,ready:false,onClose:null,lastRx:0};
 function mpNameOf(a,b){return MP_ANI[b%MP_ANI.length]+' '+MP_ADJ[a%MP_ADJ.length]}
 function mpRandomName(){MP.a=rint(0,MP_ADJ.length-1);MP.b=rint(0,MP_ANI.length-1);$('mpName').textContent=mpNameOf(MP.a,MP.b)}
 function mpCleanCode(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)}
@@ -3901,7 +3904,7 @@ function mpConnect(code,cb){
     if(m.event==='broadcast'&&m.payload&&m.payload.payload)mpRecv(m.payload.event,m.payload.payload)};
   ws.onerror=()=>{clearTimeout(to);fin(false)};
   ws.onclose=()=>{clearInterval(MP.hb);if(MP.on&&MP.onClose)MP.onClose()}}
-function mpStop(){MP.on=false;try{if(MP.ws){mpSend('bye',{i:MP.id});MP.ws.close()}}catch(e){}MP.ws=null;clearInterval(MP.hb);MP.players.clear();document.body.classList.remove('mp');$('mpTags').innerHTML='';$('mpHud').textContent=''}
+function mpStop(){if(MP.ride){MP.ride=null;P.hidden=false}MP.on=false;try{if(MP.ws){mpSend('bye',{i:MP.id});MP.ws.close()}}catch(e){}MP.ws=null;clearInterval(MP.hb);MP.players.clear();document.body.classList.remove('mp');$('mpTags').innerHTML='';$('mpHud').textContent=''}
 const MP_SHIRTS=[0xd62828,0x1d6fd6,0x2a9d4a,0xf4a100,0x8a3fd6,0x14b8a6,0xe85d9a,0x666666];
 function mpLook(id){let h=0;for(const ch of id)h=(h*31+ch.charCodeAt(0))>>>0;return mkLook({shirt:hexc(MP_SHIRTS[h%8]),pants:hexc(0x1d2433),hair:hexc([0x111111,0x3a2a1a,0x8a6a2a,0xb04a1a][(h>>3)%4]),cap:(h>>5)%3===0?hexc(MP_SHIRTS[(h>>7)%8]):null,sc:1})}
 function mpRecv(ev,d){
@@ -3911,9 +3914,11 @@ function mpRecv(ev,d){
   if(!p){if(MP.players.size>=11)return;p={id:d.i,x:0,z:0,y:0,yaw:0,tx:0,tz:0,ty:0,tyaw:0,sp:0,ph:0,car:null,col:'#cc2222',wp:0,say:'',sayT:0,look:mpLook(d.i),a:0,b:0,rx:0,fresh:true,ghost:null};MP.players.set(d.i,p);mpSend('hi',{i:MP.id,a:MP.a,b:MP.b})}
   p.rx=performance.now();
   if(ev==='hi'){p.a=(d.a|0)%MP_ADJ.length;p.b=(d.b|0)%MP_ANI.length;return}
+  if(ev==='ride'){if(d.t===MP.id&&P.car)say('👤 '+mpNameOf(p.a,p.b)+' est monté dans ta voiture',2.5);p.ride=d.t===MP.id||MP.players.has(d.t)?d.t:null;return}
+  if(ev==='unride'){if(p.ride===MP.id)say('👤 '+mpNameOf(p.a,p.b)+' est descendu',2);p.ride=null;return}
   if(ev==='say'){const k=d.k|0;if(k>=0&&k<MP_MSGS.length){p.say=MP_MSGS[k];p.sayT=4.5}return}
   if(ev==='pos'){const f=v=>(typeof v==='number'&&isFinite(v))?v:0;
-    p.tx=clamp(f(d.x),-50,SIZE+50);p.tz=clamp(f(d.z),-50,SIZE+50);p.ty=clamp(f(d.y),-5,60);p.tyaw=f(d.w);p.sp=clamp(f(d.s),0,1.2);p.wp=clamp(d.p|0,0,5);
+    p.tx=clamp(f(d.x),-2000,SIZE+2100);p.tz=clamp(f(d.z),-2000,SIZE+2100);p.lock=!!d.l;p.ride=(typeof d.r==='string'&&d.r.length<=12)?d.r:null;p.ty=clamp(f(d.y),-5,60);p.tyaw=f(d.w);p.sp=clamp(f(d.s),0,1.2);p.wp=clamp(d.p|0,0,5);
     p.car=(typeof d.c==='string'&&VT[d.c])?d.c:null;p.col=(typeof d.k==='string'&&/^#[0-9a-fA-F]{6}$/.test(d.k))?d.k:'#cc2222';p.a=(d.a|0)%MP_ADJ.length;p.b=(d.b|0)%MP_ANI.length;
     if(p.fresh){p.x=p.tx;p.z=p.tz;p.y=p.ty;p.yaw=p.tyaw;p.fresh=false}}}
 function mpUpdate(dt){
@@ -3921,10 +3926,27 @@ function mpUpdate(dt){
   for(const[id,p]of MP.players){if(now-p.rx>7000){MP.players.delete(id);continue}
     const k=1-Math.exp(-9*dt);p.x+=(p.tx-p.x)*k;p.z+=(p.tz-p.z)*k;p.y+=(p.ty-p.y)*k;p.yaw+=angd(p.yaw,p.tyaw)*k;p.ph+=dt*p.sp*9;if(p.sayT>0)p.sayT-=dt}
   MP.sendT-=dt;if(MP.sendT<=0&&MP.ready){MP.sendT=.14;const c=P.car;
-    mpSend('pos',{i:MP.id,x:+(c?c.x:P.x).toFixed(1),z:+(c?c.z:P.z).toFixed(1),y:+(c?c.y:P.y).toFixed(1),w:+(c?c.yaw:P.yaw).toFixed(2),s:c?0:+(P.sp||0).toFixed(2),p:c?0:P.wpn,c:c?c.type:null,k:c?c.col:null,a:MP.a,b:MP.b})}
+    mpSend('pos',{i:MP.id,x:+(c?c.x:P.x).toFixed(1),z:+(c?c.z:P.z).toFixed(1),y:+(c?c.y:P.y).toFixed(1),w:+(c?c.yaw:P.yaw).toFixed(2),s:c?0:+(P.sp||0).toFixed(2),p:c?0:P.wpn,c:c?c.type:null,k:c?c.col:null,l:c&&c.locked?1:0,r:MP.ride||null,a:MP.a,b:MP.b})}
   mpHud()}
+// ---------- passager / verrou (multijoueur) ----------
+function mpNearCar(){if(!MP.on||P.car||MP.ride)return null;let best=null,bd=4.2;
+  for(const p of MP.players.values()){if(!p.car)continue;const d=hyp(p.x-P.x,p.z-P.z);if(d<bd){bd=d;best=p}}return best}
+function mpRideEnter(p){
+  if(p.lock){say('🔒 '+mpNameOf(p.a,p.b)+' a verrouillé sa voiture.',2.2);sfx('fail');return}
+  let n=0;for(const q of MP.players.values())if(q.ride===p.id)n++;if(n>=3){say('La voiture est pleine !',2);return}
+  MP.ride=p.id;P.hidden=true;P.vx=P.vz=0;P.aim=0;sfx('door');mpSend('ride',{i:MP.id,t:p.id});say('Tu es passager de '+mpNameOf(p.a,p.b)+' · F pour descendre',3)}
+function mpRideExit(msg){const p=MP.players.get(MP.ride);MP.ride=null;P.hidden=false;
+  if(p){const lx=cos(p.yaw),lz=-sin(p.yaw);P.x=p.x-lx*2.2;P.z=p.z-lz*2.2;P.yaw=p.yaw}
+  P.y=groundH(P.x,P.z);P.vx=P.vz=0;P.ground=true;sfx('door');mpSend('unride',{i:MP.id});if(msg)say(msg,2.5)}
+function mpRideStep(dt){const p=MP.players.get(MP.ride);
+  if(!p||!p.car){mpRideExit(p?'Le conducteur est descendu.':'Le conducteur est parti.');return}
+  P.x=p.x;P.z=p.z;P.y=p.y;P.yaw=p.yaw;P.vx=P.vz=0;P.sp=0;P.aim=0;
+  if(CAM.free<=0)CAM.yaw+=angd(CAM.yaw,p.yaw)*min(1,dt*1.5);
+  if(IN.use){IN.use=false;mpRideExit()}}
+function mpToggleLock(){const c=P.car;if(!MP.on||!c){return}
+  c.locked=!c.locked;sfx('door');say(c.locked?'🔒 Voiture verrouillée : personne ne peut monter':'🔓 Voiture déverrouillée : tes potes peuvent monter',2.6);mpSend('pos',{i:MP.id,x:c.x,z:c.z,y:c.y,w:c.yaw,s:0,p:0,c:c.type,k:c.col,l:c.locked?1:0,a:MP.a,b:MP.b})}
 function mpDrawChars(){
-  for(const p of MP.players.values()){if(p.car)continue;if(!visSphere(p.x,p.y+1,p.z,1.6))continue;
+  for(const p of MP.players.values()){if(p.car||p.ride||p.x<-1000)continue;if(!visSphere(p.x,p.y+1,p.z,1.6))continue;
     addChar(p.x,p.y,p.z,p.yaw,{ph:p.ph,sp:p.sp,fall:0,aim:0,gun:p.wp>0?p.wp:0,flash:0,punch:0},p.look);bShadow.flat(p.x,p.y+.05,p.z,.5,.5,0,[0,0,0,.4])}}
 function mpDrawCars(){
   for(const p of MP.players.values()){if(!p.car)continue;
@@ -3934,7 +3956,7 @@ const _tagEls=[];
 function mpTags(){
   const box=$('mpTags');let i=0;const W=innerWidth,H=innerHeight;
   for(const p of MP.players.values()){
-    const x=p.x,y=p.y+(p.car?2.8:2.3),z=p.z,cw=x*VP[3]+y*VP[7]+z*VP[11]+VP[15];if(cw<=.5||cw>260)continue;
+    if(p.x<-1000)continue;const rd=p.ride&&MP.players.get(p.ride),x=p.x,y=p.y+(p.car||p.ride?2.8:2.3)+(rd?.45:0),z=p.z,cw=x*VP[3]+y*VP[7]+z*VP[11]+VP[15];if(cw<=.5||cw>260)continue;
     const sx=(x*VP[0]+y*VP[4]+z*VP[8]+VP[12])/cw,sy=(x*VP[1]+y*VP[5]+z*VP[9]+VP[13])/cw;if(abs(sx)>1.1||abs(sy)>1.1)continue;
     let el=_tagEls[i];if(!el){el=document.createElement('div');el.innerHTML='<i></i><span></span>';box.appendChild(el);_tagEls[i]=el}
     el.style.display='block';el.style.left=((sx+1)/2*W)+'px';el.style.top=((1-sy)/2*H)+'px';
@@ -3948,6 +3970,9 @@ function qchatToggle(){const q=$('qchat');if(!MP.on)return;if(q.style.display===
   q.innerHTML='';MP_MSGS.forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{mpSend('say',{i:MP.id,k});q.style.display='none';say('Toi : '+t,1.8)};q.appendChild(b)});q.style.display='flex'}
 addEventListener('keydown',e=>{if(e.code==='KeyY'&&game.state==='play'&&MP.on&&!game.paused&&!game.shopOpen)qchatToggle()});
 $('bChat').addEventListener('pointerdown',e=>{e.preventDefault();qchatToggle()});
+$('bLock').addEventListener('pointerdown',e=>{e.preventDefault();mpToggleLock()});
+addEventListener('keydown',e=>{if(e.code==='KeyL'&&game.state==='play'&&MP.on&&P.car&&!game.paused&&!game.shopOpen)mpToggleLock()});
+setInterval(()=>{document.body.classList.toggle('incar',!!P.car)},250);
 addEventListener('pagehide',()=>{if(MP.on)mpSend('bye',{i:MP.id})});
 // ---------- panneau du titre ----------
 $('mpDice').onclick=mpRandomName;
@@ -4272,8 +4297,11 @@ const fmtT=s=>{s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+':'+String(s%6
 function promptText(){
   if(P.dead||game.state!=='play')return'';
   const q=nearPOI(),k=IN.touch?'Bouton':'F';
+  if(MP.ride)return k+' : descendre (passager)';
+  if(P.car&&MP.on&&hyp(P.car.vx,P.car.vz)<9&&!(atGas(P.car.x,P.car.z)))return k+' : descendre · '+(IN.touch?'🔒':'L')+' : '+(P.car.locked?'déverrouiller':'verrouiller');
   if(P.car){const gs=!P.car.s.air&&atGas(P.car.x,P.car.z);if(gs&&hyp(P.car.vx,P.car.vz)<3&&P.car.fuel<.999)return'Plein d’essence en cours… (0,50 $ le %)';return hyp(P.car.vx,P.car.vz)<9?k+' : descendre':''}
   if(q)return k+' : '+poiPrompt(q);
+  {const rc=mpNearCar();if(rc)return k+' : monter en passager avec '+mpNameOf(rc.a,rc.b)+(rc.lock?' (🔒 verrouillée)':'')}
   const c=nearestCar(P.x,P.z,3.2);if(c)return k+' : '+(c.hasDriver?'voler ':'monter dans ')+(c.cop?'la voiture de police':c.s.air?'l’'+c.s.name.toLowerCase():'la '+c.s.name.toLowerCase());
   return''}
 function updateHUD(dt){
