@@ -116,7 +116,7 @@ a.lnk{color:#ffb703;text-decoration:none;font-size:16px}
 #mpTags i{display:block;font-style:normal;background:#fff;color:#111;border-radius:10px;padding:2px 9px;margin-bottom:2px;text-shadow:none;font-weight:700}
 #qchat{position:fixed;right:70px;top:calc(60px + env(safe-area-inset-top));z-index:9;display:none;flex-direction:column;gap:6px}
 #qchat button{background:#0b0a1ee8;color:#fff;border:2px solid #ffb703;border-radius:8px;padding:8px 14px;font:600 15px system-ui,sans-serif;text-align:left;cursor:pointer}
-body.mp #bChat{display:flex}#bLock{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(276px + env(safe-area-inset-top))}body.mp.incar #bLock{display:flex}#bChat{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(222px + env(safe-area-inset-top))}
+body.mp #bChat{display:flex}#bLock{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(276px + env(safe-area-inset-top))}body.mp.incar #bLock{display:flex}#bRob{display:none;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));width:96px;height:96px;font-size:34px;background:#2a7a2acc;border-color:#fff}body.canrob #bRob{display:flex}#bChat{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(222px + env(safe-area-inset-top))}
 body.mp #mpHud{display:block}
 #cine{position:fixed;inset:0;z-index:40;display:none;pointer-events:none;font-family:Inter,system-ui,sans-serif}
 .cbar{position:absolute;left:0;right:0;height:11vh;background:#000}.cbar.t{top:0}.cbar.b{bottom:0}
@@ -141,13 +141,13 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
 <div id="touch">
  <div id="stick"><div id="knob"></div></div>
  <div class="bt act" id="bA">🔫</div><div class="bt" id="bB">⤴</div><div class="bt" id="bC">🚗</div><div class="bt" id="bD">🏃</div><div class="bt" id="bE">🔫</div><div class="bt" id="bF">🎯<small>VISER</small></div>
- <div class="tb" id="bPause">⏸</div><div class="tb" id="bView">📷</div><div class="tb" id="bRadio">📻</div><div class="tb" id="bPhone">📱</div><div class="tb" id="bChat">💬</div><div class="tb" id="bLock">🔒</div>
+ <div class="tb" id="bPause">⏸</div><div class="tb" id="bView">📷</div><div class="tb" id="bRadio">📻</div><div class="tb" id="bPhone">📱</div><div class="tb" id="bChat">💬</div><div class="tb" id="bLock">🔒</div><div class="bt" id="bRob">💰<small>BRAQUER</small></div>
 </div>
 <div class="ov" id="title">
  <h1>VILLE<br><span>FOLLE</span></h1>
  <p>Une ville ouverte en 3D : vole des voitures, fais des missions, évite la police… ou affronte-la !</p>
  <p class="help"><b>Tablette</b> : joystick à gauche · glisse à droite pour tourner la caméra · boutons à droite<br>
- <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
+ <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>B</kbd> braquer un commerce · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
  <div><button class="btn g" id="profBtn">Profil</button></div>
@@ -1762,7 +1762,7 @@ function mpAlarm(msg){
   if((game.mpAlert||0)>0){game.mpAlert=max(game.mpAlert,60);return}
   game.mpAlert=90;game.wanted=max(game.wanted,2.2);game.seenT=0;
   say(msg||'POLICE MILITAIRE ! Zone interdite : ils ouvrent le feu !',3.5)}
-function airportUpdate(dt){indoorUpdate();for(const s of STORES)if(s.rob&&game.t-(s.robLast||0)>.4)s.rob=max(0,s.rob-dt*2);gangAmbient(dt);
+function airportUpdate(dt){indoorUpdate();gangAmbient(dt);
   if((game.mpAlert||0)>0){game.mpAlert-=dt;if(wantedLevel()===0)game.mpAlert=0}
   const alarm=(game.mpAlert||0)>0;
   for(const p of peds)if(p.mp){p.hot=alarm&&p.state!=='dead'}
@@ -2321,6 +2321,8 @@ function addChar(x,y,z,yaw,st,L){
   else if(st.pose==='cross'){aL=-1.15;aR=-1.15;lL=lR=0}
   else if(st.pose==='serve'){aL=-.5+Math.sin(st.ph*2)*.25;aR=-1.0+Math.sin(st.ph*2.4)*.2;lL=lR=0}
   else if(st.pose==='wave'){aR=-2.6+Math.sin(st.ph*4)*.3;aL=.05;lL=lR=0}
+  else if(st.pose==='hands'){aL=-2.85+Math.sin(st.ph*9)*.08;aR=-2.85-Math.sin(st.ph*9)*.08;lL=lR=0}
+  else if(st.pose==='give'){aL=-1.35;aR=-1.35;lL=lR=0}
   // jambes + chaussures
   for(const s of[1,-1]){const a=s>0?lL:lR;mpart(_Pm,_B,.115*s,.92,0,a);
     if(hi){const bend=(st.pose||dn)?0:clamp(-a,0,1.2)*1.1,lc=L.shorts?sk:pa;dmAdd(G.thigh,_Pm,pa[0],pa[1],pa[2]);mpart(_Pm2,_Pm,0,-.42,0,bend);dmAdd(G.shin,_Pm2,lc[0],lc[1],lc[2]);dmAdd(G.shoeR,_Pm2,L.shoe[0],L.shoe[1],L.shoe[2]);continue}
@@ -2598,12 +2600,17 @@ let say=()=>{},bigMsg=()=>{};
 // cap = nombre d'étoiles maximum que ce crime peut atteindre (défaut 2 : délits mineurs).
 // Pour monter à 3, 4 et 5 étoiles il faut s'attaquer à la police (3 étoiles : 1 policier abattu, 4 : 4, 5 : 8)
 // et plus on a d'étoiles, plus chaque nouveau crime pèse peu.
+// qui a vu le crime ? 'cop' (policier), 'civ' (passant qui appelle la police) ou null (personne)
+function crimeWitness(x,z){
+  for(const c of cars)if(c.cop&&c.mode!=='wreck'&&c.mode!=='parked'&&hyp(c.x-x,c.z-z)<110&&losClear(c.x,c.z,x,z))return'cop';
+  for(const p of peds)if(p.kind==='cop'&&p.state!=='dead'&&hyp(p.x-x,p.z-z)<90&&losClear(p.x,p.z,x,z))return'cop';
+  for(const p of peds){if(p.kind!=='ped'||p.state==='dead'||p.state==='ko')continue;const d=hyp(p.x-x,p.z-z);if(d<38&&losClear(p.x,p.z,x,z))return'civ'}
+  return null}
 onCrime=function(a,x,z,sure,cap){
   cap=cap||2;
-  let seen=sure;
-  if(!seen)for(const c of cars)if(c.cop&&c.mode!=='wreck'&&c.mode!=='parked'&&hyp(c.x-x,c.z-z)<110){seen=true;break}
-  if(!seen)for(const p of peds)if(p.kind==='cop'&&p.state!=='dead'&&hyp(p.x-x,p.z-z)<90){seen=true;break}
-  if(!seen)a*=.5;
+  const wit=sure?'cop':crimeWitness(x,z);let seen=wit==='cop';
+  if(!wit){if(game.wanted<1&&(!game.noWitT||game.t-game.noWitT>8)){game.noWitT=game.t;say('Personne ne t’a vu… 🤫',1.6)}return}
+  if(wit==='civ'&&game.wanted<1&&(!game.civT||game.t-game.civT>6)){game.civT=game.t;say('Un témoin appelle la police !',2.2)}
   const ck=game.copKills||0,gate=ck>=8?5:ck>=4?4:ck>=1?3:2;cap=min(cap,gate);
   const w=game.wanted;if(seen&&w>0)game.seenT=0;
   if(w>=cap)return;
@@ -2785,12 +2792,30 @@ function aimThreat(dt){
       setTimeout(()=>{if(p.state!=='dead'){p.state='flee';p.fleeT=rnd(6,10);p.fleeFrom=[P.x,P.z]}},700)}
     else{p.state='flee';p.fleeT=rnd(7,11);p.fleeFrom=[P.x,P.z];say(pick(['Le passant s’enfuit en courant !','« Au secours ! »','Il détale sans rien lâcher !']),1.8)}
     break}
-  if(game.mission)return;
-  for(const s of STORES){if(!s.R.inside(P.x,P.z,0))continue;const cl=s.cashier;if(!cl||hyp(cl.x-P.x,cl.z-P.z)>10)continue;
-    if(s.robT!==undefined&&game.t-s.robT<300){if(!s.toldT||game.t-s.toldT>4){s.toldT=game.t;say('« La caisse est vide, revenez plus tard ! »',2)}return}
-    s.rob=(s.rob||0)+dt;s.robLast=game.t;const left=Math.ceil(3.5-s.rob);if(left!==s.robShown){s.robShown=left;say(left>0?'Braquage : « D’accord, je vide la caisse ! » … '+left+' s':'',1.1)}
-    if(s.rob>=3.5){s.rob=0;s.robT=game.t;const loot=s.cash+rint(50,250);game.money+=loot;sfx('cash');setWanted(s.kind==='jewel'?3:2);bigMsg('Braquage réussi','<small>+'+loot+' $ — fuis la police !</small>',3,'#8f5')}
-    return}}
+}
+const ROB_COOL=60;
+function robStore(){if(P.car||P.dead||game.mission||game.rob||game.steal||game.state!=='play')return null;
+  for(const s of STORES){if(!s.R.inside(P.x,P.z,0))continue;const cl=s.cashier;if(cl&&hyp(cl.x-P.x,cl.z-P.z)<7.5)return s}return null}
+function robWait(s){return s.robT===undefined?0:Math.max(0,Math.ceil(ROB_COOL-(game.t-s.robT)))}
+function startRob(){const s=robStore();if(!s)return;
+  if(!P.wpn){say('Sors une arme pour braquer (Q ou 1-5) !',2);return}
+  const w=robWait(s);if(w>0){say('« La caisse est vide ! » Reviens dans '+w+' s',2);sfx('fail');return}
+  game.rob={s,t:0,next:0,paid:false};P.vx=P.vz=0;P.reloadT=0;s.cashier.pose='hands';sfx('door');
+  say(pick(['« Les mains en l’air ! La caisse, vite ! »','« Pas un geste ! Remplis le sac ! »','« Braquage ! L’argent, maintenant ! »']),2.4)}
+function robStep(dt){const R=game.rob,s=R.s,cl=s.cashier;R.t+=dt;const t=R.t;
+  if(P.dead){cl.pose='idle';game.rob=null;return}
+  P.vx=P.vz=0;P.sp=0;const yw=atan2(cl.x-P.x,cl.z-P.z);P.yaw+=angd(P.yaw,yw)*min(1,dt*12);P.aimT=.6;P.aim=1;
+  CAM.yaw+=angd(CAM.yaw,yw+.45)*min(1,dt*3);CAM.free=0;
+  if(t>1.1&&!R.serve){R.serve=true;cl.pose='serve';say('Le caissier remplit le sac en tremblant…',2)}
+  // billets qui volent de la caisse vers le joueur
+  if(t>1.1&&t<3.2){R.next-=dt;if(R.next<=0){R.next=.07;const fx=P.x-cl.x,fz=P.z-cl.z,l=hyp(fx,fz)||1;
+      PT.add(cl.x+fx/l*.6,1.25,cl.z+fz/l*.6,fx/l*rnd(2,3.4)+rnd(-.5,.5),rnd(1,2.6),fz/l*rnd(2,3.4)+rnd(-.5,.5),.35,.85,.35,1,.09,.02,rnd(.5,.9),9,.3)}
+    if(((t*3)|0)!==((t*3-dt*3)|0))sfx('cash')}
+  if(t>3.2&&!R.paid){R.paid=true;cl.pose='give';const loot=s.cash+rint(50,250);game.money+=loot;s.robT=game.t;
+    const wit=crimeWitness(cl.x,cl.z);
+    if(wit){setWanted(s.kind==='jewel'?3:2);bigMsg('Braquage réussi','<small>+'+loot+' $ — '+(wit==='cop'?'un policier t’a vu':'un témoin a appelé la police')+' : fuis !</small>',3.4,'#fb5')}
+    else bigMsg('Braquage réussi','<small>+'+loot+' $ — personne ne t’a vu 🤫</small>',3.4,'#8f5')}
+  if(t>3.8){cl.pose='hands';setTimeout(()=>{if(cl.pose==='hands')cl.pose='idle'},5000);game.rob=null}}
 function playerPunch(dt){
   if(P.punchT>0){P.punchT-=dt;if(!P.punchHit&&P.punchT<.17){P.punchHit=true;const fx=sin(P.yaw),fz=cos(P.yaw);let hitAny=false;
       for(const p of peds){if(p.state==='dead'||p.kid)continue;const dx=p.x-P.x,dz=p.z-P.z,d=hyp(dx,dz);if(d>1.9)continue;if((dx*fx+dz*fz)/(d||1)<.3)continue;hitAny=true;
@@ -2833,6 +2858,7 @@ function playerUpdate(dt){
   if(MP.ride){mpRideStep(dt);return}
   // à pied
   if(game.steal){breakInStep(dt);return}
+  if(game.rob){robStep(dt);return}
   P.busted=max(0,P.busted-dt*.5);
   if(P.ragdoll>0){P.ragdoll-=dt;P.fallT=min(1,P.fallT+dt*7);P.vx*=Math.exp(-2.5*dt);P.vz*=Math.exp(-2.5*dt);
     P.vy-=15*dt;P.y+=P.vy*dt;const g=groundH(P.x,P.z);if(P.y<=g){P.y=g;P.vy=0;P.ground=true}moveCollide(P,.38,dt);P.sp=0;return}
@@ -4065,7 +4091,8 @@ addEventListener('keydown',e=>{if(e.code==='KeyY'&&game.state==='play'&&MP.on&&!
 $('bChat').addEventListener('pointerdown',e=>{e.preventDefault();qchatToggle()});
 $('bLock').addEventListener('pointerdown',e=>{e.preventDefault();mpToggleLock()});
 addEventListener('keydown',e=>{if(e.code==='KeyL'&&game.state==='play'&&MP.on&&P.car&&!game.paused&&!game.shopOpen)mpToggleLock()});
-setInterval(()=>{document.body.classList.toggle('incar',!!P.car)},250);
+setInterval(()=>{document.body.classList.toggle('incar',!!P.car);document.body.classList.toggle('canrob',!!robStore())},250);
+bindBtn('bRob',()=>startRob(),null);
 addEventListener('pagehide',()=>{if(MP.on)mpSend('bye',{i:MP.id})});
 // ---------- panneau du titre ----------
 $('mpDice').onclick=mpRandomName;
@@ -4394,6 +4421,7 @@ function promptText(){
   if(MP.ride)return k+' : descendre (passager)';
   if(P.car&&MP.on&&hyp(P.car.vx,P.car.vz)<9&&!(atGas(P.car.x,P.car.z)))return k+' : descendre · '+(IN.touch?'🔒':'L')+' : '+(P.car.locked?'déverrouiller':'verrouiller');
   if(P.car){const gs=!P.car.s.air&&atGas(P.car.x,P.car.z);if(gs&&hyp(P.car.vx,P.car.vz)<3&&P.car.fuel<.999)return'Plein d’essence en cours… (0,50 $ le %)';return hyp(P.car.vx,P.car.vz)<9?k+' : descendre':''}
+  {const rs=robStore();if(rs){const w=robWait(rs),rk=IN.touch?'💰':'B';const rt=w>0?'caisse vide (encore '+w+' s)':P.wpn?rk+' : braquer '+rs.name:'sors une arme pour braquer';return(q?k+' : '+poiPrompt(q)+' · ':'')+rt}}
   if(q)return k+' : '+poiPrompt(q);
   {const rc=mpNearCar();if(rc)return k+' : monter en passager avec '+pN(rc)+(rc.lock?' (🔒 verrouillée)':'')}
   const c=nearestCar(P.x,P.z,3.2);if(c)return k+' : '+(c.hasDriver?'voler ':'monter dans ')+(c.cop?'la voiture de police':c.s.air?'l’'+c.s.name.toLowerCase():'la '+c.s.name.toLowerCase());
@@ -4497,6 +4525,7 @@ addEventListener('keydown',e=>{
     case'Space':IN.jump=true;break;
     case'KeyQ':IN.wpn=true;break;
     case'KeyX':startReload();break;
+    case'KeyB':if(game.state==='play'&&!game.paused)startRob();break;
     case'Digit0':IN.sel=0;break;case'Digit1':IN.sel=1;break;case'Digit2':IN.sel=2;break;case'Digit3':IN.sel=3;break;case'Digit4':IN.sel=4;break;case'Digit5':IN.sel=5;break;
     case'KeyC':CAM.view=(CAM.view+1)%2;break;
     case'KeyR':radioToggle();break;
