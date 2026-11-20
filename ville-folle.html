@@ -517,7 +517,8 @@ function circHit(it,px,pz,r){
   if(m===l){HIT.nx=-1;HIT.nz=0;HIT.pen=l+r}else if(m===rr){HIT.nx=1;HIT.nz=0;HIT.pen=rr+r}else if(m===t){HIT.nx=0;HIT.nz=-1;HIT.pen=t+r}else{HIT.nx=0;HIT.nz=1;HIT.pen=b+r}
   return true}
 function inBlockCoord(v){if(v<0||v>=SIZE)return false;const m=v%CELL;return m>=ROAD}
-function groundH(x,z){if(x<0||z<0||x>=SIZE||z>=SIZE)return outerH(x,z);return(inBlockCoord(x)&&inBlockCoord(z))?CURB:0}
+const INTZ={x0:-1700,x1:-1250,z0:520,z1:640};
+function groundH(x,z){if(x>INTZ.x0&&x<INTZ.x1&&z>INTZ.z0&&z<INTZ.z1)return CURB;if(x<0||z<0||x>=SIZE||z>=SIZE)return outerH(x,z);return(inBlockCoord(x)&&inBlockCoord(z))?CURB:0}
 // point (3D) dans un obstacle ? (pour caméra / balles)
 function solidPoint(x,y,z){const a=queryNear(x,z,.1);for(const it of a){if(it.circ)continue;if(x>it.x0&&x<it.x1&&z>it.z0&&z<it.z1&&y<it.h)return it}return null}
 
@@ -721,7 +722,22 @@ function addRoofStuff(x0,z0,x1,z1,h,n){const mb=S.flat.mb((x0+x1)/2,(z0+z1)/2);
     if(t<.55)mb.box(x,h,z,x+w,h+hh,z+d,mulc(COL.roof,wr(.9,1.3)),{ao:.85});
     else if(t<.8){const r=min(w,d)*.45;mb.addMesh(cylMB(1,1,1.8,8),sMat(x+w/2,h+1.2,z+d/2,r,1,r),hexc(0x8a6a4a));for(const[lx,lz]of[[.2,.2],[.8,.2],[.2,.8],[.8,.8]])mb.box(x+w*lx-.07,h,z+d*lz-.07,x+w*lx+.07,h+1.2,z+d*lz+.07,COL.pole,{ao:1})}
     else mb.box(x+w/2-.05,h,z+d/2-.05,x+w/2+.05,h+wr(3,7),z+d/2+.05,COL.pole,{ao:1})}}
-function building(x0,z0,x1,z1,h,o){o=o||{};const cx=(x0+x1)/2,cz=(z0+z1)/2;addAABB(x0,z0,x1,z1,h);
+const BLDS=[];
+function buildingDoor(x0,z0,x1,z1,h,kind,FL){
+  if(x1-x0<4||z1-z0<4)return;const cx=(x0+x1)/2,cz=(z0+z1)/2;let side;
+  if(cx>0&&cz>0&&cx<SIZE&&cz<SIZE){const bx=floor(cx/CELL),bz=floor(cz/CELL),X0=bx*CELL+ROAD,Z0=bz*CELL+ROAD,X1=X0+BLOCK,Z1=Z0+BLOCK;
+    const g=[z0-Z0,x1>X1?99:X1-x1,Z1-z1,x0-X0];side=g.indexOf(min(...g))}
+  else side=cz>SIZE?0:cx>SIZE?3:2;
+  const n=FACE_N[side],dx=side===0||side===2?cx:side===1?x1:x0,dz=side===1||side===3?cz:side===0?z0:z1;
+  const type=(kind==='wareh'||kind==='gang')?'entrepot':(kind==='conc'||kind==='glass')?(h>24?'luxe':'bureau'):(kind==='brick'&&BLDS.length%3===0)?'bureau':'appart';
+  const b={id:BLDS.length,type,door:{x:dx+n[0]*1.1,z:dz+n[1]*1.1,yaw:atan2(n[0],n[1])}};BLDS.push(b);
+  // porte visible
+  const ux=abs(n[1]),uz=abs(n[0]),e=.12;
+  FL.box(dx-ux*.85-(n[0]<0?e:0),0,dz-uz*.85-(n[1]<0?e:0),dx+ux*.85+(n[0]>0?e:0),2.35,dz+uz*.85+(n[1]>0?e:0),[.32,.2,.12],{ao:1});
+  FL.box(dx-ux*1.0-(n[0]<0?e*1.4:0),2.35,dz-uz*1.0-(n[1]<0?e*1.4:0),dx+ux*1.0+(n[0]>0?e*1.4:0),2.55,dz+uz*1.0+(n[1]>0?e*1.4:0),[.85,.82,.75],{ao:1});
+  POIS.push({id:'door',bld:b,x:b.door.x,z:b.door.z,r:1.9,prompt:INT_LABEL[type][1],act:()=>enterBuilding(b),y:0,l:-1})}
+const INT_LABEL={appart:['Appartement','Entrer dans l’immeuble'],bureau:['Bureaux','Entrer dans les bureaux'],entrepot:['Entrepôt','Entrer dans l’entrepôt'],luxe:['Penthouse de luxe','Entrer dans la tour']};
+function building(x0,z0,x1,z1,h,o){o=o||{};const cx=(x0+x1)/2,cz=(z0+z1)/2;addAABB(x0,z0,x1,z1,h);if(!o.noDoor)buildingDoor(x0,z0,x1,z1,h,o.kind||'apart',S.flat.mb(cx,cz));
   const kind=o.kind||'apart',tint=o.tint||[1,1,1],sh=o.shop?4.4:0,F=S[kind].mb(cx,cz),FL=S.flat.mb(cx,cz),sp=FSPEC[kind];
   let y0=0;
   if(sh){S.shop.mb(cx,cz).sides(x0,0,z0,x1,sh,z1,o.shopTint||[1,1,1],{nF:1,ao:.85,aoH:1.2,tile:FSPEC.shop.tw,uo:wint(0,400),vo:wint(0,400)});FL.box(x0-.25,sh,z0-.25,x1+.25,sh+.3,z1+.25,mulc(tint,.88),{ao:1});y0=sh+.3}
@@ -1044,7 +1060,7 @@ function buildPlace(zone,bx,bz,X0,Z0,X1,Z1){
   const fl=S.flat.mb(cx,cz);
   for(let i=0;i<4;i++){const u=wr(-R.hw+3,R.hw-3),v=R.D+wr(1.6,3.2),x=R.X(u,v),z=R.Z(u,v);if(x<X0+2||x>X1-2||z<Z0+2||z>Z1-2)continue;tree(x,z,wr(.9,1.2))}
 }
-function placeAt(x,z){for(const k in PLACES){const R=PLACES[k];if(R.inside(x,z,0))return R}for(const s of STORES)if(s.R.inside(x,z,0))return s.R;for(const b of BANKS)if(b.R.inside(x,z,0))return b.R;return null}
+function placeAt(x,z){for(const k in INTS){const R=INTS[k];if(R.inside(x,z,0))return R}for(const k in PLACES){const R=PLACES[k];if(R.inside(x,z,0))return R}for(const s of STORES)if(s.R.inside(x,z,0))return s.R;for(const b of BANKS)if(b.R.inside(x,z,0))return b.R;return null}
 // la corde du cabaret : ouverte quand l'entrée est payée
 function clubRope(open){const c=CLUB.rope;if(!c)return;const it=c.it;if(open){it.x0=it.z0=-1e5;it.x1=it.z1=-1e5+1}else{it.x0=c.orig[0];it.z0=c.orig[1];it.x1=c.orig[2];it.z1=c.orig[3]}}
 
@@ -1326,6 +1342,56 @@ function terrainGen(){
       for(const t of[[a,d,c2],[a,c2,b]])for(const p of t)mb.v(p.x,p.y-.06,p.z,p.nx,p.ny,p.nz,p.c,0,0)}}}
 
 function roadsGenAndWorld(){}
+// ---------- intérieurs génériques (on y est téléporté depuis la porte d'un bâtiment) ----------
+const INTS={};
+function freeRoom(ox,oz,hw,D,H){const R=Object.create(Room.prototype),n=[0,-1];
+  R.nx=0;R.nz=-1;R.vx=0;R.vz=1;R.ux=-1;R.uz=0;R.ox=ox;R.oz=oz;R.hw=hw;R.D=D;R.H=H;R.t=.5;R.side=0;R.bx=-1;R.bz=-1;
+  R.ctr=[R.X(0,D/2),H/2,R.Z(0,D/2)];R.wr=R.rect(-hw,0,hw,D);R.yawOut=atan2(n[0],n[1]);
+  R.F=S.flat.mb(R.ctr[0],R.ctr[2]);R.I=S.int.mb(R.ctr[0],R.ctr[2]);R.T=S.tile.mb(R.ctr[0],R.ctr[2]);R.W=S.win.mb(R.ctr[0],R.ctr[2]);return R}
+function fixDoors(){for(const b of BLDS){const d=b.door,fx=sin(d.yaw),fz=cos(d.yaw);
+    for(let k=0;k<8;k++){if(!queryNear(d.x,d.z,.35).some(it=>circHit(it,d.x,d.z,.35)))break;d.x+=fx*.5;d.z+=fz*.5}
+    const q=POIS.find(p=>p.id==='door'&&p.act&&p.bld===b);if(q){q.x=d.x;q.z=d.z}}}
+function buildInteriors(){
+  const mk=(type,i,o)=>{const R=freeRoom(INTZ.x0+60+i*100,INTZ.z0+30,o.hw,o.D,o.H);
+    shell(R,{out:[.3,.3,.32],trim:[.2,.2,.22],roof:[.25,.25,.27],inCb:o.cb,inCt:o.ct,tile:o.tile,floor:o.floor,du:1.3,dh:2.6,wins:[]});
+    for(const u of[-4,4])for(let v=4;v<R.D-2;v+=6)lightPanel(R,u,v,2.4,1.2,[1,.98,.9]);
+    R.type=type;R.label=INT_LABEL[type][0];INTS[type]=R;o.fill(R);
+    const lp=R.pt(o.loot[0],o.loot[1]);POIS.push({id:'loot',x:lp.x,z:lp.z,r:1.8,prompt:'Fouiller (un peu d’argent ?)',act:()=>lootHere(),y:1.2,l:-1});
+    return R};
+  const W=[.45,.3,.18],Wd=[.3,.2,.12],B=[.12,.12,.14];
+  mk('appart',0,{hw:8,D:17,H:3.6,cb:[.78,.72,.62],ct:[.95,.9,.82],floor:[.55,.4,.28],loot:[6,15],fill:R=>{
+    R.flatQ(R.I,-6.5,3,-1,8,.17,[.6,.18,.2]);                       // tapis
+    R.solid(-6.5,8,-1,9,.15,.85,[.25,.35,.6]);R.solid(-6.5,9,-1,9.6,.15,1.35,[.22,.3,.52]); // canapé
+    R.solid(-5,2.2,-2.5,2.6,.15,.6,B);R.box(R.I,-5.2,2.3,-2.3,2.45,.6,1.9,[.05,.05,.07]);  // télé
+    R.solid(2,4,5,6,.15,.78,W);for(const[u,v]of[[1.5,5],[5.5,5]])R.solid(u-.3,v-.3,u+.3,v+.3,.15,.5,Wd); // table + chaises
+    R.solid(-7.5,11,1,11.3,.15,R.H,[.85,.8,.72]);R.solid(3,11,7.5,11.3,.15,R.H,[.85,.8,.72]); // cloison chambre
+    R.solid(2.5,13,7,16.5,.15,.55,[.9,.9,.95]);R.box(R.I,2.6,15.6,6.9,16.4,.55,.8,[1,1,1]); // lit
+    R.solid(-7.5,12,-6.5,16.5,.15,1,[.8,.8,.82]);R.box(R.I,-7.5,12,-6.5,16.5,1,1.06,[.3,.3,.32])}}); // cuisine
+  mk('bureau',1,{hw:11,D:20,H:3.8,cb:[.7,.72,.76],ct:[.9,.92,.95],tile:[.85,.87,.9],loot:[-8,17],fill:R=>{
+    for(const u of[-7,-1.5,4])for(const v of[5,10,15]){R.solid(u,v,u+3,v+1.3,.15,.76,[.82,.8,.75]);R.box(R.I,u+.9,v+.2,u+2.1,v+.3,.76,1.4,[.08,.09,.12]);R.solid(u+1.2,v+1.6,u+1.8,v+2.2,.15,.5,[.15,.15,.18])}
+    for(const[u,v]of[[-9.5,3],[9.5,3],[9.5,18]]){R.circ(u,v,.45,1.5);const x=R.X(u,v),z=R.Z(u,v);R.F.addMesh(cylMB(.35,.3,.6,8),sMat(x,.15,z,1,1,1),[.55,.35,.2]);R.F.addMesh(coneMB(.6,1.1,8),sMat(x,.75,z,1,1,1),[.2,.55,.25])}}});
+  mk('entrepot',2,{hw:14,D:24,H:7,cb:[.5,.48,.45],ct:[.62,.6,.56],floor:[.42,.42,.44],loot:[10,20],fill:R=>{
+    for(const v of[6,12,18]){R.solid(-12.5,v,-3,v+1.4,.15,4.2,[.3,.4,.6]);for(let u=-12;u<-3.5;u+=2.3)R.box(R.I,u,v-.05,u+1.8,v+1.45,1.5+(u&1)*1.4,2.6+(u&1)*1.4,[.65,.5,.3])}
+    const r=mulb(77);for(let i=0;i<9;i++){const u=1+r()*10,v=4+r()*17,sz=.8+r()*.8;R.solid(u,v,u+sz,v+sz,.15,.15+sz,[.62+r()*.1,.47,.28])}}});
+  mk('luxe',3,{hw:12,D:20,H:4.4,cb:[.85,.82,.78],ct:[.98,.96,.92],tile:[.95,.95,.97],loot:[-10,18],fill:R=>{
+    R.solid(-10,14,-3,15.2,.15,1.1,[.15,.1,.08]);R.box(R.I,-10.1,13.9,-2.9,15.3,1.1,1.18,[.9,.85,.7]); // bar
+    R.solid(3,6,9,7,.15,.8,[.95,.95,.95]);R.solid(3,7,9,7.6,.15,1.3,[.9,.9,.9]);R.solid(3,3,4,6,.15,.8,[.95,.95,.95]); // canapé d'angle
+    R.solid(5,3.5,7.5,5,.15,.45,[.2,.2,.22]);                                                                // table basse
+    R.solid(4,13,7.5,16,.15,1,[.05,.05,.06]);R.box(R.I,4,15.6,7.5,16,1,1.9,[.05,.05,.06]);                  // piano
+    R.box(R.I,-11.4,4,-11.3,10,.8,3,[.2,.5,.85]);R.solid(-11.5,4,-10.8,10,.15,.8,[.12,.12,.14])}});         // aquarium
+}
+const LOOTT=new Map();
+function lootHere(){const b=game.inside&&game.inside.b;if(!b){say('Rien à fouiller.',1.5);return}
+  const last=LOOTT.get(b.id);if(last!==undefined&&game.t-last<600){say('Déjà fouillé… reviens plus tard.',2);return}
+  LOOTT.set(b.id,game.t);const R={appart:[20,120],bureau:[50,220],entrepot:[30,160],luxe:[150,500]}[b.type],m=rint(R[0],R[1]);
+  game.money+=m;say('Tu trouves '+m+' $ !',2.2);sfx('cash')}
+function tpTo(x,z,yaw){P.x=x;P.z=z;P.y=groundH(x,z);P.vx=P.vz=P.vy=0;P.yaw=yaw;P.ground=true;CAM.yaw=yaw;CAM.free=0;CAM.curD=1}
+function enterBuilding(b){const R=INTS[b.type];if(!R||P.car)return;game.inside={b};const p=R.pt(0,2.2);tpTo(p.x,p.z,atan2(R.vx,R.vz));say(R.label,2)}
+function indoorUpdate(){if(!game.inside)return;const R=INTS[game.inside.b.type];
+  if(!R||P.car||P.dead){game.inside=null;return}
+  if(!(P.x>INTZ.x0&&P.x<INTZ.x1&&P.z>INTZ.z0&&P.z<INTZ.z1)){game.inside=null;return} // réapparition ailleurs
+  const v=(P.x-R.ox)*R.vx+(P.z-R.oz)*R.vz;
+  if(v<.2){const d=game.inside.b.door;game.inside=null;tpTo(d.x,d.z,d.yaw)}}
 // ---------- monde ----------
 function worldGenSteps(){
   const st=[()=>{S.ground.mb(SIZE/2,SIZE/2).topUV(0,0,SIZE,SIZE,0,[1,1,1],0,0,SIZE/14,SIZE/14);
@@ -1335,10 +1401,11 @@ function worldGenSteps(){
   st.push(outerGen);
   return st}
 function worldGenFinish(){
-  roadsGen();
+  roadsGen();buildInteriors();
   {const EE=SIZE+2000,ES=SIZE+2000,EN=-1900; // bout du monde (loin) ; à l'ouest, la mer après la plage
     addAABB(-132,EN-60,-72,ES+60,50);addAABB(-132,EN-60,EE+60,EN,50);
     addAABB(EE,EN-60,EE+60,ES+60,50);addAABB(-132,ES,EE+60,ES+60,50)}
+  fixDoors();
   for(const k in S){const v=S[k];if(v instanceof Stat)v.build()}for(const a of S.tl)for(const s of a)s.build();
   SPAWN.x=6*CELL+HALF+HALF+2.2;SPAWN.z=6*CELL+HALF+HALF+2.2;SPAWN.yaw=PI}
 function worldGen(){for(const f of worldGenSteps())f();worldGenFinish()}
@@ -1655,15 +1722,13 @@ function mpAlarm(msg){
   if((game.mpAlert||0)>0){game.mpAlert=max(game.mpAlert,60);return}
   game.mpAlert=90;game.wanted=max(game.wanted,2.2);game.seenT=0;
   say(msg||'POLICE MILITAIRE ! Zone interdite : ils ouvrent le feu !',3.5)}
-function airportUpdate(dt){
+function airportUpdate(dt){indoorUpdate();
   if((game.mpAlert||0)>0){game.mpAlert-=dt;if(wantedLevel()===0)game.mpAlert=0}
   const alarm=(game.mpAlert||0)>0;
   for(const p of peds)if(p.mp){p.hot=alarm&&p.state!=='dead'}
   const low=!P.car||!P.car.s.air||(P.car.alt||0)<30;
   if(inAirbase(P.x,P.z)&&low&&!P.dead){
-    if(!alarm){game.trespass=(game.trespass||0)+dt;
-      if(game.trespass>.8&&!game.warned){game.warned=true;say('POLICE MILITAIRE : « Zone interdite ! Quittez les lieux ! »',3.2)}
-      if(game.trespass>7)mpAlarm()}
+    if(!alarm&&!game.warned){game.warned=true;say('Bienvenue à l’aéroport ! Les avions sont là-bas… (en voler un fâche la police militaire)',4)}
   }else{game.trespass=max(0,(game.trespass||0)-dt*2);if(game.trespass<=0)game.warned=false}}
 
 // =====================================================================
@@ -2775,7 +2840,7 @@ function updateGame(dt){
   for(let i=tracers.length-1;i>=0;i--){tracers[i].t+=dt;if(tracers[i].t>.07)tracers.splice(i,1)}
   PT.update(dt);
   // quartier
-  const k=DNAMES(clamp(floor(P.x/CELL),0,NB-1),clamp(floor(P.z/CELL),0,NB-1));if(k!==game.areaKey){game.areaKey=k;showArea(k)}
+  const k=game.inside?INT_LABEL[game.inside.b.type][0]:DNAMES(clamp(floor(P.x/CELL),0,NB-1),clamp(floor(P.z/CELL),0,NB-1));if(k!==game.areaKey){game.areaKey=k;showArea(k)}
 }
 let showArea=()=>{};
 // ---------- police ----------
@@ -3059,7 +3124,9 @@ const mDead=c=>!c||c.hp<=0||c.mode==='wreck'||c.mode==='burning'||c.dead||!cars.
 const pAlive=p=>p.state!=='dead'&&peds.includes(p);
 function setMission(m){game.mission=m;MS_ACTIVE=true}
 function failMission(why){const m=game.mission;if(!m)return;game.mission=null;MS_ACTIVE=false;bigMsg('Mission échouée','<small>'+why+'</small>',3,'#e33');sfx('fail');if(m.cleanup)m.cleanup();m.src.cool=30}
-function winMission(reward){const m=game.mission;if(!m)return;reward=Math.round(reward*(1+min(game.done,40)*.02)/10)*10;game.mission=null;MS_ACTIVE=false;game.money+=reward;game.done++;bigMsg('Mission réussie','<small>+'+reward+' $</small>',3.2,'#8f5');sfx('win');if(m.cleanup)m.cleanup();m.src.cool=45;if(m.story!==undefined)storyDone(m.story)}
+function winMission(reward){const m=game.mission;if(!m)return;reward=Math.round(reward*(1+min(game.done,40)*.02)/10)*10;game.mission=null;MS_ACTIVE=false;game.money+=reward;game.done++;bigMsg('Mission réussie','<small>+'+reward+' $</small>',3.2,'#8f5');sfx('win');if(m.cleanup)m.cleanup();m.src.cool=45;if(m.story!==undefined)storyDone(m.story);
+  else if(game.mode==='story'&&storyIdx()<STORY.length&&storyLeft()>0){game.storyRep=(game.storyRep|0)+1;const l=storyLeft();
+    setTimeout(()=>{if(l>0)say('Histoire : encore '+l+' contrat'+(l>1?'s':'')+' avant le chapitre '+(storyIdx()+1),3.2);else{bigMsg('Chapitre débloqué !','<small>Cherche la lettre H bleue sur la carte</small>',3.6,'#8cf');setupStory()}},3400);saveGame()}}
 
 // ---------- petite mécanique de missions « par étapes » ----------
 function startM(src,o){
@@ -3563,9 +3630,13 @@ function cutscene(sc,done){
   requestAnimationFrame(()=>{fade.style.transition='';nextBeat();requestAnimationFrame(step)})}
 let storyMk=null;
 function storyIdx(){return game.storyIdx|0}
+// entre deux chapitres, il faut réussir des contrats (missions des contacts) : ~220 missions au total ≈ 30 h
+function storyNeed(i){return i<=0?0:8+i*2}
+function storyLeft(){return max(0,storyNeed(storyIdx())-(game.storyRep|0))}
 function setupStory(){
   if(storyMk){const i=markers.indexOf(storyMk);if(i>=0)markers.splice(i,1);storyMk=null}
   if(game.mode!=='story'||storyIdx()>=STORY.length)return;
+  if(storyLeft()>0){say('Histoire : réussis encore '+storyLeft()+' contrats (missions des contacts) pour débloquer le chapitre '+(storyIdx()+1),4.5);return}
   const ch=STORY[storyIdx()],[ix,iz,sx,sz]=ch.loc;
   storyMk={id:'story',cat:'H',l:15,c:[.35,.8,1],name:'Histoire',ix,iz,sx,sz,cool:0,x:ix*CELL+HALF+sx*13.5,z:iz*CELL+HALF+sz*13.5,start:m=>storyStart(m)};markers.push(storyMk)}
 function dialog(who,lines,done){
@@ -3779,11 +3850,11 @@ function storyStart(m){
     const p=ch.run?{start:ch.run,name:ch.title}:POOL.find(q=>q.id===ch.id);game.curM=ch.id;p.start(m);
     if(game.mission){game.mission.story=idx;bigMsg('Chapitre '+(idx+1)+'/'+STORY.length,'<small>'+ch.title+'</small>',2.6,'#8cf')}})}
 function storyDone(idx){
-  const ch=STORY[idx],prime=300+idx*150;game.storyIdx=idx+1;game.money+=prime;saveGame();
+  const ch=STORY[idx],prime=300+idx*150;game.storyIdx=idx+1;game.storyRep=0;game.money+=prime;saveGame();
   if(ch.id==='escape'){setTimeout(runFinale,1200);return}
   setTimeout(()=>{if(CINE)return;
     const sc=ch.outro(game.curMarker);
-    cutscene(sc,()=>{say('+'+prime+' $ de prime d’histoire',3);bigMsg('Nouveau chapitre','<small>Cherche la lettre H bleue sur la carte</small>',3.6,'#8cf');setupStory()})},1500)}
+    cutscene(sc,()=>{say('+'+prime+' $ de prime d’histoire',3);const l=storyLeft();if(l>0)bigMsg('Chapitre terminé','<small>Réussis '+l+' contrats (missions des contacts) pour débloquer la suite</small>',4.5,'#8cf');else bigMsg('Nouveau chapitre','<small>Cherche la lettre H bleue sur la carte</small>',3.6,'#8cf');setupStory()})},1500)}
 
 // =====================================================================
 //  MULTIJOUEUR : salle par code, joueurs/voitures visibles, messages rapides (pas de texte libre)
@@ -4337,8 +4408,10 @@ bindBtn('bPause',()=>{togglePause()});bindBtn('bView',()=>{CAM.view=(CAM.view+1)
 function pollInput(dt){
   let sx=0,sy=0;
   if(KB.KeyD)sx+=1;if(KB.KeyA)sx-=1;if(KB.KeyW)sy+=1;if(KB.KeyS)sy-=1;
-  if(TS.stick&&TS.stick.sx!==undefined){sx+=TS.stick.sx;sy+=TS.stick.sy}
-  const m=hyp(sx,sy);if(m>1){sx/=m;sy/=m}
+  if(TS.stick&&TS.stick.sx!==undefined){
+    if(P.car){sx+=clamp(TS.stick.sx*1.5,-1,1);sy+=clamp(TS.stick.sy*1.5,-1,1)} // en voiture : axes séparés (diagonale = plein gaz + braquage max)
+    else{sx+=TS.stick.sx;sy+=TS.stick.sy}}
+  if(P.car){sx=clamp(sx,-1,1);sy=clamp(sy,-1,1)}else{const m=hyp(sx,sy);if(m>1){sx/=m;sy/=m}}
   IN.sx=sx;IN.sy=sy;
   IN.run=!!(KB.ShiftLeft||BT.run);
   IN.fire=!!(KB.Enter||KB.ShiftRight||(BT.A&&!P.car));
@@ -4505,7 +4578,7 @@ function drawMarkers(){
   const t=game.t,dm=(x,z)=>hyp(x-CAM.x,z-CAM.z);
   if(!game.mission)for(const m of markers){if(m.cool>0||dm(m.x,m.z)>300)continue;ringMarker(m.x,m.z,m.c,2.8,.5+.2*sin(t*3));billUV(bLet,m.x,3.3+sin(t*2)*.2,m.z,2.2,[1,1,1,1],m.l)}
   for(const g of GUIDES){if(dm(g.x,g.z)>260)continue;ringMarker(g.x,g.z,g.c,2.4,.45+.15*sin(t*3));billUV(bLet,g.x,3.3+sin(t*2+1)*.2,g.z,2.1,[1,1,1,1],g.l)}
-  for(const p of POIS){if(dm(p.x,p.z)>34)continue;if(p.id.slice(0,4)!=='car_')bGlow.flat(p.x,.3,p.z,1.7,1.7,0,[1,.9,.45,.3+.12*sin(t*3)]);if(p.l>=0&&hyp(p.x-P.x,p.z-P.z)>3.6)billUV(bLet,p.x,p.y+sin(t*2)*.12,p.z,.9,[1,1,1,1],p.l)}
+  for(const p of POIS){if(dm(p.x,p.z)>34)continue;if(p.id.slice(0,4)!=='car_'&&p.id!=='door')bGlow.flat(p.x,.3,p.z,1.7,1.7,0,[1,.9,.45,.3+.12*sin(t*3)]);if(p.l>=0&&hyp(p.x-P.x,p.z-P.z)>3.6)billUV(bLet,p.x,p.y+sin(t*2)*.12,p.z,.9,[1,1,1,1],p.l)}
   if(game.wp&&dm(game.wp.x,game.wp.z)<900)bPlain.beam(game.wp.x,0,game.wp.z,game.wp.x,90,game.wp.z,.9,[1,.83,0,.45]);
   const mi=game.mission;if(mi)for(const tg of mi.targets||[]){
     if(tg.car){const c=tg.car;bGlow.bill(c.x,c.y+3.4+sin(t*5)*.25,c.z,2.4,[tg.c[0],tg.c[1],tg.c[2],.9]);bPlain.beam(c.x,c.y+1.8,c.z,c.x,c.y+60,c.z,.7,[tg.c[0],tg.c[1],tg.c[2],.4])}
@@ -4611,9 +4684,9 @@ function profSave(){try{localStorage.setItem(PROFK,JSON.stringify(PROF))}catch(e
 function saveKey(n){return n==='Joueur'?'villefolle3d_v1':'villefolle3d_p_'+n}
 const SAVEK0=null;
 
-function saveGame(){try{localStorage.setItem(saveKey(PROF.cur),JSON.stringify({m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}}
+function saveGame(){try{localStorage.setItem(saveKey(PROF.cur),JSON.stringify({m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}}
 function loadGame(){try{const s=JSON.parse(localStorage.getItem(saveKey(PROF.cur))||'null');if(!s)return;
-  game.storyIdx=Math.max(0,Math.min(STORY.length,s.s|0));game.money=(typeof s.m==='number'&&isFinite(s.m))?Math.min(99999999,Math.max(0,Math.floor(s.m))):300;game.done=s.d|0;game.kills=s.k|0;
+  game.storyIdx=Math.max(0,Math.min(STORY.length,s.s|0));game.storyRep=Math.max(0,s.r|0);game.money=(typeof s.m==='number'&&isFinite(s.m))?Math.min(99999999,Math.max(0,Math.floor(s.m))):300;game.done=s.d|0;game.kills=s.k|0;
   if(Array.isArray(s.a))for(let i=1;i<6;i++)P.ammo[i]=Math.max(0,Math.min(WEAPONS[i].max,(s.a[i]|0)));
   if(Array.isArray(s.o)){for(let i=2;i<6;i++)P.own[i]=s.o[i]?1:0}else if(Array.isArray(s.a)&&(s.a[2]|0)>0)P.own[2]=1;
   P.own[0]=1;P.own[1]=1;
@@ -4641,7 +4714,7 @@ function bootFinish(){
   titleCam(0);
   game.state='title';$('gen').style.display='none';
   for(const id of['go','goStory','goMulti']){$(id).disabled=false}
-  $('storyInfo').textContent=storyIdx()>0?(storyIdx()>=STORY.length?'Histoire terminée — rejoue-la ou explore librement.':'Histoire : chapitre '+(storyIdx()+1)+' / '+STORY.length+' (progression sauvegardée)'):'Histoire : 10 chapitres avec dialogues. Monde libre : fais ce que tu veux. Multijoueur : retrouve tes amis.';
+  $('storyInfo').textContent=storyIdx()>0?(storyIdx()>=STORY.length?'Histoire terminée — rejoue-la ou explore librement.':'Histoire : chapitre '+(storyIdx()+1)+' / '+STORY.length+(storyLeft()>0?' · encore '+storyLeft()+' contrats avant la suite':'')+' (progression sauvegardée)'):'Histoire : '+STORY.length+' chapitres (~30 h) : entre chaque chapitre, réussis des contrats. Monde libre : fais ce que tu veux. Multijoueur : retrouve tes amis.';
   if(q.get('auto')){startGame(q.get('auto')==='story'?'story':'free')}
   requestAnimationFrame(frame)}
 window.__G={game,P,cars,peds,CAM,IN,KB,pickups,markers,startGame,wantedLevel,hitPed,mkCar,mkPed,enterCar,exitCar,setTime:h=>{TIME=h},onCrime:(a,x,z,s)=>onCrime(a,x,z,s),respawnAt,HOSP,POLS,SPAWN,gtime,PT,startDelivery,startRace,startSteal,startGang,MDEFS,OWN,PLACES,POIS,CLUB,WEAPONS,SHOPCARS,VT,rockets,explosion,openShop,closeShop,buyWeapon,buyAmmo,buyCar,callCar,insureCar,clubPay,clubBar,nearPOI,addAmmo,altWeapon,saveGame,loadGame,SHOP_COL,mDead,trafficSpawn,spawnPedNear,aiInit,get TIME(){return TIME}};
