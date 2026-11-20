@@ -1060,7 +1060,7 @@ function buildPlace(zone,bx,bz,X0,Z0,X1,Z1){
   const fl=S.flat.mb(cx,cz);
   for(let i=0;i<4;i++){const u=wr(-R.hw+3,R.hw-3),v=R.D+wr(1.6,3.2),x=R.X(u,v),z=R.Z(u,v);if(x<X0+2||x>X1-2||z<Z0+2||z>Z1-2)continue;tree(x,z,wr(.9,1.2))}
 }
-function placeAt(x,z){for(const k in INTS){const R=INTS[k];if(R.inside(x,z,0))return R}for(const k in PLACES){const R=PLACES[k];if(R.inside(x,z,0))return R}for(const s of STORES)if(s.R.inside(x,z,0))return s.R;for(const b of BANKS)if(b.R.inside(x,z,0))return b.R;return null}
+function placeAt(x,z){for(const R of STYLE_ROOMS)if(R.inside(x,z,0))return R;for(const k in INTS){const R=INTS[k];if(R.inside(x,z,0))return R}for(const k in PLACES){const R=PLACES[k];if(R.inside(x,z,0))return R}for(const s of STORES)if(s.R.inside(x,z,0))return s.R;for(const b of BANKS)if(b.R.inside(x,z,0))return b.R;return null}
 // la corde du cabaret : ouverte quand l'entrée est payée
 function clubRope(open){const c=CLUB.rope;if(!c)return;const it=c.it;if(open){it.x0=it.z0=-1e5;it.x1=it.z1=-1e5+1}else{it.x0=c.orig[0];it.z0=c.orig[1];it.x1=c.orig[2];it.z1=c.orig[3]}}
 
@@ -1179,16 +1179,34 @@ GEN.water=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c;
   const E=130,x0=bx===0?-E:X0-HALF,x1=bx===NB-1?SIZE+E:X1+HALF,z0=bz===0?-E:Z0-HALF,z1=bz===NB-1?SIZE+E:Z1+HALF;
   const ext=(a,b,c2,d)=>{waterRect(a,b,c2,d);WEXT.push([a,b,c2,d])};
   if(bx===NB-1)ext(SIZE,z0,SIZE+E,z1);if(bz===0)ext(x0,-E,x1,0);if(bz===NB-1)ext(x0,SIZE,x1,SIZE+E)};
-const GASST=[],STYLEST=[];
+const GASST=[],STYLEST=[],STYLE_ROOMS=[];
 GEN.style=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c,f=S.flat.mb(cx,cz),Y=CURB+.03;
-  S.grass.mb(cx,cz).topUV(X0+3.5,Z0+3.5,X1-3.5,Z1-3.5,CURB+.03,[1,1,1],0,0,14,14);
-  const z0=Z0+4.5,z1=Z0+17;
-  const shop=(x0,x1,col,roof,txt,bg,fg,focus,prompt)=>{ubox(f,x0,Y,z0,x1,Y+5.2,z1,col);addAABB(x0,z0,x1,z1,5.5);ubox(f,x0-.3,Y+5.2,z0-.5,x1+.3,Y+5.6,z1+.3,roof);
-    bannerPlane(txt,bg,fg,(x0+x1)/2,Y+4.2,z0-.05,13,1.6,0,-1,'#fff');ubox(f,(x0+x1)/2-1.1,Y,z0-.1,(x0+x1)/2+1.1,Y+2.6,z0,[.25,.3,.4]);
-    ubox(f,x0+1,Y+.6,z0-.12,(x0+x1)/2-1.8,Y+2.7,z0,[.45,.7,.85]);ubox(f,(x0+x1)/2+1.8,Y+.6,z0-.12,x1-1,Y+2.7,z0,[.45,.7,.85]);
-    POIS.push({id:focus,x:(x0+x1)/2,z:z0-1.6,r:3.2,prompt,act:()=>openShop('style',focus),y:2.3,l:-1})};
-  shop(cx-25,cx-3,[.95,.8,.85],[.8,.25,.5],'COIFFEUR','#b01e6a','#ffffff','salon','Coiffeur : changer de coupe et de couleur');
-  shop(cx+3,cx+25,[.8,.85,.95],[.2,.35,.7],'MODE FOLLE','#1e4fb0','#ffffff','mode','Magasin de vêtements : changer de tenue');
+  S.grass.mb(cx,cz).topUV(X0+3.5,Z0+31,X1-3.5,Z1-3.5,CURB+.03,[1,1,1],0,0,14,9);
+  // deux grandes boutiques où l'on entre (24 m de large, 26 m de profondeur)
+  const shop=(ux,o)=>{const R=freeRoom(ux,Z0+4,12,26,5.6);R.F=f;
+    shell(R,{out:hexs(o.out),trim:hexs(o.trim),roof:hexs(o.roof),inCb:o.cb,inCt:o.ct,tile:o.tile,du:1.8,dh:3.2,wins:[[-10.5,-3],[3,10.5]],wy0:.8,wy1:3.8});
+    for(const u of[-6,0,6])for(let v=5;v<24;v+=6)lightPanel(R,u,v,3,1.2,[1,.98,.92]);
+    const sp=R.pt(0,-.3);bannerPlane(o.txt,o.bg,'#ffffff',sp.x+R.nx*.05,6.4,sp.z+R.nz*.05,14,1.9,R.nx,R.nz,'#fff');
+    o.fill(R);STYLE_ROOMS.push(R);
+    const pp=R.pt(0,19.5);POIS.push({id:o.focus,x:pp.x,z:pp.z,r:3.6,prompt:o.prompt,act:()=>openShop('style',o.focus),y:2.3,l:-1});
+    // comptoir
+    R.solid(-4,21.5,4,22.7,.15,1.1,hexs(o.trim),.85);R.box(R.I,-4.1,21.4,4.1,22.8,1.1,1.18,[.95,.95,.95]);
+    const cp=R.pt(0,23.6);mkActor(cp.x,.14,cp.z,R.yawOut,mkLook({shirt:hexs(o.out),pants:hexc(0x20222a),front:true,hair:hexc(0x3a2a1a)}),{pose:'idle',face:true,r:.5})};
+  shop(cx-13,{out:'#f2cbd8',trim:'#c2185b',roof:'#7a2050',cb:[.92,.8,.85],ct:[1,.94,.96],tile:[.96,.92,.94],txt:'COIFFEUR',bg:'#b01e6a',focus:'salon',prompt:'Coiffeur : changer de coupe et de couleur',fill:R=>{
+    for(let i=0;i<4;i++){const u=-9+i*6;
+      R.box(R.I,u-1.2,R.D-.62,u+1.2,R.D-.55,1.0,2.6,[.75,.85,.95]);                      // miroir
+      R.solid(u-1.4,R.D-1.4,u+1.4,R.D-.6,.15,.95,[.95,.95,.95]);                         // tablette
+      R.solid(u-.5,R.D-3.4,u+.5,R.D-2.4,.15,.55,[.15,.12,.14]);R.box(R.I,u-.5,R.D-2.5,u+.5,R.D-2.35,.55,1.3,[.15,.12,.14])} // fauteuil
+    for(const u of[-9,-6])R.solid(u-1,5,u+1,6.2,.15,.5,[.75,.2,.45]);R.solid(-10.5,4,-4.5,4.4,.15,.9,[.3,.3,.32]); // attente
+    R.solid(6,5,10,6,.15,1.0,[.95,.95,.95]);for(let i=0;i<5;i++)R.box(R.I,6.3+i*.75,5.3,6.6+i*.75,5.7,1.0,1.4,[[.9,.2,.5],[.2,.6,.9],[.95,.8,.2],[.3,.8,.4],[.6,.3,.8]][i])}}); // présentoir
+  shop(cx+13,{out:'#cbd8f2',trim:'#1e4fb0',roof:'#203a70',cb:[.8,.84,.92],ct:[.95,.97,1],tile:[.9,.92,.96],txt:'MODE FOLLE',bg:'#1e4fb0',focus:'mode',prompt:'Magasin de vêtements : changer de tenue',fill:R=>{
+    const CL=[[.85,.2,.2],[.2,.4,.85],[.95,.85,.3],[.2,.7,.4],[.15,.15,.18],[.95,.95,.95],[.6,.3,.8]];
+    for(const v of[6,11,16])for(const u of[-8,0]){R.solid(u-2.5,v-.15,u+2.5,v+.15,.15,1.7,[.7,.7,.72]);           // portant
+      for(let i=0;i<9;i++)R.box(R.I,u-2.3+i*.52,v-.4,u-1.95+i*.52,v+.4,.8,1.6,CL[(((i+v+u)|0)%7+7)%7])}
+    for(const[u,v]of[[7,5],[9.5,8],[7,11]]){R.circ(u,v,.4,1.9);const x=R.X(u,v),z=R.Z(u,v);                    // mannequins
+      R.F.addMesh(cylMB(.18,.18,1.1,8),sMat(x,.15,z,1,1,1),[.9,.88,.85]);R.F.addMesh(cylMB(.32,.26,.7,10),sMat(x,1.2,z,1,1,1),CL[((u+v)|0)%7]);R.F.addMesh(cylMB(.14,.14,.25,8),sMat(x,1.9,z,1,1,1),[.9,.88,.85])}
+    for(let i=0;i<3;i++){const u=-10.5+i*3;R.solid(u,R.D-4.5,u+.15,R.D-.5,.15,2.6,[.9,.9,.9]);R.box(R.I,u+.15,R.D-4.5,u+2.85,R.D-4.4,.3,2.4,[.55,.15,.25])} // cabines d'essayage
+    R.box(R.I,10.5,14,10.6,20,.6,3.4,[.75,.85,.95])}});                                                            // grand miroir
   tree(cx-14,Z1-12,1.1);tree(cx+14,Z1-12,1.1);tree(cx,Z1-20,1.2);bush(cx-30+4,Z1-8,1);bush(cx+22,Z1-8,1);
   lampPost(X0+3,Z0+3,1,1);lampPost(X1-3,Z0+3,-1,1);
   STYLEST.push({x:cx,z:Z0+8,bx,bz})};
@@ -1274,7 +1292,7 @@ GEN.gang=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c,hide=HIDEOUTS.includes(bx+','+bz);
 // banque, commerces, hôpital, police : voir buildStore / buildBank dans p2d_stores.js
 GEN.shops=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c;
   S.flat.mb(cx,cz).addMesh(cylMB(3.4,3.4,.6,12),sMat(cx,CURB,cz,1,1,1),[.8,.8,.78]);S.flat.mb(cx,cz).addMesh(cylMB(2.9,2.9,.62,12),sMat(cx,CURB,cz,1,1,1),[.22,.55,.78]);addCirc(cx,cz,3.4,.7);
-  for(const[dx,dz]of[[-9,-9],[9,9],[-9,9],[9,-9]]){bench(cx+dx,cz+dz,((dx+dz)&1)===0);tree(cx+dx*.5,cz+dz*1.3,wr(.8,1))}
+  for(const[dx,dz]of[[-9,-9],[9,9],[-9,9],[9,-9]]){bench(cx+dx*.7,cz+dz*.7,((dx+dz)&1)===0);tree(cx+dx*1.25,cz+dz*1.25,wr(.8,1))}
   const NF=['conv','jewel','pharma','electro'],FD=['pizza','burger','resto'],k0=bx*3+bz;
   const kinds=[FD[k0%3],NF[k0%4],FD[(k0+1)%3],NF[(k0+1)%4]];
   for(let s=0;s<4;s++)if(typeof buildStore==='function')buildStore(s,bx,bz,kinds[s]);
@@ -1359,7 +1377,7 @@ function buildInteriors(){
     const lp=R.pt(o.loot[0],o.loot[1]);POIS.push({id:'loot',x:lp.x,z:lp.z,r:1.8,prompt:'Fouiller (un peu d’argent ?)',act:()=>lootHere(),y:1.2,l:-1});
     return R};
   const W=[.45,.3,.18],Wd=[.3,.2,.12],B=[.12,.12,.14];
-  mk('appart',0,{hw:8,D:17,H:3.6,cb:[.78,.72,.62],ct:[.95,.9,.82],floor:[.55,.4,.28],loot:[6,15],fill:R=>{
+  mk('appart',0,{hw:10,D:21,H:3.9,cb:[.78,.72,.62],ct:[.95,.9,.82],floor:[.55,.4,.28],loot:[6,15],fill:R=>{
     R.flatQ(R.I,-6.5,3,-1,8,.17,[.6,.18,.2]);                       // tapis
     R.solid(-6.5,8,-1,9,.15,.85,[.25,.35,.6]);R.solid(-6.5,9,-1,9.6,.15,1.35,[.22,.3,.52]); // canapé
     R.solid(-5,2.2,-2.5,2.6,.15,.6,B);R.box(R.I,-5.2,2.3,-2.3,2.45,.6,1.9,[.05,.05,.07]);  // télé
@@ -1367,13 +1385,13 @@ function buildInteriors(){
     R.solid(-7.5,11,1,11.3,.15,R.H,[.85,.8,.72]);R.solid(3,11,7.5,11.3,.15,R.H,[.85,.8,.72]); // cloison chambre
     R.solid(2.5,13,7,16.5,.15,.55,[.9,.9,.95]);R.box(R.I,2.6,15.6,6.9,16.4,.55,.8,[1,1,1]); // lit
     R.solid(-7.5,12,-6.5,16.5,.15,1,[.8,.8,.82]);R.box(R.I,-7.5,12,-6.5,16.5,1,1.06,[.3,.3,.32])}}); // cuisine
-  mk('bureau',1,{hw:11,D:20,H:3.8,cb:[.7,.72,.76],ct:[.9,.92,.95],tile:[.85,.87,.9],loot:[-8,17],fill:R=>{
+  mk('bureau',1,{hw:13,D:23,H:4.2,cb:[.7,.72,.76],ct:[.9,.92,.95],tile:[.85,.87,.9],loot:[-8,17],fill:R=>{
     for(const u of[-7,-1.5,4])for(const v of[5,10,15]){R.solid(u,v,u+3,v+1.3,.15,.76,[.82,.8,.75]);R.box(R.I,u+.9,v+.2,u+2.1,v+.3,.76,1.4,[.08,.09,.12]);R.solid(u+1.2,v+1.6,u+1.8,v+2.2,.15,.5,[.15,.15,.18])}
     for(const[u,v]of[[-9.5,3],[9.5,3],[9.5,18]]){R.circ(u,v,.45,1.5);const x=R.X(u,v),z=R.Z(u,v);R.F.addMesh(cylMB(.35,.3,.6,8),sMat(x,.15,z,1,1,1),[.55,.35,.2]);R.F.addMesh(coneMB(.6,1.1,8),sMat(x,.75,z,1,1,1),[.2,.55,.25])}}});
-  mk('entrepot',2,{hw:14,D:24,H:7,cb:[.5,.48,.45],ct:[.62,.6,.56],floor:[.42,.42,.44],loot:[10,20],fill:R=>{
+  mk('entrepot',2,{hw:16,D:28,H:8,cb:[.5,.48,.45],ct:[.62,.6,.56],floor:[.42,.42,.44],loot:[10,20],fill:R=>{
     for(const v of[6,12,18]){R.solid(-12.5,v,-3,v+1.4,.15,4.2,[.3,.4,.6]);for(let u=-12;u<-3.5;u+=2.3)R.box(R.I,u,v-.05,u+1.8,v+1.45,1.5+(u&1)*1.4,2.6+(u&1)*1.4,[.65,.5,.3])}
     const r=mulb(77);for(let i=0;i<9;i++){const u=1+r()*10,v=4+r()*17,sz=.8+r()*.8;R.solid(u,v,u+sz,v+sz,.15,.15+sz,[.62+r()*.1,.47,.28])}}});
-  mk('luxe',3,{hw:12,D:20,H:4.4,cb:[.85,.82,.78],ct:[.98,.96,.92],tile:[.95,.95,.97],loot:[-10,18],fill:R=>{
+  mk('luxe',3,{hw:14,D:24,H:5,cb:[.85,.82,.78],ct:[.98,.96,.92],tile:[.95,.95,.97],loot:[-10,18],fill:R=>{
     R.solid(-10,14,-3,15.2,.15,1.1,[.15,.1,.08]);R.box(R.I,-10.1,13.9,-2.9,15.3,1.1,1.18,[.9,.85,.7]); // bar
     R.solid(3,6,9,7,.15,.8,[.95,.95,.95]);R.solid(3,7,9,7.6,.15,1.3,[.9,.9,.9]);R.solid(3,3,4,6,.15,.8,[.95,.95,.95]); // canapé d'angle
     R.solid(5,3.5,7.5,5,.15,.45,[.2,.2,.22]);                                                                // table basse
@@ -1439,7 +1457,7 @@ function eatAt(r){
   if(game.money<f.p){say(f.n+' : '+f.p+' $. Pas assez d’argent !',2.2);sfx('fail');return}
   const g=min(f.hp,100-P.hp);game.money-=f.p;P.hp=min(100,P.hp+f.hp);say(f.n+' : miam ! +'+Math.round(g)+' de vie (−'+f.p+' $)',2.8);sfx('cash')}
 function buildStore(side,bx,bz,kind){
-  const d=STORE_DEF[kind],R=new Room(side,bx,bz,8.6,13,4.4),I=R.I,hw=R.hw,D=R.D,t=R.t,H=R.H;
+  const d=STORE_DEF[kind],R=new Room(side,bx,bz,9.4,13.4,5.2),I=R.I,hw=R.hw,D=R.D,t=R.t,H=R.H;
   shell(R,{out:hexs(d.out),trim:hexs(d.trim),roof:hexs(d.roof),inCb:d.inCb,inCt:d.inCt,tile:d.tile,du:1.5,dh:3,wins:[[-7.4,-2.6],[2.6,7.4]],wy0:.9,wy1:3.3});
   // étagères en deux rangées
   for(const v0 of[4.2,7.4])for(const[u0,u1]of[[-6.4,-1.8],[1.8,6.4]])R.solid(u0,v0,u1,v0+1,.15,1.9,d.sh,.85);
