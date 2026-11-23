@@ -2478,11 +2478,11 @@ function stepCar(c,inp,dt){
   const tu=c===P.car&&!s.air?P.tune:null,fl=c.flat?.55:1,tE=(tu?1+.14*tu.eng:1)*fl,tV=(tu?1+.08*tu.eng:1)*fl,tB=tu?1+.18*tu.brk:1,tS=tu?1+.08*tu.brk:1;
   if(thr>0)a+=thr*s.acc*dmg*tE*clamp(1-max(vf,0)/(s.vmax*dmg*tV),0,1);
   if(brk>0){if(vf>1)a-=brk*s.brake*tB;else a-=brk*s.acc*.5*clamp(1-(-vf)/(s.vmax*.28),0,1)}
-  if(thr===0&&brk===0&&abs(vf)>.01)a-=Math.sign(vf)*min(abs(vf)/dt,1.4);
+  if(thr===0&&brk===0&&abs(vf)>.01)a-=Math.sign(vf)*min(abs(vf)/dt,inp.park?9:1.4); // frein à main serré quand la voiture est garée
   a-=vf*abs(vf)*.0008;
   vf+=a*dt;if(inp.hb)vf*=(1-.55*dt);
-  c.gk=inp.hb?.2:min(1,(c.gk===undefined?1:c.gk)+dt*1.4); // adhérence arrière : chute au frein à main, revient doucement
-  const grip=(abs(vf)>25?5.4:7)*(s.boat?.35:1)*c.gk*((c.slip||0)>3.2&&thr>.3&&!inp.hb&&!s.bike?.55:1);vl*=Math.exp(-grip*dt);
+  c.gk=inp.hb?.2:inp.sb?1:min(1,(c.gk===undefined?1:c.gk)+dt*1.4); // adhérence arrière : chute au frein à main, revient doucement
+  const grip=(abs(vf)>25?5.4:7)*(s.boat?.35:1)*(inp.sb?1.8:1)*c.gk*((c.slip||0)>3.2&&thr>.3&&!inp.hb&&!s.bike?.55:1);vl*=Math.exp(-grip*dt);
   c.slip=abs(vl);
   const spd=abs(vf),maxSt=s.steer*tS/(1+spd/24);
   let yr=vf*Math.tan((inp.steer||0)*maxSt)/s.wb;if(inp.hb)yr*=1.8;
@@ -3308,7 +3308,7 @@ function exitCar(emergency){
     if(!blocked||emergency){P.x=x;P.z=z;ok=true;break}}
   if(!ok){P.x=c.x+lx*(c.s.W/2+.9);P.z=c.z+lz*(c.s.W/2+.9)}
   P.y=groundH(P.x,P.z,c.y+.5);P.vx=c.vx*.5;P.vz=c.vz*.5;P.vy=emergency?3:0;P.ground=!emergency;P.yaw=c.yaw+PI/2;
-  c.mode=c.cop&&false?'ai':'idle';c.keep=!!c.owned;P.car=null;sfx('door');
+  c.mode=c.cop&&false?'ai':'idle';c.keep=!!c.owned;if(!emergency&&hyp(c.vx,c.vz)<6){c.vx*=.3;c.vz*=.3;c.vf=(c.vf||0)*.3}P.car=null;sfx('door');
   if(emergency){P.ragdoll=1.4}
   if(c.s.boat){if(land){P.x=land.x;P.z=land.z}else respawnAt(HOSP,0,true);P.y=groundH(P.x,P.z);P.vx=P.vz=0;P.ragdoll=0;P.ground=true;c.mode='parked';c.sleep=false}
   CAM.free=0}
@@ -3524,7 +3524,7 @@ function carShoot(dt){const c=P.car;if(!c||c.s.air)return;reloadStep(dt);P.shoot
 function playerDrive(dt){
   const c=P.car;P.enterT=max(0,P.enterT-dt);carShoot(dt);
   if(IN.use&&P.enterT<=0){IN.use=false;if(c.s.air&&((c.alt||0)>1.5||abs(c.vf||0)>9)){say('Pose l’avion et arrête-toi avant de descendre !',2.2)}else{exitCar(false);return}}IN.use=false;
-  const air=!!c.s.air,sb=!air&&!!KB.ShiftLeft,inp={thr:sb?0:max(0,IN.sy),brk:max(max(0,-IN.sy),sb?1:0),steer:IN.sx,hb:air?false:IN.hb}; // Maj gauche = frein en voiture
+  const air=!!c.s.air,sb=!air&&!!KB.ShiftLeft,inp={thr:sb?0:max(0,IN.sy),brk:max(max(0,-IN.sy),sb?1:0),steer:IN.sx,hb:air||sb?false:IN.hb,sb}; // Maj gauche = frein en voiture
   if(!air&&!c.s.boat){if(c.fuel===undefined)c.fuel=.45+Math.random()*.55;const sp=hyp(c.vx,c.vz),gs=atGas(c.x,c.z);
     if(gs&&sp<3&&c.fuel<1){if(game.money>=1){const add=min(1-c.fuel,dt*.14),cost=add*100*.5;c.fuel+=add;game.fcost=(game.fcost||0)+cost;if(game.fcost>=1){const pay=floor(game.fcost);game.money=max(0,game.money-pay);game.fcost-=pay}if(c.fuel>=.999){c.fuel=1;say('Plein fait !',1.8)}}else say('Pas assez d’argent pour l’essence',1.5)}
     else if(!game.mission){c.fuel=max(0,c.fuel-dt*(.0002+sp*.00003+inp.thr*.00015))}
@@ -3563,7 +3563,7 @@ function updateGame(dt){
     if(c.mode==='player'){inp=c.input||{thr:0,brk:0,steer:0,hb:false}}
     else if(c.mode==='ai'){inp=aiCar(c,dt)}
     else if(c.mode==='cop'){inp=(wantedLevel()>0||c.hunt)?copAI(c,dt):{thr:0,brk:.5,steer:0,hb:false}}
-    else if(c.mode==='idle'||c.mode==='parked'){if(c.sleep&&hyp(c.vx,c.vz)<.05&&abs(c.yawRate)<.01){continue}inp={thr:0,brk:.4,steer:0,hb:true}}
+    else if(c.mode==='idle'||c.mode==='parked'){if(c.sleep&&hyp(c.vx,c.vz)<.05&&abs(c.yawRate)<.01){continue}inp={thr:0,brk:0,steer:0,hb:false,park:true}}
     else if(c.mode==='burning'){inp={thr:0,brk:0,steer:0,hb:false}}
     else if(c.mode==='wreck'){inp={thr:0,brk:.2,steer:0,hb:false}}
     if(c.hitT>0)c.hitT-=dt;if(c.hornT>0)c.hornT-=dt;
@@ -5064,8 +5064,15 @@ function routeLine(g,pts,tx,tz,sx,sz,ox,oz,col,w){ // trace joueur -> noeuds -> 
   let q=pts.slice();
   while(q.length>=2&&((q[1].x-q[0].x)*(px-q[0].x)+(q[1].z-q[0].z)*(pz-q[0].z))>0)q.shift(); // on a déjà passé le 1er carrefour
   while(q.length>=2){const a=q[q.length-1],b=q[q.length-2];if((b.x-a.x)*(tx-a.x)+(b.z-a.z)*(tz-a.z)>0)q.pop();else break} // la cible est avant le dernier carrefour
+  // départ et arrivée accrochés à la route la plus proche, puis virages à angle droit
+  const road=v=>Math.round((v-HALF)/CELL)*CELL+HALF,inCity=(x,z)=>x>-5&&z>-5&&x<SIZE+5&&z<SIZE+5;
+  const snap=(x,z)=>{const rz=road(z),rx=road(x);return abs(z-rz)<=abs(x-rx)?{x,z:rz}:{x:rx,z}};
+  if(inCity(px,pz))all.push(snap(px,pz));
   for(const p of q)if(hyp(p.x-px,p.z-pz)>14)all.push(p);
+  const te=inCity(tx,tz)?snap(tx,tz):null;if(te)all.push(te);
   all.push({x:tx,z:tz});
+  for(let i=1;i<all.length;i++){const A=all[i-1],B=all[i];if(abs(A.x-B.x)<1.5||abs(A.z-B.z)<1.5)continue;if(i===1&&!inCity(px,pz))continue;if(i===all.length-1&&!te)continue;
+    const onH=abs(A.z-road(A.z))<HALF;all.splice(i,0,onH?{x:B.x,z:A.z}:{x:A.x,z:B.z});i++}
   g.save();g.lineJoin='round';g.lineCap='round';
   for(const[c,ww]of[['#000a',w+3],[col,w]]){g.strokeStyle=c;g.lineWidth=ww;g.beginPath();all.forEach((p,i)=>{const X=(p.x-ox)*sx,Z=(p.z-oz)*sz;i?g.lineTo(X,Z):g.moveTo(X,Z)});g.stroke()}
   g.restore()}
@@ -5331,6 +5338,9 @@ function drawBigMap(){
   for(const q of GUIDES)dot(q.x,q.z,rgb(q.c),13,MLET[q.l],false);
   for(const s of GASST)dot(s.x,s.z,'#f2a33a',11,'E',false);
   for(const s of STYLEST)dot(s.x,s.z,'#d26ad1',11,'C',false);
+  for(const s of robList()){const cl=s.cashier;if(!cl)continue;const d=s.R?s.R.pt(0,-2.5):{x:cl.x,z:cl.z},w=s.robT!==undefined&&game.t-s.robT<ROB_COOL;dot(d.x,d.z,w?'#777':'#ffc400',6.5,'$',w)}
+  if(wantedLevel()>0&&game.lastSeen){const fl=(performance.now()/400|0)%2,R=searchR(wantedLevel());g.save();g.beginPath();g.arc(game.lastSeen.x*k,game.lastSeen.z*k,R*k,0,TAU);g.fillStyle=game.seenT>1.5?(fl?'#ff333340':'#3366ff40'):'#ff333355';g.fill();g.lineWidth=3;g.strokeStyle=fl?'#ff4444':'#4477ff';g.stroke();
+    g.font='bold 13px Oswald,Impact,sans-serif';g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000';g.fillStyle='#fff';const ty=(game.lastSeen.z-R)*k-6;const tt=game.seenT>1.5?'ZONE DE RECHERCHE':'LA POLICE TE VOIT';g.strokeText(tt,game.lastSeen.x*k,ty);g.fillText(tt,game.lastSeen.x*k,ty);g.restore()}
   for(const r of RESTOS)dot(r.door.x,r.door.z,'#ff7a3d',10,'R',false);
   for(const t of TURFS){g.save();g.globalAlpha=.25;g.fillStyle=t.g.c;g.beginPath();g.arc(t.x*k,t.z*k,40*k,0,TAU);g.fill();g.restore();dot(t.x,t.z,t.g.c,8,'☠',false)}
   dot(HOSP.x,HOSP.z,'#e33',11,'+',false);dot(POLS.x,POLS.z,'#3a6ae0',11,'★',false);
@@ -5348,9 +5358,10 @@ function drawBigMap(){
   g.save();g.translate(P.x*k,P.z*k);g.rotate(PI-P.yaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=3;g.beginPath();g.moveTo(0,-14);g.lineTo(10,11);g.lineTo(0,6);g.lineTo(-10,11);g.closePath();g.fill();g.stroke();g.restore()}
 (function(){let h='';for(const k in CATS){const m=CATS[k],c=m.c;h+='<span><b style="background:rgb('+(c[0]*255|0)+','+(c[1]*255|0)+','+(c[2]*255|0)+')">'+MLET[m.l]+'</b>'+m.name+'</span>'}
   h+='<span><b style="background:#ffb703">A</b>Armurerie</span><span><b style="background:#4aa3ff">$</b>Concessionnaire</span><span><b style="background:#ff4dd6">N</b>Cabaret Le Néon</span><span><b style="background:#e33">+</b>Hôpital · <b style="background:#3a6ae0">★</b>Police</span>';
-  h+='<span><b style="background:#f2a33a">E</b>Station-service (essence)</span><span><b style="background:#d26ad1">C</b>Coiffeur &amp; mode</span><span><b style="background:#ff7a3d">R</b>Restaurant (vie +)</span><span><b style="background:#2aa198">T</b>Garage Turbo (pièces)</span><span><b style="background:#c0392b">☠</b>Territoire de gang</span>';
+  h+='<span><b style="background:#f2a33a">E</b>Station-service (essence)</span><span><b style="background:#d26ad1">C</b>Coiffeur &amp; mode</span><span><b style="background:#ff7a3d">R</b>Restaurant (vie +)</span><span><b style="background:#2aa198">T</b>Garage Turbo (pièces)</span><span><b style="background:#c0392b">☠</b>Territoire de gang</span><span><b style="background:#ffc400;color:#000">$</b>Commerce à braquer (gris = déjà braqué)</span>';
   h+='<span><b style="background:#ffd400;color:#000">◆</b>Ton point (touche un lieu)</span><span><b style="background:#fff;color:#000">D</b>Départ de mission · <b style="background:#2c2">★</b>Arrivée</span>';
   $('pleg').innerHTML=h})();
+setInterval(()=>{if(game.paused&&$('pause').style.display==='flex')drawBigMap()},400);
 function togglePause(forceOn){
   if(game.state==='title')return;
   const on=forceOn===true?true:!game.paused;if(on&&game.shopOpen)closeShop();game.paused=on;$('pause').style.display=on?'flex':'none';
