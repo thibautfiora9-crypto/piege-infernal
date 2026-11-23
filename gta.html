@@ -2151,7 +2151,7 @@ function driftUpdate(dt){const c=P.car;
     if(c.hp<D.hp-25){say('💥 Drift raté !',1.4);game.drift=null;return}D.hp=c.hp;D.s+=dt*abs(c.vf)*c.slip*.09;D.t=.8;D.show-=dt;if(D.show<=0){D.show=.25;say('DRIFT  '+Math.round(D.s)+' pts',.5)}return}
   const D=game.drift;if(!D)return;D.t-=dt;if(D.t>0)return;const pts=Math.round(D.s);game.drift=null;
   if(pts>=15){const m=min(600,Math.round(pts/3));game.money+=m;sfx('cash');bigMsg('Drift '+pts+' pts','<small>+'+m+' $</small>',1.8,'#ffb703')}}
-function airportUpdate(dt){indoorUpdate();turfUpdate(dt);driftUpdate(dt);gangAmbient(dt);eventsUpdate(dt);sprayUpdate();bizUpdate(dt);
+function airportUpdate(dt){indoorUpdate();callsUpdate(dt);turfUpdate(dt);driftUpdate(dt);gangAmbient(dt);eventsUpdate(dt);sprayUpdate();bizUpdate(dt);
   if((game.mpAlert||0)>0){game.mpAlert-=dt;if(wantedLevel()===0)game.mpAlert=0}
   const alarm=(game.mpAlert||0)>0;
   for(const p of peds)if(p.mp){p.hot=alarm&&p.state!=='dead'}
@@ -2763,6 +2763,7 @@ function pedLook(kind){const sk=pick(SKINS);
 function mkLook(o){return Object.assign({skin:pick(SKINS),shirt:hexc(0xdddddd),pants:hexc(0x222226),hair:pick(HAIRS),shoe:[.1,.1,.12],cap:null,sc:1},o)}
 const PLAYER_LOOK={style:1,short:false,skin:hexc(0xe0ac69),shirt:hexc(0xe8541e),pants:hexc(0x2a4d8f),hair:hexc(0x3b2a1e),shoe:[.92,.92,.92],cap:hexc(0xffc400),sc:1};
 // st : ph (phase), sp (vitesse 0..1.3), aim (0/1), punch (0..1), fall (0..1), jump (0/1), gun (0/1), flash
+const PHONEG=(()=>{const m=new MB();m.box(-.025,-.4,-.05,.025,-.27,.03,[1,1,1],{ao:1});return toG(m)})();
 function addChar(x,y,z,yaw,st,L){
   const hi=(x-CAM.x)*(x-CAM.x)+(z-CAM.z)*(z-CAM.z)<900,G=hi?CGEOH:CGEO;
   const f=st.fall||0,jg=L.jog?1.5:1;let sw=Math.sin(st.ph)*.62*st.sp*jg,bob=Math.abs(Math.cos(st.ph))*.045*st.sp*jg;const k=L.sc||1,dn=st.dance||0;
@@ -2791,6 +2792,7 @@ function addChar(x,y,z,yaw,st,L){
   let aL=-sw*1.15,aR=sw*1.15,lL=sw,lR=-sw;
   if(jump){lL=-.7;lR=.25;aL=-2.3;aR=-2.3}
   const gw=st.gun===true?1:(st.gun|0);
+  if(st.phone&&!st.aim){aR=-2.55}
   if(kn){lL=lR=-.08;if(!st.aim){aL=-.55+Math.sin(st.ph*3)*.05;aR=-.6}}
   if(st.aim){const ap=st.ap||0;aR=-1.5-ap;aL=(gw>=3?-1.45:-1.28)-ap}
   if(st.punch>0){aR=-1.7*Math.sin(st.punch*PI);aL=.5*Math.sin(st.punch*PI)}
@@ -2808,7 +2810,7 @@ function addChar(x,y,z,yaw,st,L){
     dmAdd(G.leg,_Pm,pa[0],pa[1],pa[2]);dmAdd(G.shoe,_Pm,L.shoe[0],L.shoe[1],L.shoe[2])}
   // bras + mains (+ arme dans la main droite = x négatif)
   for(const s of[1,-1]){const a=s>0?aL:aR;mpart(_Pm,_B,(hi?.238:.295)*s,hi?1.41:1.44,0,a);
-    if(hi){const hold=(s<0&&gw)||st.aim||st.punch>0||st.pose||dn||st.jump,bend=hold?0:-(.15+.75*clamp(st.sp||0,0,1.3)),fc=L.short?sk:sh;dmAdd(G.armU,_Pm,sh[0],sh[1],sh[2]);mpart(_Pm2,_Pm,0,-.3,0,bend);dmAdd(G.armF,_Pm2,fc[0],fc[1],fc[2]);dmAdd(G.handR,_Pm2,sk[0],sk[1],sk[2])}
+    if(hi){const hold=(s<0&&gw)||st.aim||st.punch>0||st.pose||dn||st.jump,bend=(st.phone&&s<0)?-2.35:hold?0:-(.15+.75*clamp(st.sp||0,0,1.3)),fc=L.short?sk:sh;dmAdd(G.armU,_Pm,sh[0],sh[1],sh[2]);mpart(_Pm2,_Pm,0,-.3,0,bend);dmAdd(G.armF,_Pm2,fc[0],fc[1],fc[2]);dmAdd(G.handR,_Pm2,sk[0],sk[1],sk[2]);if(st.phone&&s<0)dmAdd(PHONEG,_Pm2,.05,.05,.07)}
     else{dmAdd(G.arm,_Pm,sh[0],sh[1],sh[2]);dmAdd(G.hand,_Pm,sk[0],sk[1],sk[2])}
     if(s<0&&gw){const gm=GUNM[gw]||GUNM[1];for(const[nm,c]of gm)dmAdd(CGEO[nm],_Pm,c[0],c[1],c[2])}}}
 
@@ -2925,6 +2927,7 @@ function provoke(p){
   game.fights=(game.fights||0)+1}
 function scarePeds(x,z,r){for(const q of peds){if(q.kind!=='ped'||q.fight||q.state==='dead'||q.state==='ko')continue;if(hyp(q.x-x,q.z-z)<r&&q.state!=='flee'){q.state='flee';q.fleeT=rnd(4,8);q.fleeFrom=[x,z]}}}
 function updatePed(p,dt){
+  if(p.calling&&p.state!=='dead'&&p.state!=='ko'){p.vx=p.vz=0;p.sp=lerp(p.sp,0,min(1,dt*8));p.yaw+=angd(p.yaw,atan2(P.x-p.x,P.z-p.z)+PI*.65)*min(1,dt*3);p.y=lerp(p.y,groundH(p.x,p.z),min(1,dt*10));return}
   if(p.crip&&p.state!=='dead'&&p.state!=='ko'&&p.ground){const x0=p.x,z0=p.z;updatePed0(p,dt);p.x=x0+(p.x-x0)*.12;p.z=z0+(p.z-z0)*.12;p.sp*=.3;p.fall=0;p.kneel=1;return}
   updatePed0(p,dt)}
 function updatePed0(p,dt){
@@ -3077,7 +3080,7 @@ let gunSound=()=>{};
 function drawPeds(){
   DM.n=0;
   for(const p of peds){if(!farOK(p.x,p.y+1,p.z,1.4,230)||!visSphere(p.x,p.y+1,p.z,1.4))continue;
-    const sc=p.look.sc||1;addChar(p.x,p.y,p.z,p.yaw,{kneel:(p.crip&&p.state!=='dead'&&p.state!=='ko')?1:0,ph:p.ph,sp:p.sp,fall:p.fall,aim:p.aim,gun:p.gun?(p.gunK||1):0,flash:p.flash>0?p.flash*2:0,punch:p.pk>0?1-p.pk/.28:0},p.look);
+    const sc=p.look.sc||1;addChar(p.x,p.y,p.z,p.yaw,{phone:p.calling?1:0,kneel:(p.crip&&p.state!=='dead'&&p.state!=='ko')?1:0,ph:p.ph,sp:p.sp,fall:p.fall,aim:p.aim,gun:p.gun?(p.gunK||1):0,flash:p.flash>0?p.flash*2:0,punch:p.pk>0?1-p.pk/.28:0},p.look);
     bShadow.flat(p.x,p.y+.05,p.z,.5,.5,0,[0,0,0,p.state==='dead'?.25:.4])}
   if(!P.car&&!P.hidden){addChar(P.x,P.y,P.z,P.yaw,{ph:P.ph,sp:P.sp,fall:P.fallT,aim:P.aim>.5?1:0,ap:P.aim>.5?clamp(CAM.aimP||0,-.8,.9):0,gun:(P.wpn>0&&!P.punchT)?P.wpn:0,punch:P.punchT>0?1-P.punchT/.28:0,jump:!P.ground&&P.vy!==0&&!P.ragdoll,flash:P.hitFlash>0?P.hitFlash*.8:0},P.look);
     bShadow.flat(P.x,P.y+.05,P.z,.55,.55,0,[0,0,0,.45])}
@@ -3135,13 +3138,27 @@ let say=()=>{},bigMsg=()=>{};
 function crimeWitness(x,z){
   for(const c of cars)if(copUnit(c)&&hyp(c.x-x,c.z-z)<110&&losClear(c.x,c.z,x,z))return'cop';
   for(const p of peds)if(p.kind==='cop'&&p.state!=='dead'&&hyp(p.x-x,p.z-z)<90&&losClear(p.x,p.z,x,z))return'cop';
-  for(const p of peds){if(p.kind!=='ped'||p.state==='dead'||p.state==='ko')continue;const d=hyp(p.x-x,p.z-z);if(d<38&&losClear(p.x,p.z,x,z))return'civ'}
+  let best=null,bd=1e9;for(const p of peds){if(p.kind!=='ped'||p.state==='dead'||p.state==='ko'||p.thief)continue;const d=hyp(p.x-x,p.z-z)-(p.calling?20:0);if(d<38&&d<bd&&losClear(p.x,p.z,x,z)){bd=d;best=p}}
+  if(best){CW_PED=best;return'civ'}
   return null}
+// ---------- appels des témoins : le passant sort son téléphone, si on l'élimine avant la fin, pas de police ----------
+let CW_PED=null;const CALLS=[];
+function queueCall(p,r){if(!p)return;r.plate=r.plate===undefined?(P.car&&!P.car.cop&&!P.car.s.air?P.car.plate:null):r.plate;
+  if(p.calling){const c=p.calling;c.a=max(c.a||0,r.a||0);c.set=max(c.set||0,r.set||0);c.cap=max(c.cap||2,r.cap||2);if(r.plate)c.plate=r.plate;return}
+  p.calling=Object.assign({t:0,dur:rnd(4.5,6.5)},r);CALLS.push(p);
+  if(!game.callMsgT||game.t-game.callMsgT>4){game.callMsgT=game.t;say('📱 Un témoin sort son téléphone pour appeler la police… arrête-le ou fuis !',3.2);sfx('fail')}}
+function callsUpdate(dt){for(let i=CALLS.length-1;i>=0;i--){const p=CALLS[i],c=p.calling;
+    if(!c||!peds.includes(p)||p.state==='dead'||p.state==='ko'){CALLS.splice(i,1);if(c&&peds.includes(p)){p.calling=null;say('🤫 Le témoin n’a pas pu appeler la police',2.2)}else if(c)say('🤫 Le témoin n’a pas pu appeler la police',2.2);continue}
+    c.t+=dt;if(c.t<c.dur)continue;CALLS.splice(i,1);p.calling=null;p.state='flee';p.fleeT=rnd(6,10);p.fleeFrom=[P.x,P.z];
+    game.lastSeen={x:c.x,z:c.z};game.noFlag=true;if(c.set)setWanted(c.set);if(c.a)onCrime(c.a,c.x,c.z,true,c.cap);game.noFlag=false;
+    if(c.plate)HOT.add(c.plate);say('📞 Le témoin a prévenu la police !'+(c.plate?' Ta plaque '+c.plate+' est signalée.':''),3)}
+  if(CALLS.length){const p=CALLS.reduce((a,b)=>hyp(a.x-P.x,a.z-P.z)<hyp(b.x-P.x,b.z-P.z)?a:b),left=Math.ceil(p.calling.dur-p.calling.t);if(left!==game.callShown){game.callShown=left;say('📱 Appel à la police dans '+left+' s… (point jaune)',1.1)}}else game.callShown=-1}
 onCrime=function(a,x,z,sure,cap){
   cap=cap||2;
-  const wit=sure?'cop':crimeWitness(x,z);let seen=wit==='cop';if(wit){game.lastSeen={x,z};if(game.wanted<1)game.seenT=0;if(P.car&&!P.car.cop)flagPlate(P.car)}
+  const wit=sure?'cop':crimeWitness(x,z);
+  if(wit==='civ'){queueCall(CW_PED,{a,x,z,cap});return}
+  let seen=wit==='cop';if(wit){game.lastSeen={x,z};if(game.wanted<1)game.seenT=0;if(P.car&&!P.car.cop&&!game.noFlag)flagPlate(P.car)}
   if(!wit){if(game.wanted<1&&(!game.noWitT||game.t-game.noWitT>8)){game.noWitT=game.t;say('Personne ne t’a vu… 🤫',1.6)}return}
-  if(wit==='civ'&&game.wanted<1&&(!game.civT||game.t-game.civT>6)){game.civT=game.t;say('Un témoin appelle la police !',2.2)}
   const ck=game.copKills||0,gate=ck>=8?5:ck>=4?4:ck>=1?3:2;cap=min(cap,gate);
   const w=game.wanted;if(seen&&w>0)game.seenT=0;
   if(w>=cap)return;
@@ -3389,7 +3406,9 @@ function robStep(dt){const R=game.rob,s=R.s,cl=s.cashier;R.t+=dt;const t=R.t;
     if(((t*3)|0)!==((t*3-dt*3)|0))sfx('cash')}
   if(t>3.2&&!R.paid){R.paid=true;cl.pose='give';const loot=s.cash+rint(50,250);game.money+=loot;s.robT=game.t;
     const wit=crimeWitness(cl.x,cl.z);
-    if(wit){setWanted(['jewel','bank','gun'].includes(s.kind)?3:2);bigMsg('Braquage réussi','<small>+'+loot+' $ — '+(wit==='cop'?'un policier t’a vu':'un témoin a appelé la police')+' : fuis !</small>',3.4,'#fb5')}
+    const st=['jewel','bank','gun'].includes(s.kind)?3:2;
+    if(wit==='cop'){setWanted(st);bigMsg('Braquage réussi','<small>+'+loot+' $ — un policier t’a vu : fuis !</small>',3.4,'#fb5')}
+    else if(wit==='civ'){queueCall(CW_PED,{set:st,x:cl.x,z:cl.z,plate:null});bigMsg('Braquage réussi','<small>+'+loot+' $ — un témoin appelle la police : arrête-le ou fuis !</small>',3.4,'#fb5')}
     else bigMsg('Braquage réussi','<small>+'+loot+' $ — personne ne t’a vu 🤫</small>',3.4,'#8f5')}
   if(t>3.8){cl.pose='hands';setTimeout(()=>{if(cl.pose==='hands')cl.pose='idle'},5000);game.rob=null}}
 function playerPunch(dt){
@@ -5185,6 +5204,7 @@ function drawRadar(){
   for(const s of GASST)blip(s.x,s.z,'#f2a33a',5,false);
   for(const s of STYLEST)blip(s.x,s.z,'#d26ad1',5,false);
   if(wantedLevel()>0&&game.lastSeen&&game.seenT>1.5){const L=wantedLevel(),fl=(performance.now()/400|0)%2;g.save();g.beginPath();g.arc((game.lastSeen.x-P.x)*k,(game.lastSeen.z-P.z)*k,searchR(L)*k,0,TAU);g.fillStyle=fl?'#ff333333':'#3366ff33';g.fill();g.strokeStyle=fl?'#ff4444aa':'#4477ffaa';g.lineWidth=2;g.stroke();g.restore()}
+  for(const p of CALLS)blip(p.x,p.z,(performance.now()/250|0)%2?'#ffd400':'#ff8800',6,true);
   if(game.ev&&game.ev.type==='thief')blip(game.ev.p.x,game.ev.p.z,'#ff2222',6,true);
   if(game.ev&&game.ev.type==='van')blip(game.ev.c.x,game.ev.c.z,'#22dd44',7,true);
   for(const r of RESTOS)blip(r.door.x,r.door.z,'#ff7a3d',4.5,false);
