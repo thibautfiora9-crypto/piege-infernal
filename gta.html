@@ -326,7 +326,7 @@ a.lnk{color:#ffb703;text-decoration:none;font-size:16px}
 #mpTags i{display:block;font-style:normal;background:#fff;color:#111;border-radius:10px;padding:2px 9px;margin-bottom:2px;text-shadow:none;font-weight:700}
 #qchat{position:fixed;right:70px;top:calc(60px + env(safe-area-inset-top));z-index:9;display:none;flex-direction:column;gap:6px}
 #qchat button{background:#0b0a1ee8;color:#fff;border:2px solid #ffb703;border-radius:8px;padding:8px 14px;font:600 15px system-ui,sans-serif;text-align:left;cursor:pointer}
-body.mp #bChat{display:flex}#bLock{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(276px + env(safe-area-inset-top))}body.mp.incar #bLock{display:flex}#bRob{display:none;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));width:96px;height:96px;font-size:34px;background:#2a7a2acc;border-color:#fff}body.canrob #bRob{display:flex}#bVig{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(330px + env(safe-area-inset-top))}body.incop #bVig{display:flex}#bChat{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(222px + env(safe-area-inset-top))}
+body.mp #bChat{display:flex}#bLock{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(276px + env(safe-area-inset-top))}body.mp.incar #bLock{display:flex}#bRob{display:none;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));width:96px;height:96px;font-size:34px;background:#2a7a2acc;border-color:#fff}body.canrob #bRob{display:flex}#bG{display:none;right:calc(130px + env(safe-area-inset-right));bottom:calc(122px + env(safe-area-inset-bottom));width:70px;height:70px;font-size:26px}body.incar #bG{display:flex}body.inair #bG{display:none!important}#bVig{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(330px + env(safe-area-inset-top))}body.incop #bVig{display:flex}#bChat{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(222px + env(safe-area-inset-top))}
 body.mp #mpHud{display:block}
 #cine{position:fixed;inset:0;z-index:40;display:none;pointer-events:none;font-family:Inter,system-ui,sans-serif}
 .cbar{position:absolute;left:0;right:0;height:11vh;background:#000}.cbar.t{top:0}.cbar.b{bottom:0}
@@ -351,13 +351,13 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
 <div id="touch">
  <div id="stick"><div id="knob"></div></div>
  <div class="bt act" id="bA">🔫</div><div class="bt" id="bB">⤴</div><div class="bt" id="bC">🚗</div><div class="bt" id="bD">🏃</div><div class="bt" id="bE">🔫</div><div class="bt" id="bF">🎯<small>VISER</small></div>
- <div class="tb" id="bPause">⏸</div><div class="tb" id="bView">📷</div><div class="tb" id="bRadio">📻</div><div class="tb" id="bPhone">📱</div><div class="tb" id="bChat">💬</div><div class="tb" id="bLock">🔒</div><div class="bt" id="bRob">💰<small>BRAQUER</small></div><div class="tb" id="bVig">🚨</div>
+ <div class="tb" id="bPause">⏸</div><div class="tb" id="bView">📷</div><div class="tb" id="bRadio">📻</div><div class="tb" id="bPhone">📱</div><div class="tb" id="bChat">💬</div><div class="tb" id="bLock">🔒</div><div class="bt" id="bRob">💰<small>BRAQUER</small></div><div class="tb" id="bVig">🚨</div><div class="bt" id="bG">🔫<small>TIRER</small></div>
 </div>
 <div class="ov" id="title">
  <h1>VILLE<br><span>FOLLE</span></h1>
  <p>Une ville ouverte en 3D : vole des voitures, fais des missions, évite la police… ou affronte-la !</p>
  <p class="help"><b>Tablette</b> : joystick à gauche · glisse à droite pour tourner la caméra · boutons à droite<br>
- <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>B</kbd> braquer un commerce · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
+ <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>Entrée</kbd> en voiture : tirer par la fenêtre · <kbd>B</kbd> braquer un commerce · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
  <div><button class="btn g" id="profBtn">Compte / Profil</button> <button class="btn g" id="gfxBtn2">Graphismes</button></div>
@@ -840,7 +840,17 @@ function circHit(it,px,pz,r){
   return true}
 function inBlockCoord(v){if(v<0||v>=SIZE)return false;const m=v%CELL;return m>=ROAD}
 const INTZ={x0:-1700,x1:-1250,z0:520,z1:640};
-function groundH(x,z){if(x>INTZ.x0&&x<INTZ.x1&&z>INTZ.z0&&z<INTZ.z1)return CURB;if(x<0||z<0||x>=SIZE||z>=SIZE)return outerH(x,z);return(inBlockCoord(x)&&inBlockCoord(z))?CURB:0}
+// viaducs : rampe montante dans le segment a, tablier au-dessus des carrefours, rampe descendante dans le segment b
+const DECKS=[{c:9*CELL+HALF,a:3,b:12,H:7.5,hw:6.2},{c:3*CELL+HALF,a:4,b:10,H:6.6,hw:6.2}];
+for(const D of DECKS){D.r0=D.a*CELL+ROAD+2;D.r1=(D.a+1)*CELL-2;D.r2=D.b*CELL+ROAD+2;D.r3=(D.b+1)*CELL-2}
+function deckH(x,z){for(const D of DECKS){if(abs(x-D.c)>D.hw||z<D.r0||z>D.r3)continue;
+    if(z<D.r1){const t=(z-D.r0)/(D.r1-D.r0);return D.H*t*t*(3-2*t)}if(z<=D.r2)return D.H;const t=(z-D.r2)/(D.r3-D.r2);const u=1-t;return D.H*u*u*(3-2*u)}return-1}
+const BUMPS=[];
+function bumpH(x,z){for(const b of BUMPS){if(x<b.x0||x>b.x1||z<b.z0||z>b.z1)continue;const d=b.ax?(x-(b.x0+b.x1)/2):(z-(b.z0+b.z1)/2),c=cos(clamp(d/1.6,-1,1)*PI/2);return .17*c*c}return 0}
+function groundH(x,z,y){if(x>INTZ.x0&&x<INTZ.x1&&z>INTZ.z0&&z<INTZ.z1)return CURB;if(x<0||z<0||x>=SIZE||z>=SIZE)return outerH(x,z);
+  const base=(inBlockCoord(x)&&inBlockCoord(z))?CURB:bumpH(x,z);
+  if(y!==undefined){const d=deckH(x,z);if(d>0&&y>d-2.2)return max(base,d)}
+  return base}
 // point (3D) dans un obstacle ? (pour caméra / balles)
 function solidPoint(x,y,z){const a=queryNear(x,z,.1);for(const it of a){if(it.circ||it.water)continue;if(x>it.x0&&x<it.x1&&z>it.z0&&z<it.z1&&y<it.h)return it}return null}
 
@@ -1775,8 +1785,32 @@ function worldGenSteps(){
   for(let bz=0;bz<NB;bz++)st.push(()=>{for(let bx=0;bx<NB;bx++)blockGen(bx,bz)});
   st.push(outerGen);
   return st}
+function buildDecks(){const conc=[.7,.7,.68],dk=[.5,.5,.5];
+  for(const D of DECKS){const c=D.c,hw=D.hw,x0=c-hw,x1=c+hw,G=S.ground,F=S.flat;
+    const surf=(za,zb,n)=>{for(let i=0;i<n;i++){const z0=za+(zb-za)*i/n,z1=za+(zb-za)*(i+1)/n,h0=deckH(c,z0+.001),h1=deckH(c,z1-.001);
+        G.mb(c,(z0+z1)/2).quad([x0,h0+.02,z0],[x1,h0+.02,z0],[x1,h1+.02,z1],[x0,h1+.02,z1],[0,1,0],[1,1,1],[1,1,1],[[x0/14,z0/14],[x1/14,z0/14],[x1/14,z1/14],[x0/14,z1/14]]);
+        for(const sx of[-1,1]){const x=c+sx*hw;F.mb(c,(z0+z1)/2).qd([x,0,z0],[x,0,z1],[x,h1+.02,z1],[x,h0+.02,z0],conc,[c,h0/2,(z0+z1)/2]);
+          F.mb(c,(z0+z1)/2).box(x-.18,h0,z0,x+.18,h0+.9,z1,conc,{ao:.95})}}};               // muret
+    surf(D.r0,D.r1,14);surf(D.r2,D.r3,14);
+    // tablier
+    for(let z=D.r1;z<D.r2;z+=40){const z1=min(D.r2,z+40);G.mb(c,(z+z1)/2).topUV(x0,z,x1,z1,D.H+.02,[1,1,1],x0/14,z/14,x1/14,z1/14);
+      F.mb(c,(z+z1)/2).box(x0-.3,D.H-.75,z,x1+.3,D.H,z1,conc,{ao:.8,bottom:true});
+      for(const sx of[-1,1])F.mb(c,(z+z1)/2).box(c+sx*hw-.2,D.H,z,c+sx*hw+.2,D.H+1.0,z1,conc,{ao:.95})}
+    // marquage central
+    for(let z=D.r0+2;z<D.r3-2;z+=7){const h=deckH(c,z)+.04;if(h<.1)continue;S.marks.mb(c,z).box(c-.08,h,z,c+.08,h+.01,z+3.5,[.95,.95,.95],{ao:1})}
+    // piliers (sur les bas-côtés, jamais au milieu d'un carrefour)
+    for(let z=D.r1+6;z<D.r2-3;z+=16){if(((z%CELL)+CELL)%CELL<ROAD+3)continue;for(const sx of[-1,1]){const x=c+sx*(hw+1.8);F.mb(x,z).box(x-.55,0,z-.55,x+.55,D.H-.7,z+.55,dk,{ao:.85});addAABB(x-.55,z-.55,x+.55,z+.55,D.H-.75)}}}}
+function buildBumps(){const R=mulb(1717);
+  for(let i=0;i<40&&BUMPS.length<14;i++){const ax=R()<.5,k=1+((R()*(NB-2))|0),s=1+((R()*(NB-3))|0);
+    // segment de route : entre les carrefours s et s+1, sur la ligne k
+    const c=k*CELL+HALF,m=s*CELL+ROAD+BLOCK/2,x=ax?m:c,z=ax?c:m;if(deckH(x,z)>=0||abs(x-9*CELL-HALF)<8||abs(x-3*CELL-HALF)<8)continue;
+    const bx=floor(x/CELL),bz=floor(z/CELL),zn=zoneOf(clamp(bx,0,NB-1),clamp(bz,0,NB-1));if(zn==='water')continue;if(!(ax?segOK(s,k,s+1,k):segOK(k,s,k,s+1)))continue;
+    const b=ax?{ax:1,x0:x-1.6,x1:x+1.6,z0:z-HALF+.5,z1:z+HALF-.5}:{ax:0,x0:x-HALF+.5,x1:x+HALF-.5,z0:z-1.6,z1:z+1.6};BUMPS.push(b);
+    const n=8,F=S.flat.mb(x,z);for(let j=0;j<n;j++){const t0=j/n,t1=(j+1)/n,col=(j%2)?[.95,.8,.1]:[.12,.12,.12];
+      if(ax){const za=b.z0+(b.z1-b.z0)*t0,zb=b.z0+(b.z1-b.z0)*t1;for(let q=0;q<6;q++){const u0=-1.6+3.2*q/6,u1=-1.6+3.2*(q+1)/6;F.quad([x+u0,bumpH(x+u0,z)+.01,za],[x+u1,bumpH(x+u1,z)+.01,za],[x+u1,bumpH(x+u1,z)+.01,zb],[x+u0,bumpH(x+u0,z)+.01,zb],[0,1,0],col,col)}}
+      else{const xa=b.x0+(b.x1-b.x0)*t0,xb=b.x0+(b.x1-b.x0)*t1;for(let q=0;q<6;q++){const u0=-1.6+3.2*q/6,u1=-1.6+3.2*(q+1)/6;F.quad([xa,bumpH(x,z+u1)+.01,z+u1],[xb,bumpH(x,z+u1)+.01,z+u1],[xb,bumpH(x,z+u0)+.01,z+u0],[xa,bumpH(x,z+u0)+.01,z+u0],[0,1,0],col,col)}}}}}
 function worldGenFinish(){
-  roadsGen();buildInteriors();
+  roadsGen();buildInteriors();buildDecks();buildBumps();
   {const EE=SIZE+2000,ES=SIZE+2000,EN=-1900; // bout du monde (loin) ; à l'ouest, la mer après la plage
     addAABB(-132,EN-60,-72,ES+60,50).water=true;addAABB(-132,EN-60,EE+60,EN,50);
     addAABB(EE,EN-60,EE+60,ES+60,50);addAABB(-132,ES,EE+60,ES+60,50)}
@@ -2320,6 +2354,8 @@ function carGeo(type){
     const h=by1-by0,rc=Math.min(.16,h*.32);
     loftZ(Pm,[[-hl,hw*.9,by0+.06,by1-h*.22,rc*.8,.05],[-hl+.1,hw*.97,by0+.01,by1-h*.06,rc,.06],[-hl+.42,hw,by0,by1,rc,.06],[hl-.62,hw,by0,by1-h*.02,rc,.06],[hl-.25,hw*.985,by0+.01,by1-h*.13,rc,.06],[hl-.06,hw*.94,by0+.04,by1-h*.28,rc*.8,.05],[hl,hw*.88,by0+.08,by1-h*.4,rc*.6,.04]],wh,{k:3});
     for(const sx of[-1,1])D.box(sx*(hw+.003)-.006,by0+h*.35,-hl*.55,sx*(hw+.003)+.006,by0+h*.37,hl*.55,[.07,.07,.08],{ao:1}); // ligne de caisse
+    for(const sz of[-1,1])D.box(-.24,by0+.1,sz*(hl+.11)-.012,.24,by0+.22,sz*(hl+.11)+.012,[.96,.96,.92],{ao:1}); // plaques
+    for(const sx of[-1,1])for(const zz of[.25,-.75])D.box(sx*(hw+.005)-.012,by1-.22,zz-.09,sx*(hw+.005)+.012,by1-.18,zz+.09,[.55,.56,.6],{ao:1}); // poignées
     D.box(-hw+.08,.16,-hl+.25,hw-.08,by0+.06,hl-.25,dark,{ao:1});
     D.box(-hw-.02,by0-.1,hl-.08,hw+.02,by0+.12,hl+.1,bump,{ao:1});D.box(-hw-.02,by0-.1,-hl-.1,hw+.02,by0+.12,-hl+.08,bump,{ao:1});
     {const h=by1-by0,yl=by1-h*.4,const_=0;const hl2=hl-.02,g=ellG([[-(hw-.3),yl,hl2-.02,.2,.075,.06],[hw-.3,yl,hl2-.02,.2,.075,.06]],6,12),t=ellG([[-(hw-.26),by1-h*.3,-hl+.04,.22,.07,.05],[hw-.26,by1-h*.3,-hl+.04,.22,.07,.05]],6,12);
@@ -2441,8 +2477,9 @@ function stepCar(c,inp,dt){
   c.vx=fx*vf+rx*vl;c.vz=fz*vf+rz*vl;c.vf=vf;
   c.yaw-=c.yawRate*dt;
   c.x+=c.vx*dt;c.z+=c.vz*dt;
-  c.y=lerp(c.y,groundH(c.x,c.z),min(1,dt*10));
-  c.roll=lerp(c.roll,s.bike?clamp(c.yawRate*vf*.022,-.5,.5):clamp(c.yawRate*vf*.012,-.09,.09),min(1,dt*6));c.pitch=lerp(c.pitch,clamp(-a*.004,-.05,.05),min(1,dt*6));
+  c.y=lerp(c.y,groundH(c.x,c.z,c.y),min(1,dt*10));
+  {const ox=sin(c.yaw)*s.L*.42,oz=cos(c.yaw)*s.L*.42,hf=groundH(c.x+ox,c.z+oz,c.y+.6),hb=groundH(c.x-ox,c.z-oz,c.y+.6);c.slope=Math.atan2(hf-hb,s.L*.84)}
+  c.roll=lerp(c.roll,s.bike?clamp(c.yawRate*vf*.022,-.5,.5):clamp(c.yawRate*vf*.012,-.09,.09),min(1,dt*6));c.pitch=lerp(c.pitch,clamp(-a*.004,-.05,.05)-(c.slope||0),min(1,dt*8));
   if(abs(vf)>6&&c.slip>(inp.hb?2.2:3.4)&&!s.bike){fxDust(c.x-fx*1.3-rx*.8,.2,c.z-fz*1.3-rz*.8,1,[.85,.85,.88]);fxDust(c.x-fx*1.3+rx*.8,.2,c.z-fz*1.3+rz*.8,1,[.85,.85,.88])}}
 function stepPlane(c,inp,dt){
   const s=c.s,fx=sin(c.yaw),fz=cos(c.yaw),pl=c.mode==='player';let vf=c.vf||0,vy=c.vy||0;
@@ -2481,7 +2518,7 @@ function circlesOf(c,out){const o=c.s.L*.28,fx=sin(c.yaw),fz=cos(c.yaw);out[0]=c
 function collideStatic(c,dt){
   const r=c.s.W*.52;circlesOf(c,_cc);
   for(let k=0;k<3;k++){let px=_cc[k*2],pz=_cc[k*2+1];const items=queryNear(px,pz,r+1);
-    for(let i=0;i<items.length;i++){const it=items[i];if(c.s.air&&c.y-groundH(px,pz)>(it.h||0)+1.5)continue;if(!circHit(it,px,pz,r))continue;
+    for(let i=0;i<items.length;i++){const it=items[i];if(c.s.air&&c.y-groundH(px,pz)>(it.h||0)+1.5)continue;if(!c.s.air&&c.y>(it.h||0)+.4)continue;if(!circHit(it,px,pz,r))continue;
       const nx=HIT.nx,nz=HIT.nz,pen=HIT.pen;c.x+=nx*pen;c.z+=nz*pen;px+=nx*pen;pz+=nz*pen;_cc[k*2]=px;_cc[k*2+1]=pz;
       const vn=c.vx*nx+c.vz*nz;
       if(vn<0){const imp=-vn;c.vx+=nx*imp*1.25;c.vz+=nz*imp*1.25;
@@ -2533,7 +2570,7 @@ function aiCar(c,dt){
       const opts=[],ok=(x,z)=>segOK(ix,iz,x,z);
       if(ok(ix+DX[d],iz+DZ[d])){opts.push([0,d],[0,d],[0,d])}
       const rdir=(d+1)%4,ldir=(d+3)%4;if(ok(ix+DX[rdir],iz+DZ[rdir]))opts.push([1,rdir],[1,rdir]);if(ok(ix+DX[ldir],iz+DZ[ldir]))opts.push([2,ldir]);
-      const o=opts.length?pick(opts):[2,ldir];A.plan={k:nk,ri,turn:o[0],nd:o[1]}}
+      const o=(c.y>2.5&&opts.some(q=>q[0]===0))?[0,d]:opts.length?pick(opts):[2,ldir];A.plan={k:nk,ri,turn:o[0],nd:o[1]}}
     const inner=ix>0&&ix<NB&&iz>0&&iz<NB;
     if(inner&&dc>0&&ds>-.5){const st=lightState(alongX?0:1,gtime.t);
       if(st!==0){const brakeD=vf*vf/(2*5.5)+1.5;if(st===2||ds>brakeD+1){const stopV=sqrt(max(0,2*5*max(0,ds-1.4)));target=min(target,stopV)}}}
@@ -2717,7 +2754,8 @@ function addChar(x,y,z,yaw,st,L){
   const hi=(x-CAM.x)*(x-CAM.x)+(z-CAM.z)*(z-CAM.z)<900,G=hi?CGEOH:CGEO;
   const f=st.fall||0,jg=L.jog?1.5:1;let sw=Math.sin(st.ph)*.62*st.sp*jg,bob=Math.abs(Math.cos(st.ph))*.045*st.sp*jg;const k=L.sc||1,dn=st.dance||0;
   if(dn){bob=Math.abs(Math.sin(st.ph*1.0))*.09*dn;yaw+=Math.sin(st.ph*.5)*.35*dn}
-  mtrs(_B,x,y+bob*k+.13*f,z,yaw,-1.52*f,0);
+  const kn=st.kneel?1:0,lean=kn?0:clamp((st.sp||0)-.45,0,.8)*.16;
+  mtrs(_B,x,y+bob*k+.13*f-kn*.4*k,z,yaw,-1.52*f-lean,0);
   if(k!==1){for(const i of[0,1,2,4,5,6,8,9,10])_B[i]*=k}
   const fl=st.flash||0,tr=(c)=>fl>0?[c[0]+fl,c[1]*(1-fl*.5),c[2]*(1-fl*.5)]:c;
   const sk=tr(L.skin),sh=tr(L.shirt),pa=tr(L.pants);
@@ -2740,6 +2778,7 @@ function addChar(x,y,z,yaw,st,L){
   let aL=-sw*1.15,aR=sw*1.15,lL=sw,lR=-sw;
   if(jump){lL=-.7;lR=.25;aL=-2.3;aR=-2.3}
   const gw=st.gun===true?1:(st.gun|0);
+  if(kn){lL=lR=-.08;if(!st.aim){aL=-.55+Math.sin(st.ph*3)*.05;aR=-.6}}
   if(st.aim){const ap=st.ap||0;aR=-1.5-ap;aL=(gw>=3?-1.45:-1.28)-ap}
   if(st.punch>0){aR=-1.7*Math.sin(st.punch*PI);aL=.5*Math.sin(st.punch*PI)}
   if(dn){const t=st.ph;aL=-2.5+Math.sin(t)*.8;aR=-2.5+Math.sin(t+PI)*.8;lL=Math.sin(t)*.28;lR=-Math.sin(t)*.28}
@@ -2752,11 +2791,11 @@ function addChar(x,y,z,yaw,st,L){
   else if(st.pose==='give'){aL=-1.35;aR=-1.35;lL=lR=0}
   // jambes + chaussures
   for(const s of[1,-1]){const a=s>0?lL:lR;mpart(_Pm,_B,.115*s,.92,0,a);
-    if(hi){const bend=(st.pose||dn)?0:clamp(-a,0,1.2)*1.1,lc=L.shorts?sk:pa;dmAdd(G.thigh,_Pm,pa[0],pa[1],pa[2]);mpart(_Pm2,_Pm,0,-.42,0,bend);dmAdd(G.shin,_Pm2,lc[0],lc[1],lc[2]);dmAdd(G.shoeR,_Pm2,L.shoe[0],L.shoe[1],L.shoe[2]);continue}
+    if(hi){const lp=st.ph+(s>0?0:PI),rs=clamp(st.sp||0,0,1.3),bend=kn?1.62:(st.pose||dn)?0:st.jump?.7:rs*(.12+.95*max(0,-Math.sin(lp+.65)))+clamp(-a,0,1.2)*.35,lc=L.shorts?sk:pa;dmAdd(G.thigh,_Pm,pa[0],pa[1],pa[2]);mpart(_Pm2,_Pm,0,-.42,0,bend);dmAdd(G.shin,_Pm2,lc[0],lc[1],lc[2]);dmAdd(G.shoeR,_Pm2,L.shoe[0],L.shoe[1],L.shoe[2]);continue}
     dmAdd(G.leg,_Pm,pa[0],pa[1],pa[2]);dmAdd(G.shoe,_Pm,L.shoe[0],L.shoe[1],L.shoe[2])}
   // bras + mains (+ arme dans la main droite = x négatif)
   for(const s of[1,-1]){const a=s>0?aL:aR;mpart(_Pm,_B,(hi?.238:.295)*s,hi?1.41:1.44,0,a);
-    if(hi){const hold=(s<0&&gw)||st.aim||st.punch>0||st.pose||dn||st.jump,bend=hold?0:-(.12+.5*clamp(st.sp||0,0,1.3)),fc=L.short?sk:sh;dmAdd(G.armU,_Pm,sh[0],sh[1],sh[2]);mpart(_Pm2,_Pm,0,-.3,0,bend);dmAdd(G.armF,_Pm2,fc[0],fc[1],fc[2]);dmAdd(G.handR,_Pm2,sk[0],sk[1],sk[2])}
+    if(hi){const hold=(s<0&&gw)||st.aim||st.punch>0||st.pose||dn||st.jump,bend=hold?0:-(.15+.75*clamp(st.sp||0,0,1.3)),fc=L.short?sk:sh;dmAdd(G.armU,_Pm,sh[0],sh[1],sh[2]);mpart(_Pm2,_Pm,0,-.3,0,bend);dmAdd(G.armF,_Pm2,fc[0],fc[1],fc[2]);dmAdd(G.handR,_Pm2,sk[0],sk[1],sk[2])}
     else{dmAdd(G.arm,_Pm,sh[0],sh[1],sh[2]);dmAdd(G.hand,_Pm,sk[0],sk[1],sk[2])}
     if(s<0&&gw){const gm=GUNM[gw]||GUNM[1];for(const[nm,c]of gm)dmAdd(CGEO[nm],_Pm,c[0],c[1],c[2])}}}
 
@@ -2775,7 +2814,7 @@ const wMag=i=>Math.max(1,Math.round(WEAPONS[i].mag*(1+UPG.mag[2]*upL(i,'mag'))))
 const wRate=i=>WEAPONS[i].rate*(1+UPG.rate[2]*upL(i,'rate'));
 const wDmg=i=>WEAPONS[i].dmg*(1+UPG.dmg[2]*upL(i,'dmg'));
 const upPrice=(i,k)=>Math.round([500,1200,2600][upL(i,k)]*(1+(i-1)*.35)/10)*10;
-function startReload(){const w=P.wpn;if(!w||P.reloadT>0||P.car)return;const full=min(wMag(w),P.ammo[w]|0);if((P.clip[w]|0)>=full)return;
+function startReload(){const w=P.wpn;if(!w||P.reloadT>0||(P.car&&P.car.s.air))return;const full=min(wMag(w),P.ammo[w]|0);if((P.clip[w]|0)>=full)return;
   P.reloadT=WEAPONS[w].rl;P.reloadW=w;sfx('pick');say('Rechargement…',WEAPONS[w].rl)}
 function reloadStep(dt){if(!P.clipOK){P.clipOK=1;for(let i=1;i<6;i++)P.clip[i]=min(wMag(i),P.ammo[i]|0)}const w=P.wpn;if(!w){P.reloadT=0;return}
   P.clip[w]=min(P.clip[w]|0,P.ammo[w]|0);
@@ -2794,7 +2833,7 @@ function groundAt(x,z){return groundH(x,z)}
 // voiture contre personne : renvoie true si la personne est écrasée
 const _pc=new Float32Array(6);
 function personVsCars(o,r,isPlayer,dt){
-  for(let i=0;i<cars.length;i++){const c=cars[i];if(c===o.inCar)continue;const dx=o.x-c.x,dz=o.z-c.z;if(abs(dx)>4.6||abs(dz)>4.6)continue;if(c.s.air&&c.y-o.y>2.5)continue;
+  for(let i=0;i<cars.length;i++){const c=cars[i];if(c===o.inCar)continue;const dx=o.x-c.x,dz=o.z-c.z;if(abs(dx)>4.6||abs(dz)>4.6)continue;if(abs(c.y-o.y)>2.5)continue;
     circlesOf(c,_pc);const rc=c.s.W*.5+r,sp=hyp(c.vx,c.vz);
     for(let k=0;k<3;k++){const ex=o.x-_pc[k*2],ez=o.z-_pc[k*2+1],d2=ex*ex+ez*ez;if(d2>=rc*rc)continue;
       const d=sqrt(d2)||1e-3,nx=ex/d,nz=ez/d,pen=rc-d;
@@ -2873,7 +2912,7 @@ function provoke(p){
   game.fights=(game.fights||0)+1}
 function scarePeds(x,z,r){for(const q of peds){if(q.kind!=='ped'||q.fight||q.state==='dead'||q.state==='ko')continue;if(hyp(q.x-x,q.z-z)<r&&q.state!=='flee'){q.state='flee';q.fleeT=rnd(4,8);q.fleeFrom=[x,z]}}}
 function updatePed(p,dt){
-  if(p.crip&&p.state!=='dead'&&p.state!=='ko'&&p.ground){const x0=p.x,z0=p.z;updatePed0(p,dt);p.x=x0+(p.x-x0)*.22;p.z=z0+(p.z-z0)*.22;p.sp*=.35;p.fall=.82;return}
+  if(p.crip&&p.state!=='dead'&&p.state!=='ko'&&p.ground){const x0=p.x,z0=p.z;updatePed0(p,dt);p.x=x0+(p.x-x0)*.12;p.z=z0+(p.z-z0)*.12;p.sp*=.3;p.fall=0;p.kneel=1;return}
   updatePed0(p,dt)}
 function updatePed0(p,dt){
   p.life+=dt;if(p.hitCar>0)p.hitCar-=dt;if(p.flash>0)p.flash-=dt*3;
@@ -3001,7 +3040,7 @@ let gunSound=()=>{};
 function drawPeds(){
   DM.n=0;
   for(const p of peds){if(!farOK(p.x,p.y+1,p.z,1.4,230)||!visSphere(p.x,p.y+1,p.z,1.4))continue;
-    const sc=p.look.sc||1;addChar(p.x,p.y,p.z,p.yaw,{ph:p.ph,sp:p.sp,fall:p.fall,aim:p.aim,gun:p.gun?(p.gunK||1):0,flash:p.flash>0?p.flash*2:0,punch:p.pk>0?1-p.pk/.28:0},p.look);
+    const sc=p.look.sc||1;addChar(p.x,p.y,p.z,p.yaw,{kneel:(p.crip&&p.state!=='dead'&&p.state!=='ko')?1:0,ph:p.ph,sp:p.sp,fall:p.fall,aim:p.aim,gun:p.gun?(p.gunK||1):0,flash:p.flash>0?p.flash*2:0,punch:p.pk>0?1-p.pk/.28:0},p.look);
     bShadow.flat(p.x,p.y+.05,p.z,.5,.5,0,[0,0,0,p.state==='dead'?.25:.4])}
   if(!P.car&&!P.hidden){addChar(P.x,P.y,P.z,P.yaw,{ph:P.ph,sp:P.sp,fall:P.fallT,aim:P.aim>.5?1:0,ap:P.aim>.5?clamp(CAM.aimP||0,-.8,.9):0,gun:(P.wpn>0&&!P.punchT)?P.wpn:0,punch:P.punchT>0?1-P.punchT/.28:0,jump:!P.ground&&P.vy!==0&&!P.ragdoll,flash:P.hitFlash>0?P.hitFlash*.8:0},P.look);
     bShadow.flat(P.x,P.y+.05,P.z,.55,.55,0,[0,0,0,.45])}
@@ -3020,7 +3059,7 @@ function updateActors(dt){const bt=gtime.t;
 const CAM={yaw:PI,pitch:.3,dist:5,x:0,y:2,z:0,fov:1.02,free:0,view:0,curD:5,ty:0};
 function camCollide(tx,ty,tz,dx,dy,dz,dist){ // dir unitaire depuis la cible, renvoie la distance libre
   let free=dist;for(let t=.6;t<=dist;t+=.5){const x=tx+dx*t,y=ty+dy*t,z=tz+dz*t;
-    if(y<groundH(x,z)+.35){free=max(.6,t-.5);break}
+    if(y<groundH(x,z,ty)+.35){free=max(.6,t-.5);break}
     if(solidPoint(x,y,z)||solidPoint(x+.35,y,z)||solidPoint(x-.35,y,z)||solidPoint(x,y,z+.35)||solidPoint(x,y,z-.35)){free=max(.6,t-.55);break}}
   return free}
 function updateCamera(dt){
@@ -3037,7 +3076,7 @@ function updateCamera(dt){
   const dy=sin(pe),dh=cos(pe),dx=-sin(CAM.yaw)*dh,dz=-cos(CAM.yaw)*dh;
   const free=camCollide(fx,fy,fz,dx,dy,dz,want);
   CAM.curD=free<CAM.curD?free:lerp(CAM.curD,free,min(1,dt*3.2));
-  const cx=fx+dx*CAM.curD,cz=fz+dz*CAM.curD;let cy=max(.5,fy+dy*CAM.curD);const gcam=groundH(cx,cz);if(cy<gcam+.7)cy=gcam+.7;
+  const cx=fx+dx*CAM.curD,cz=fz+dz*CAM.curD;let cy=max(.5,fy+dy*CAM.curD);const gcam=groundH(cx,cz,fy);if(cy<gcam+.7)cy=gcam+.7;
   if(!inCar){const rm=placeAt(fx,fz);if(rm)cy=min(cy,rm.H-.45)}
   CAM.x=cx;CAM.y=cy;CAM.z=cz;CAM.tx=fx;CAM.ty=fy+.0;CAM.tz=fz;
   if(!inCar&&P.aim>.3){const dh2=cos(pe);CAM.tx=cx+sin(CAM.yaw)*dh2*40;CAM.tz=cz+cos(CAM.yaw)*dh2*40;CAM.ty=cy-sin(pe)*40}
@@ -3208,7 +3247,7 @@ function exitCar(emergency){
     let blocked=false;const it=queryNear(x,z,.6);for(const w of it)if(circHit(w,x,z,.4)){blocked=true;break}
     if(!blocked||emergency){P.x=x;P.z=z;ok=true;break}}
   if(!ok){P.x=c.x+lx*(c.s.W/2+.9);P.z=c.z+lz*(c.s.W/2+.9)}
-  P.y=groundH(P.x,P.z);P.vx=c.vx*.5;P.vz=c.vz*.5;P.vy=emergency?3:0;P.ground=!emergency;P.yaw=c.yaw+PI/2;
+  P.y=groundH(P.x,P.z,c.y+.5);P.vx=c.vx*.5;P.vz=c.vz*.5;P.vy=emergency?3:0;P.ground=!emergency;P.yaw=c.yaw+PI/2;
   c.mode=c.cop&&false?'ai':'idle';c.keep=!!c.owned;P.car=null;sfx('door');
   if(emergency){P.ragdoll=1.4}
   if(c.s.boat){if(land){P.x=land.x;P.z=land.z}else respawnAt(HOSP,0,true);P.y=groundH(P.x,P.z);P.vx=P.vz=0;P.ragdoll=0;P.ground=true;c.mode='parked';c.sleep=false}
@@ -3354,7 +3393,7 @@ function playerUpdate(dt){
   if(game.rob){robStep(dt);return}
   P.busted=max(0,P.busted-dt*.5);
   if(P.ragdoll>0){P.ragdoll-=dt;P.fallT=min(1,P.fallT+dt*7);P.vx*=Math.exp(-2.5*dt);P.vz*=Math.exp(-2.5*dt);
-    P.vy-=15*dt;P.y+=P.vy*dt;const g=groundH(P.x,P.z);if(P.y<=g){P.y=g;P.vy=0;P.ground=true}moveCollide(P,.38,dt);P.sp=0;return}
+    P.vy-=15*dt;P.y+=P.vy*dt;const g=groundH(P.x,P.z,P.y+.6);if(P.y<=g){P.y=g;P.vy=0;P.ground=true}moveCollide(P,.38,dt);P.sp=0;return}
   P.fallT=max(0,P.fallT-dt*6);
   const sy=sin(CAM.yaw),cy=cos(CAM.yaw),mx=IN.sx,my=IN.sy,mag=min(1,hyp(mx,my));
   const wx=sy*my-cy*mx,wz=cy*my+sy*mx,wl=hyp(wx,wz)||1;
@@ -3369,7 +3408,7 @@ function playerUpdate(dt){
   if(aiming&&P.wpn>0)P.yaw+=angd(P.yaw,CAM.yaw)*min(1,dt*14);
   else if(mag>.05)P.yaw+=angd(P.yaw,atan2(wx,wz))*min(1,dt*13);
   if(IN.jump){IN.jump=false;if(P.ground&&!P.car){P.vy=5.6;P.ground=false;sfx('jump')}}
-  P.vy-=15*dt;P.y+=P.vy*dt;const g=groundH(P.x,P.z);if(P.y<=g){P.y=g;P.vy=0;P.ground=true}else if(P.y>g+.05)P.ground=false;
+  P.vy-=15*dt;P.y+=P.vy*dt;const g=groundH(P.x,P.z,P.y+.6);if(P.y<=g){P.y=g;P.vy=0;P.ground=true}else if(P.y>g+.05)P.ground=false;
   moveCollide(P,.38,dt);
   // pousse les piétons
   for(const p of peds){const dx=p.x-P.x,dz=p.z-P.z,d2=dx*dx+dz*dz;if(d2<.64&&p.state!=='dead'){const d=sqrt(d2)||.01;p.x+=dx/d*.04;p.z+=dz/d*.04;P.x-=dx/d*.02;P.z-=dz/d*.02}}
@@ -3384,8 +3423,25 @@ function playerUpdate(dt){
     else if(rc&&(!lc||hyp(rc.x-P.x,rc.z-P.z)<hyp(lc.x-P.x,lc.z-P.z)))mpRideEnter(rc);
     else{const c=lc;if(c&&P.enterT<=0){if(needsBreak(c))startBreakIn(c);else enterCar(c)}}}
   P.enterT=max(0,P.enterT-dt)}
+// tir par la fenêtre en conduisant (pistolet, mitraillette, fusil d'assaut)
+function carShoot(dt){const c=P.car;if(!c||c.s.air)return;reloadStep(dt);P.shootT-=dt;if(!(IN.fire||BT.G)||P.shootT>0)return;
+  let w=P.wpn;if(![1,2,4].includes(w)||!P.own[w]||P.ammo[w]<=0){w=[2,4,1].find(i=>P.own[i]&&P.ammo[i]>0)||0;if(w){P.wpn=w;P.reloadT=0}}
+  if(!w){P.shootT=.6;say('Pas d’arme pour tirer en roulant (pistolet, mitraillette ou fusil)',1.6);return}
+  if(P.reloadT>0)return;if((P.clip[w]|0)<=0){startReload();return}
+  const W=WEAPONS[w];let fx=CAM.tx-CAM.x,fy=0,fz=CAM.tz-CAM.z,l=hyp(fx,fz)||1;fx/=l;fz/=l;
+  const as=findAimTarget(c.x,c.y+1.2,c.z,fx,0,fz,.6,65);
+  const rx=cos(c.yaw),rz=-sin(c.yaw);
+  let dx=fx,dy=-.02,dz=fz;const side=(dx*rx+dz*rz)>=0?1:-1,mx=c.x+rx*side*(c.s.W/2+.15)+sin(c.yaw)*.2,my=c.y+1.2,mz=c.z+rz*side*(c.s.W/2+.15)+cos(c.yaw)*.2;
+  if(as){dx=as.x-mx;dy=as.y-my;dz=as.z-mz;l=hyp(dx,dy,dz);dx/=l;dy/=l;dz/=l}
+  P.ammo[w]--;P.clip[w]--;if(P.clip[w]<=0&&P.ammo[w]>0)setTimeout(startReload,120);P.shootT=1.15/wRate(w);game.lastShot=game.t;
+  const sp=W.spread*1.8,r=rayCast(mx,my,mz,dx+rnd(-sp,sp),dy+rnd(-sp,sp)*.6,dz+rnd(-sp,sp),70,.4),hx=mx+dx*r.t,hy=my+dy*r.t,hz=mz+dz*r.t;
+  tracers.push({a:[mx,my,mz],b:[hx,hy,hz],t:0,pl:1});PT.add(mx,my,mz,0,.4,0,1,.9,.5,.8,.6,.1,.07,0,0);fxSpark(mx,my,mz,2);gunSound(c.x,c.z,1);
+  if(r.type==='ped'){const z=r.zone,d=wDmg(w)*(z==='head'?3.2:z==='legs'?.55:1);hitPed(r.obj,d,'player',z);if(r.obj.kind==='ped'&&r.obj.state!=='dead')onCrime(.06,r.obj.x,r.obj.z,false)}
+  else if(r.type==='car'){hurtCar(r.obj,wDmg(w)*1.5);if(r.obj.mode==='ai'&&r.obj.ai)r.obj.ai.stopT=1;fxSpark(hx,hy,hz,4);onCrime(.03,r.obj.x,r.obj.z,false)}
+  else if(r.type!=='none')fxDust(hx,hy,hz,3);
+  scarePeds(c.x,c.z,30);if(wantedLevel()===0){let near=false;for(const k of cars)if(copUnit(k)&&hyp(k.x-c.x,k.z-c.z)<120)near=true;for(const p of peds)if(p.kind==='cop'&&hyp(p.x-c.x,p.z-c.z)<100)near=true;if(near)onCrime(.35,c.x,c.z,true,1)}}
 function playerDrive(dt){
-  const c=P.car;P.enterT=max(0,P.enterT-dt);
+  const c=P.car;P.enterT=max(0,P.enterT-dt);carShoot(dt);
   if(IN.use&&P.enterT<=0){IN.use=false;if(c.s.air&&((c.alt||0)>1.5||abs(c.vf||0)>9)){say('Pose l’avion et arrête-toi avant de descendre !',2.2)}else{exitCar(false);return}}IN.use=false;
   const air=!!c.s.air,inp={thr:max(0,IN.sy),brk:max(0,-IN.sy),steer:IN.sx,hb:air?false:IN.hb};
   if(!air&&!c.s.boat){if(c.fuel===undefined)c.fuel=.45+Math.random()*.55;const sp=hyp(c.vx,c.vz),gs=atGas(c.x,c.z);
@@ -4625,8 +4681,8 @@ addEventListener('keydown',e=>{if(e.code==='KeyY'&&game.state==='play'&&MP.on&&!
 $('bChat').addEventListener('pointerdown',e=>{e.preventDefault();qchatToggle()});
 $('bLock').addEventListener('pointerdown',e=>{e.preventDefault();mpToggleLock()});
 addEventListener('keydown',e=>{if(e.code==='KeyL'&&game.state==='play'&&MP.on&&P.car&&!game.paused&&!game.shopOpen)mpToggleLock()});
-setInterval(()=>{document.body.classList.toggle('incar',!!P.car);document.body.classList.toggle('incop',!!(P.car&&P.car.cop&&!P.car.swat));document.body.classList.toggle('canrob',!!robStore())},250);
-bindBtn('bRob',()=>startRob(),null);bindBtn('bVig',()=>startVigilante(),null);
+setInterval(()=>{document.body.classList.toggle('incar',!!P.car);document.body.classList.toggle('inair',!!(P.car&&P.car.s.air));document.body.classList.toggle('incop',!!(P.car&&P.car.cop&&!P.car.swat));document.body.classList.toggle('canrob',!!robStore())},250);
+bindBtn('bRob',()=>startRob(),null);bindBtn('bG',()=>{BT.G=true},()=>{BT.G=false});bindBtn('bVig',()=>startVigilante(),null);
 addEventListener('pagehide',()=>{if(MP.on)mpSend('bye',{i:MP.id})});
 // ---------- panneau du titre ----------
 $('mpDice').onclick=mpRandomName;
