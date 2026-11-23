@@ -1809,9 +1809,13 @@ function buildDecks(){const conc=[.7,.7,.68],dk=[.5,.5,.5];
     const surf=(ua,ub,n)=>{for(let i=0;i<n;i++){const u0=ua+(ub-ua)*i/n,u1=ua+(ub-ua)*(i+1)/n,h0=hAt(u0+.001),h1=hAt(u1-.001);
         const P=[W(c-hw,h0+.06,u0),W(c+hw,h0+.06,u0),W(c+hw,h1+.06,u1),W(c-hw,h1+.06,u1)];
         mb(G,c,(u0+u1)/2).qd(P[0],P[1],P[2],P[3],[1,1,1],W(c,-20,(u0+u1)/2),P.map(q=>[q[0]/14,q[2]/14]));
+        {const Q=[W(c-hw,h0-.02,u0),W(c+hw,h0-.02,u0),W(c+hw,h1-.02,u1),W(c-hw,h1-.02,u1)];mb(F,c,(u0+u1)/2).qd(Q[0],Q[1],Q[2],Q[3],[.55,.55,.53],W(c,h0+20,(u0+u1)/2))} // dessous
         for(const sx of[-1,1]){const v=c+sx*hw;mb(F,c,(u0+u1)/2).qd(W(v,0,u0),W(v,0,u1),W(v,h1+.02,u1),W(v,h0+.02,u0),conc,W(c,h0/2,(u0+u1)/2));
           box(mb(F,c,(u0+u1)/2),v-.18,h0,u0,v+.18,h0+.9,u1,conc,{ao:.95})}}};       // muret
     surf(D.r0,D.r1,14);surf(D.r2,D.r3,14);
+    // faces d'about pleines au pied du tablier (on ne voit plus à travers la rampe)
+    for(const[u,dirn]of[[D.r1,1],[D.r2,-1]]){mb(F,c,u).qd(W(c-hw,0,u),W(c+hw,0,u),W(c+hw,D.H,u),W(c-hw,D.H,u),[.6,.6,.58],W(c,D.H/2,u-dirn*2));
+      mb(F,c,u).qd(W(c-hw,0,u),W(c+hw,0,u),W(c+hw,D.H,u),W(c-hw,D.H,u),[.6,.6,.58],W(c,D.H/2,u+dirn*2))}
     // dessous des rampes : plein
     for(let u=D.r0;u<D.r1;u+=3){const h=hAt(u+.001);if(h>=3)aabb(c-hw,u,c+hw,min(D.r1,u+3),h-1.8).ramp=true}
     for(let u=D.r2;u<D.r3;u+=3){const u1=min(D.r3,u+3),h=hAt(u1-.001);if(h>=3)aabb(c-hw,u,c+hw,u1,h-1.8).ramp=true}
@@ -3684,7 +3688,7 @@ function copsUpdate(dt){plateWatch(dt);
 // =====================================================================
 //  ARMES (munitions, roquettes), BOUTIQUES, GARAGE, CABARET
 // =====================================================================
-function addAmmo(w,n){const had=P.ammo[w]|0;P.ammo[w]=Math.min(WEAPONS[w].max||999,had+n);if(!had)P.clip[w]=min(wMag(w),P.ammo[w])}
+function addAmmo(w,n){const had=P.ammo[w]|0;P.ammo[w]=Math.min(9999999,had+n);if(!had)P.clip[w]=min(wMag(w),P.ammo[w])}
 function altWeapon(){for(const n of[1,2,4,3,5])if(P.own[n]&&P.ammo[n]>0)return n;return 0}
 
 // ---------- explosions & roquettes ----------
@@ -3772,12 +3776,12 @@ function shopRender(){
       const dps=w.rocket?100:Math.min(100,w.dmg*(w.pellets||1)*w.rate/2.2);
       h+='<div class="it"><div class="ih"><span class="wi">'+WSVG[i]+'</span><div class="tx"><b>'+w.n+'</b><small>'+w.info+'</small></div></div>'+
         '<div class="st"><span>Puissance</span>'+shBar(dps,'#ff6b6b')+'</div>'+
-        '<div class="st"><span>Munitions</span>'+shBar(am/w.max*100,'#4aa3ff')+'<em>'+(own?am+' / '+w.max:'—')+'</em></div>'+
+        '<div class="st"><span>Munitions</span>'+shBar(Math.min(100,am/w.max*100),'#4aa3ff')+'<em>'+(own?am.toLocaleString('fr-FR'):'—')+'</em></div>'+
         '<div class="st"><span>Chargeur</span>'+shBar(wMag(i)/60*100,'#8fd45c')+'<em>'+wMag(i)+' balles</em></div>'+
         (own&&!w.rocket?Object.keys(UPG).map(k=>{const l=upL(i,k),pr=l<3?upPrice(i,k):0;return'<div class="st"><span>'+UPG[k][0].split(' ')[0]+' '+'★'.repeat(l)+'☆'.repeat(3-l)+'</span>'+
           '<button style="flex:1;background:#3a3a5c;color:#fff;border:0;border-radius:6px;padding:6px;font:600 13px Oswald,Impact,sans-serif" data-a="up" data-i="'+i+'" data-t="'+k+'"'+(l>=3||game.money<pr?' disabled':'')+'>'+(l>=3?'MAX ✓':UPG[k][0]+' ('+UPG[k][1]+') · '+fmt$(pr))+'</button></div>'}).join(''):'')+
         '<div class="bt2">'+(own
-          ?'<button data-a="ammo" data-i="'+i+'"'+(am>=w.max||game.money<w.packPrice?' disabled':'')+'>+'+w.pack+' munitions · '+fmt$(w.packPrice)+'</button>'+
+          ?'<button data-a="ammo" data-i="'+i+'"'+(game.money<w.packPrice?' disabled':'')+'>+'+w.pack+' munitions · '+fmt$(w.packPrice)+'</button>'+
            '<button class="g2" data-a="eq" data-i="'+i+'"'+(P.wpn===i?' disabled':'')+'>'+(P.wpn===i?'Équipé ✓':'Équiper')+'</button>'
           :'<button data-a="buy" data-i="'+i+'"'+(game.money<w.price?' disabled':'')+'>Acheter · '+fmt$(w.price)+'</button>')+'</div></div>'}
     h+='<div class="it"><div class="ih"><span class="wi vest"><svg viewBox="0 0 120 50"><path d="M34 6h16l10 8 10-8h16l8 10v26H26V16z" fill="#2f6fd1"/><path d="M44 14l16 12 16-12" stroke="#10286a" stroke-width="3" fill="none"/><rect x="44" y="30" width="32" height="8" fill="#1d4fa0"/></svg></span><div class="tx"><b>Gilet pare-balles</b><small>Absorbe une partie des dégâts</small></div></div>'+
@@ -3834,7 +3838,6 @@ function buyWeapon(i){const w=WEAPONS[i];if(P.own[i])return;
   if(game.money<w.price){shopMsg('Pas assez d’argent ('+fmt$(w.price)+')',1);sfx('fail');return}
   game.money-=w.price;P.own[i]=1;addAmmo(i,w.pack);P.wpn=i;shopMsg('Achat réussi : '+w.n+' (+'+w.pack+' munitions)');sfx('cash');shopRender()}
 function buyAmmo(i){const w=WEAPONS[i];if(!P.own[i])return;
-  if(P.ammo[i]>=w.max){shopMsg('Tu as déjà le maximum de munitions',1);return}
   if(game.money<w.packPrice){shopMsg('Pas assez d’argent ('+fmt$(w.packPrice)+')',1);sfx('fail');return}
   game.money-=w.packPrice;addAmmo(i,w.pack);shopMsg('+'+w.pack+' munitions pour le '+w.n.toLowerCase());sfx('cash');shopRender()}
 
@@ -5699,7 +5702,7 @@ function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null
   if(Array.isArray(s.bz))P.biz=s.bz.filter(v=>Number.isInteger(v)&&v>=0&&v<STORES.length).slice(0,20);
   for(const k of pickups)if(k.type==='pkg'&&P.pkgs.includes(k.val)){k.gone=true;k.respawn=1e9}
   if(s.tu)P.tune={eng:L3(s.tu.eng),arm:L3(s.tu.arm),brk:L3(s.tu.brk)};game.money=(typeof s.m==='number'&&isFinite(s.m))?Math.min(99999999,Math.max(0,Math.floor(s.m))):300;game.done=s.d|0;game.kills=s.k|0;
-  if(Array.isArray(s.a))for(let i=1;i<6;i++)P.ammo[i]=Math.max(0,Math.min(WEAPONS[i].max,(s.a[i]|0)));
+  if(Array.isArray(s.a))for(let i=1;i<6;i++)P.ammo[i]=Math.max(0,Math.min(9999999,(s.a[i]|0)));
   if(Array.isArray(s.o)){for(let i=2;i<6;i++)P.own[i]=s.o[i]?1:0}else if(Array.isArray(s.a)&&(s.a[2]|0)>0)P.own[2]=1;
   P.own[0]=1;P.own[1]=1;
   if(s.l){const ok=a=>Array.isArray(a)&&a.length===3&&a.every(v=>typeof v==='number'&&isFinite(v));P.look.style=s.l.st|0;P.look.hairLong=!!s.l.hl;if(ok(s.l.h))P.look.hair=s.l.h;if(ok(s.l.sh))P.look.shirt=s.l.sh;if(ok(s.l.pa))P.look.pants=s.l.pa;P.look.cap=ok(s.l.cp)?s.l.cp:null}
