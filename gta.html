@@ -272,9 +272,11 @@ kbd{background:#2d2d4a;border-radius:4px;padding:1px 8px;border-bottom:3px solid
 a.lnk{color:#ffb703;text-decoration:none;font-size:16px}
 #pause{background:#000d}
 .pbox{display:flex;gap:22px;align-items:center;justify-content:center;flex-wrap:wrap;max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:4px}
-#bigmap{width:min(70vh*1.1,720px);aspect-ratio:700/631;height:auto;max-width:92vw;border:3px solid #fff;border-radius:8px;background:#0b1620;box-shadow:0 6px 24px #000a}
+#bigmap{touch-action:none;width:min(70vh*1.1,720px);aspect-ratio:700/631;height:auto;max-width:92vw;border:3px solid #fff;border-radius:8px;background:#0b1620;box-shadow:0 6px 24px #000a}
 .pside{display:flex;flex-direction:column;gap:10px;align-items:center;max-width:380px}
 .pside h1{margin:0;font-size:46px;letter-spacing:3px}
+
+.mzrow{display:flex;gap:8px}.mzrow .btn{padding:6px 14px;font-size:16px}
 #pinfo{font-size:17px;color:#e6e6ff}
 #pleg{display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;font-size:13px;text-align:left;color:#d0d0ea;max-width:380px}
 #pleg span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -392,7 +394,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
 <div id="mpHud"></div><div id="mpTags"></div>
 <div id="qchat"></div>
 <div class="ov" id="pause"><div class="pbox"><canvas id="bigmap" width="700" height="631"></canvas>
- <div class="pside"><h1>PAUSE</h1><div id="pinfo"></div><div id="pleg"></div>
+ <div class="pside"><h1>PAUSE</h1><div class="mzrow"><button class="btn g" id="mzIn">🔍＋</button><button class="btn g" id="mzOut">🔍－</button><button class="btn g" id="mzMe">⌖ Moi</button></div><div id="pinfo"></div><div id="pleg"></div>
  <button class="btn" id="resume">Reprendre</button><button class="btn g" id="rsp">Réapparaître à l'hôpital</button><button class="btn g" id="gfxBtn">Graphismes</button><a class="btn g" href="index.html">Quitter</a></div></div></div>
 <div class="ov" id="shop"><div class="shbox"><div class="shhead"><h2 id="shTitle"></h2><span id="shMoney"></span><button id="shClose">Fermer ✕</button></div><div id="shList"></div><div id="shMsg" class="ok"></div></div></div>
 <script>
@@ -5324,9 +5326,14 @@ function pollInput(dt){
   if(cy||cp){CAM.yaw+=cy*dt*2.3;CAM.pitch=clamp(CAM.pitch+cp*dt*1.4,-.25,1.2);aimAdj(cp*dt*1.4);CAM.free=1.6}}
 
 // ---------- pause ----------
+// ---------- zoom de la grande carte ----------
+const MAPV={z:1,cx:EXTW/2,cz:EXTH/2};
+function mapView(W,H){const z=MAPV.z,hw=EXTW/(2*z),hh=EXTH/(2*z);MAPV.cx=clamp(MAPV.cx,hw,EXTW-hw);MAPV.cz=clamp(MAPV.cz,hh,EXTH-hh);const k=W/EXTW*z;return{k,ox:W/2-MAPV.cx*k,oy:H/2-MAPV.cz*k}}
+function mapZoomAt(f,px,py){const cv=$('bigmap'),W=cv.width,H=cv.height;if(px===undefined){px=W/2;py=H/2}const v=mapView(W,H),wx=(px-v.ox)/v.k,wz=(py-v.oy)/v.k;
+  MAPV.z=clamp(MAPV.z*f,1,7);const k=W/EXTW*MAPV.z;MAPV.cx=(W/2-(px-wx*k))/k;MAPV.cz=(H/2-(py-wz*k))/k;drawBigMap()}
 function drawBigMap(){
-  const cv=$('bigmap'),g=cv.getContext('2d'),W=cv.width,k=W/EXTW;
-  g.clearRect(0,0,cv.width,cv.height);g.fillStyle='#16324a';g.fillRect(0,0,cv.width,cv.height);g.imageSmoothingEnabled=true;
+  const cv=$('bigmap'),g=cv.getContext('2d'),W=cv.width,MV=mapView(W,cv.height),k=MV.k;
+  g.clearRect(0,0,cv.width,cv.height);g.fillStyle='#16324a';g.fillRect(0,0,cv.width,cv.height);g.imageSmoothingEnabled=true;g.save();g.translate(MV.ox,MV.oy);
   g.save();g.scale(k,k);g.fillStyle='#2b4430';g.fillRect(0,0,EXTW,EXTH);g.restore();
   g.drawImage(MAPC,0,0,MAPC.width,MAPC.height,0,0,SIZE*k,SIZE*k);
   g.save();g.scale(k,k);drawOuterWorld(g,false);g.restore();
@@ -5355,7 +5362,8 @@ function drawBigMap(){
   if(game.wp){const x=game.wp.x*k,z=game.wp.z*k;g.save();routeLine(g,ROUTE.wp,game.wp.x,game.wp.z,k,k,0,0,'#ffd400',5);
     g.translate(x,z);g.fillStyle='#ffd400';g.strokeStyle='#000';g.lineWidth=3;g.beginPath();g.arc(0,-16,10,PI*.8,PI*.2+TAU);g.lineTo(0,0);g.closePath();g.fill();g.stroke();g.fillStyle='#000';g.beginPath();g.arc(0,-16,3.5,0,TAU);g.fill();
     if(game.wp.name){g.font='bold 14px Oswald,Impact,sans-serif';g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000';g.fillStyle='#ffd400';g.strokeText(game.wp.name,0,-32);g.fillText(game.wp.name,0,-32)}g.restore()}
-  g.save();g.translate(P.x*k,P.z*k);g.rotate(PI-P.yaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=3;g.beginPath();g.moveTo(0,-14);g.lineTo(10,11);g.lineTo(0,6);g.lineTo(-10,11);g.closePath();g.fill();g.stroke();g.restore()}
+  g.save();g.translate(P.x*k,P.z*k);g.rotate(PI-P.yaw);g.fillStyle='#fff';g.strokeStyle='#000';g.lineWidth=3;g.beginPath();g.moveTo(0,-14);g.lineTo(10,11);g.lineTo(0,6);g.lineTo(-10,11);g.closePath();g.fill();g.stroke();g.restore();
+  g.restore();g.save();g.font='bold 14px Oswald,Impact,sans-serif';g.textAlign='right';g.lineWidth=4;g.strokeStyle='#000';g.fillStyle='#fff';const zt='×'+MAPV.z.toFixed(1);g.strokeText(zt,W-10,22);g.fillText(zt,W-10,22);g.restore()}
 (function(){let h='';for(const k in CATS){const m=CATS[k],c=m.c;h+='<span><b style="background:rgb('+(c[0]*255|0)+','+(c[1]*255|0)+','+(c[2]*255|0)+')">'+MLET[m.l]+'</b>'+m.name+'</span>'}
   h+='<span><b style="background:#ffb703">A</b>Armurerie</span><span><b style="background:#4aa3ff">$</b>Concessionnaire</span><span><b style="background:#ff4dd6">N</b>Cabaret Le Néon</span><span><b style="background:#e33">+</b>Hôpital · <b style="background:#3a6ae0">★</b>Police</span>';
   h+='<span><b style="background:#f2a33a">E</b>Station-service (essence)</span><span><b style="background:#d26ad1">C</b>Coiffeur &amp; mode</span><span><b style="background:#ff7a3d">R</b>Restaurant (vie +)</span><span><b style="background:#2aa198">T</b>Garage Turbo (pièces)</span><span><b style="background:#c0392b">☠</b>Territoire de gang</span><span><b style="background:#ffc400;color:#000">$</b>Commerce à braquer (gris = déjà braqué)</span>';
@@ -5381,14 +5389,28 @@ function mapSnapTargets(){const L=[],add=(x,z,name)=>{if(isFinite(x)&&isFinite(z
   add(HOSP.x,HOSP.z,'Hôpital');add(POLS.x,POLS.z,'Commissariat');
   for(const m of markers)add(m.x,m.z,m.name||'Mission');
   return L}
-{const bm=$('bigmap');let lt=0;const tap=e=>{e.preventDefault();const n=performance.now();if(n-lt<250)return;lt=n;const r=bm.getBoundingClientRect(),t=e.changedTouches?e.changedTouches[0]:e,k=bm.width/EXTW;
+{const bm=$('bigmap');let lt=0;const tap=t=>{const n=performance.now();if(n-lt<250)return;lt=n;const r=bm.getBoundingClientRect(),V=mapView(bm.width,bm.height),k=V.k;
   if(!r.width||!r.height)return;
-  const wx=(t.clientX-r.left)/r.width*bm.width/k,wz=(t.clientY-r.top)/r.height*bm.height/k,pxW=bm.width/r.width/k; // 1 pixel écran = pxW mètres
+  const wx=((t.clientX-r.left)/r.width*bm.width-V.ox)/k,wz=((t.clientY-r.top)/r.height*bm.height-V.oy)/k,pxW=bm.width/r.width/k; // 1 pixel écran = pxW mètres
   if(game.wp&&hyp(game.wp.x-wx,game.wp.z-wz)<16*pxW){game.wp=null;say('Point retiré.',1.5);drawBigMap();return}
   let best=null,bd=26*pxW;for(const q of mapSnapTargets()){const d=hyp(q.x-wx,q.z-wz);if(d<bd){bd=d;best=q}}
   game.wp=best?{x:best.x,z:best.z,name:best.name}:{x:clamp(wx,0,EXTW),z:clamp(wz,0,EXTH)};
   ROUTE.wk='';ROUTE.t=0;say(best?'Point placé : '+best.name:'Point placé sur la carte.',1.8);drawBigMap()};
- bm.addEventListener('click',tap);bm.style.cursor='crosshair'}
+ // doigts / souris : 1 doigt = déplacer (ou toucher pour placer un point), 2 doigts = zoomer
+ const pts=new Map();let moved=false,pinch=null;const loc=e=>{const r=bm.getBoundingClientRect();return[(e.clientX-r.left)/r.width*bm.width,(e.clientY-r.top)/r.height*bm.height]};
+ bm.addEventListener('pointerdown',e=>{e.preventDefault();try{bm.setPointerCapture(e.pointerId)}catch(x){}pts.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY});if(pts.size===1)moved=false;
+   if(pts.size===2){const a=[...pts.values()];pinch={d:hyp(a[0].x-a[1].x,a[0].y-a[1].y)||1,z:MAPV.z};moved=true}});
+ bm.addEventListener('pointermove',e=>{const q=pts.get(e.pointerId);if(!q)return;e.preventDefault();const r=bm.getBoundingClientRect(),sc=bm.width/r.width;
+   if(pts.size>=2&&pinch){q.x=e.clientX;q.y=e.clientY;const a=[...pts.values()],d=hyp(a[0].x-a[1].x,a[0].y-a[1].y)||1,mx=((a[0].x+a[1].x)/2-r.left)*sc,my=((a[0].y+a[1].y)/2-r.top)*sc;mapZoomAt(pinch.z*d/pinch.d/MAPV.z,mx,my);return}
+   const dx=e.clientX-q.x,dy=e.clientY-q.y;q.x=e.clientX;q.y=e.clientY;if(hyp(e.clientX-q.sx,e.clientY-q.sy)>7)moved=true;
+   if(moved&&MAPV.z>1){const k=bm.width/EXTW*MAPV.z;MAPV.cx-=dx*sc/k;MAPV.cz-=dy*sc/k;drawBigMap()}});
+ const up=e=>{const q=pts.get(e.pointerId);if(!q)return;pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(!moved&&pts.size===0)tap(e)};
+ bm.addEventListener('pointerup',up);bm.addEventListener('pointercancel',e=>{pts.delete(e.pointerId);pinch=null});
+ bm.addEventListener('wheel',e=>{e.preventDefault();const[x,y]=loc(e);mapZoomAt(Math.exp(-e.deltaY*.0018),x,y)},{passive:false});
+ bm.addEventListener('dblclick',e=>{e.preventDefault()});
+ bm.style.cursor='crosshair'}
+$('mzIn').addEventListener('click',()=>mapZoomAt(1.6));$('mzOut').addEventListener('click',()=>mapZoomAt(1/1.6));
+$('mzMe').addEventListener('click',()=>{MAPV.z=max(MAPV.z,3);MAPV.cx=P.car?P.car.x:P.x;MAPV.cz=P.car?P.car.z:P.z;drawBigMap()});
 {const rd=$('radar');let rt=0;const op=e=>{e.preventDefault();e.stopPropagation();const n=performance.now();if(n-rt<300)return;rt=n;if(game.state==='play'&&!game.paused)togglePause(true)};
  rd.addEventListener('click',op);rd.addEventListener('touchstart',op,{passive:false});rd.addEventListener('pointerdown',e=>e.stopPropagation());}
 $('rsp').addEventListener('click',()=>{togglePause(false);respawnAt(HOSP,min(300,floor(game.money*.05)),true);say('Retour à l’hôpital.',2)});
