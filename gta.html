@@ -358,7 +358,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <h1>VILLE<br><span>FOLLE</span></h1>
  <p>Une ville ouverte en 3D : vole des voitures, fais des missions, évite la police… ou affronte-la !</p>
  <p class="help"><b>Tablette</b> : joystick à gauche · glisse à droite pour tourner la caméra · boutons à droite<br>
- <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>Entrée</kbd> en voiture : tirer par la fenêtre · <kbd>B</kbd> braquer un commerce / payer un racket · <kbd>K</kbd> échanger tes plaques avec une voiture garée · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
+ <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir à pied / freiner en voiture · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>Entrée</kbd> en voiture : tirer par la fenêtre · <kbd>B</kbd> braquer un commerce / payer un racket · <kbd>K</kbd> échanger tes plaques avec une voiture garée · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
  <div><button class="btn g" id="profBtn">Compte / Profil</button> <button class="btn g" id="gfxBtn2">Graphismes</button></div>
@@ -538,6 +538,7 @@ varying vec3 vCol;varying vec2 vUV;varying vec3 vWP;varying vec3 vN;
 uniform sampler2D uTex;uniform sampler2D uEmi;uniform float uEmiK;uniform vec2 uCells;uniform float uLitF;uniform float uAlpha;uniform vec3 uCam;uniform vec3 uFogC;uniform vec2 uFog;
 uniform vec3 uSunDir;uniform vec3 uSunC;uniform vec3 uSky;uniform vec3 uGnd;uniform float uSpec;uniform float uShin;
 uniform sampler2D uShadow;uniform mat4 uLVP;uniform float uShOn;uniform float uShPx;
+uniform vec4 uPL[10];uniform vec3 uPLC[10];uniform float uPLn;
 float unpackD(vec4 c){return dot(c,vec4(1.0,1.0/255.0,1.0/65025.0,1.0/16581375.0));}
 void main(){vec4 t=vec4(1.0);
 #ifdef TEX
@@ -560,7 +561,8 @@ vec3 base=c;c=base*(amb+uSunC*df*sh);
 vec3 H=normalize(uSunDir+V);float sp=pow(max(dot(n,H),0.0),uShin)*uSpec*step(0.0,nd)*sh;
 float fr=uSpec*pow(1.0-max(dot(n,V),0.0),4.0);
 vec3 R=reflect(-V,n);vec3 env=mix(uGnd*0.7,uSky*1.15,smoothstep(-0.15,0.55,R.y));
-c+=uSunC*sp*1.5+env*fr*0.6;}
+c+=uSunC*sp*1.5+env*fr*0.6;
+if(uPLn>0.5){vec3 acc=vec3(0.0);for(int i=0;i<10;i++){vec3 d=uPL[i].xyz-vWP;float r=uPL[i].w;float l=length(d);if(l<r){float a=1.0-l/r;a*=a;float nl=max(dot(n,d/l),0.0)*0.85+0.15;acc+=uPLC[i]*a*nl;}}c+=base*acc;}}
 #endif
 #ifdef EMI
 float hh=fract(sin(dot(floor(vUV*uCells),vec2(12.9898,78.233)))*43758.5453);
@@ -640,6 +642,7 @@ function frameUniforms(p){
   if((l=u('uSunC')))gl.uniform3fv(l,ENV.sunC);
   if((l=u('uSky')))gl.uniform3fv(l,ENV.sky);
   if((l=u('uGnd')))gl.uniform3fv(l,ENV.gnd);
+  if((l=u('uPL')))gl.uniform4fv(l,PLIGHTS.p);if((l=u('uPLC')))gl.uniform3fv(l,PLIGHTS.c);if((l=u('uPLn')))gl.uniform1f(l,PLIGHTS.n);
   if((l=u('uShadow')))gl.uniform1i(l,2);if((l=u('uLVP')))gl.uniformMatrix4fv(l,false,SHD.lvp);if((l=u('uShOn')))gl.uniform1f(l,SHD.on?1:0);if((l=u('uShPx')))gl.uniform1f(l,1/SHD.size)}
 let frameId=0;
 function useMat(m){
@@ -741,7 +744,7 @@ c=mix(c,c*c*(3.0-2.0*c),0.3);                                 // contraste « fi
 float l=dot(c,vec3(0.2126,0.7152,0.0722));c=mix(vec3(l),c,1.15); // couleurs plus riches
 c*=mix(vec3(0.95,0.99,1.07),vec3(1.06,1.0,0.93),smoothstep(0.15,0.75,l)); // ombres bleutées, lumières chaudes
 c*=mix(vec3(1.0),vec3(0.86,0.9,1.08),uNight*0.5);
-float v=length(vUV-0.5)*1.35;c*=1.0-0.38*v*v;                  // coins assombris
+c=c*1.05+vec3(0.018);float v=length(vUV-0.5)*1.35;c*=1.0-0.2*v*v;                  // coins assombris
 gl_FragColor=vec4(clamp(c,0.0,1.0),1.0);}`;
 let pBright=null,pBlur=null,pFinal=null,PPTRI=null;
 function ppTex(w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,w,h,0,gl.RGBA,gl.UNSIGNED_BYTE,null);
@@ -1043,7 +1046,8 @@ function lampPost(x,z,dx,dz){const mb=S.flat.mb(x,z),ax=x+dx*1.7,az=z+dz*1.7;
   mb.addMesh(cylMB(.1,.075,6.2,6,false),sMat(x,0,z,1,1,1),COL.pole);mb.box(min(x,ax)-.06,6.05,min(z,az)-.06,max(x,ax)+.06,6.25,max(z,az)+.06,COL.pole,{ao:1});
   S.lamph.mb(x,z).box(ax-.4,5.95,az-.25,ax+.4,6.1,az+.25,[1,1,1],{ao:1});
   S.glow.mb(x,z).topUV(ax-7,az-7,ax+7,az+7,.17,[1,1,1],0,0,1,1);
-  addCirc(x,z,.22,6.2)}
+  LAMPS.push([ax,5.8,az]);addCirc(x,z,.22,6.2)}
+const LAMPS=[];
 // petit mobilier urbain
 function hydrant(x,z){S.flat.mb(x,z).addMesh(cylMB(.14,.12,.72,6),sMat(x,CURB,z,1,1,1),[.85,.12,.1]);addCirc(x,z,.18,.8)}
 function binProp(x,z){const mb=S.flat.mb(x,z);mb.addMesh(cylMB(.3,.26,.9,8),sMat(x,CURB,z,1,1,1),[.2,.3,.24]);mb.addMesh(cylMB(.32,.32,.07,8),sMat(x,CURB+.9,z,1,1,1),[.14,.2,.16]);addCirc(x,z,.32,1)}
@@ -2167,22 +2171,22 @@ function airportUpdate(dt){indoorUpdate();turfUpdate(dt);driftUpdate(dt);gangAmb
 //  ENVIRONNEMENT : cycle jour/nuit, dessin du monde statique
 // =====================================================================
 const TOD=[ // t, top, horizon, ciel hémi, sol hémi, intensité hémi, couleur soleil, intensité soleil
- [0,0x050a1c,0x141c34,0x4a5c9a,0x1e2433,.6,0x8fa8ff,.2],
- [5.3,0x1a2750,0x5a4a6a,0x7a82b0,0x2a2a3a,.58,0xff9a60,.12],
+ [0,0x081230,0x1c2848,0x7686c4,0x384058,.86,0xa8beff,.3],
+ [5.3,0x1a2750,0x5a4a6a,0x8890c0,0x3a3a4c,.74,0xff9a60,.16],
  [6.5,0x4a6bb0,0xf5a870,0xc0b0b8,0x5a4a40,.6,0xffb070,.45],
  [8.2,0x4a8fe0,0xbcdcf6,0xcfe3ff,0x6a6a5e,.62,0xfff1d6,.6],
  [13,0x3f86e0,0xb4d8f7,0xdcebff,0x706c60,.66,0xffffff,.62],
  [17,0x4a88d8,0xc8dcf0,0xdbe4f4,0x6a6860,.62,0xfff0d0,.56],
  [19,0x35508f,0xf59a5a,0xb09ab8,0x4a4048,.55,0xff9a5a,.42],
- [20.6,0x101c40,0x30365a,0x5a6aa0,0x1e2433,.58,0x8fa8ff,.2],
- [24,0x050a1c,0x141c34,0x4a5c9a,0x1e2433,.6,0x8fa8ff,.2]];
+ [20.6,0x101c40,0x30365a,0x7686c4,0x384058,.84,0xa8beff,.3],
+ [24,0x081230,0x1c2848,0x7686c4,0x384058,.86,0xa8beff,.3]];
 let TIME=9.0;
 function applyTime(t){
   t=((t%24)+24)%24;let a=TOD[0],b=TOD[1];
   for(let i=0;i<TOD.length-1;i++){if(t>=TOD[i][0]&&t<=TOD[i+1][0]){a=TOD[i];b=TOD[i+1];break}}
   const k=(t-a[0])/(b[0]-a[0]),C=(i)=>mixc(hexc(a[i]),hexc(b[i]),k);
   ENV.top=C(1);ENV.hor=C(2);const hs=C(3),hg=C(4),hi=lerp(a[5],b[5],k),sc=C(6),si=lerp(a[7],b[7],k);
-  ENV.sky=mulc(hs,hi);ENV.gnd=mulc(hg,hi);ENV.sunC=mulc(sc,si);
+  ENV.sky=mulc(hs,hi*1.12);ENV.gnd=mulc(hg,hi*1.15);ENV.sunC=mulc(sc,si);
   ENV.fogC=mixc(ENV.hor,[.5,.52,.56],.0);
   const night=t<12?1-sstep(5.3,7.0,t):sstep(18.4,20.4,t);ENV.night=night;
   if(t>6&&t<18.5){const an=(t-6)/12.5*PI,x=cos(an)*.9,y=sin(an)*.95+.14,z=.35,l=hyp(x,y,z);ENV.sunDir=[x/l,y/l,z/l]}else ENV.sunDir=(()=>{const x=-.4,y=.65,z=-.3,l=hyp(x,y,z);return[x/l,y/l,z/l]})();
@@ -3488,7 +3492,7 @@ function carShoot(dt){const c=P.car;if(!c||c.s.air)return;reloadStep(dt);P.shoot
 function playerDrive(dt){
   const c=P.car;P.enterT=max(0,P.enterT-dt);carShoot(dt);
   if(IN.use&&P.enterT<=0){IN.use=false;if(c.s.air&&((c.alt||0)>1.5||abs(c.vf||0)>9)){say('Pose l’avion et arrête-toi avant de descendre !',2.2)}else{exitCar(false);return}}IN.use=false;
-  const air=!!c.s.air,inp={thr:max(0,IN.sy),brk:max(0,-IN.sy),steer:IN.sx,hb:air?false:IN.hb};
+  const air=!!c.s.air,sb=!air&&!!KB.ShiftLeft,inp={thr:sb?0:max(0,IN.sy),brk:max(max(0,-IN.sy),sb?1:0),steer:IN.sx,hb:air?false:IN.hb}; // Maj gauche = frein en voiture
   if(!air&&!c.s.boat){if(c.fuel===undefined)c.fuel=.45+Math.random()*.55;const sp=hyp(c.vx,c.vz),gs=atGas(c.x,c.z);
     if(gs&&sp<3&&c.fuel<1){if(game.money>=1){const add=min(1-c.fuel,dt*.14),cost=add*100*.5;c.fuel+=add;game.fcost=(game.fcost||0)+cost;if(game.fcost>=1){const pay=floor(game.fcost);game.money=max(0,game.money-pay);game.fcost-=pay}if(c.fuel>=.999){c.fuel=1;say('Plein fait !',1.8)}}else say('Pas assez d’argent pour l’essence',1.5)}
     else if(!game.mission){c.fuel=max(0,c.fuel-dt*(.0002+sp*.00003+inp.thr*.00015))}
@@ -5469,6 +5473,15 @@ function drawPickups(){
   for(const k of pickups){if(k.gone)continue;if(abs(k.x-CAM.x)>130||abs(k.z-CAM.z)>130)continue;if(!visSphere(k.x,1,k.z,1.2))continue;
     const y=groundH(k.x,k.z)+.75+sin(t*2.2+k.x)*.12;mtrs(_M,k.x,y,k.z,t*1.6+k.z,0,k.type==='cash'?.35:0);drawMesh(pkMeshes[k.type],pickMat,_M);
     const c=PKCOL[k.type];bGlow.bill(k.x,y+.2,k.z,1.8,[c[0],c[1],c[2],.35])}}
+// choisit les lumières les plus proches de la caméra (lampadaires, phares, néons)
+const PLIGHTS={p:new Float32Array(40),c:new Float32Array(30),n:0};
+function gatherLights(){const n=ENV.night;PLIGHTS.n=0;PLIGHTS.p.fill(0);PLIGHTS.c.fill(0);if(n<.05)return;
+  const cx=(CAM.x+CAM.tx)/2,cz=(CAM.z+CAM.tz)/2,L=[];
+  for(const q of LAMPS){const d=abs(q[0]-cx)+abs(q[2]-cz);if(d<140)L.push([d,q[0],q[1],q[2],17,1,.78,.48,1.25])}
+  for(const c of cars){if(c.mode==='parked'||c.mode==='wreck'||c.mode==='idle'||c.s.air)continue;const d=abs(c.x-cx)+abs(c.z-cz);if(d>110)continue;const fx=sin(c.yaw),fz=cos(c.yaw);
+    L.push([d-(c===P.car?200:0),c.x+fx*(c.s.L/2+6),c.y+1.2,c.z+fz*(c.s.L/2+6),c===P.car?15:10,1,.93,.78,c===P.car?1.5:.9])}
+  L.sort((a,b)=>a[0]-b[0]);const k=min(10,L.length);
+  for(let i=0;i<k;i++){const q=L[i];PLIGHTS.p.set([q[1],q[2],q[3],q[4]],i*4);PLIGHTS.c.set([q[5]*q[8]*n,q[6]*q[8]*n,q[7]*q[8]*n],i*3)}PLIGHTS.n=k}
 function drawLights(){
   const n=ENV.night;
   for(const c of cars){if(c.mode==='wreck'||c.mode==='parked'||c.mode==='burning'&&false)continue;
@@ -5484,7 +5497,7 @@ function drawLights(){
 function drawTracers(){
   for(const t of tracers){const k=1-t.t/.07;bPlain.beam(t.a[0],t.a[1],t.a[2],t.b[0],t.b[1],t.b[2],.06,[1,.92,.55,.95*k]);if(t.t<.03)bGlow.bill(t.a[0],t.a[1],t.a[2],1.0,[1,.8,.35,.9])}}
 function render(){
-  applyTime(TIME);tlColors(gtime.t);
+  applyTime(TIME);tlColors(gtime.t);gatherLights();
   let shx=0,shy=0,shz=0;if(shake>0){const k=min(shake,1.6)*.09;shx=rnd(-k,k);shy=rnd(-k,k);shz=rnd(-k,k)}
   const pp=gfxOn();if(pp)shadowPass();else SHD.on=false;shadowBind();if(pp)gl.bindFramebuffer(gl.FRAMEBUFFER,PP.drawF);
   beginFrame(CAM.x+shx,CAM.y+shy,CAM.z+shz,CAM.tx,CAM.ty,CAM.tz,CAM.fov,cvs.width/cvs.height);
