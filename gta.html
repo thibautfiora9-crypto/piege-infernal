@@ -375,6 +375,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
   <div class="row" id="accBtns"><button class="btn" id="accLogin">Connexion</button><button class="btn g" id="accReg">Créer un compte</button></div>
   <div class="row"><button class="btn g" id="accSync" style="display:none">Sauvegarder maintenant</button><button class="btn g" id="accOut" style="display:none">Déconnexion</button></div>
   <div id="accMsg" style="min-height:20px;font-size:14px"></div></div>
+ <div style="border:2px solid #4a8fe8;border-radius:10px;padding:10px;width:100%;display:flex;flex-direction:column;gap:6px;align-items:center"><b>🗂️ Sauvegardes trouvées</b><small style="color:#c8c8e0">Toutes les parties de Ville Folle trouvées sur cet appareil (et en ligne). Choisis celle à reprendre.</small><div id="svList" style="display:flex;flex-direction:column;gap:6px;width:100%"></div></div>
  <h1 style="font-size:26px;margin-top:6px">PROFILS SUR CET APPAREIL</h1>
  <p>Chaque profil garde sa propre progression (argent, armes, voitures, histoire) sur cet appareil. Le PIN est un simple verrou, pas une vraie sécurité.</p>
  <div id="profList"></div>
@@ -847,11 +848,13 @@ function circHit(it,px,pz,r){
 function inBlockCoord(v){if(v<0||v>=SIZE)return false;const m=v%CELL;return m>=ROAD}
 const INTZ={x0:-1700,x1:-1250,z0:520,z1:640};
 // viaducs : rampe montante dans le segment a, tablier au-dessus des carrefours, rampe descendante dans le segment b
-const DECKS=[{c:9*CELL+HALF,a:3,b:12,H:7.5,hw:6.2},{c:3*CELL+HALF,a:4,b:10,H:6.6,hw:6.2}];
+const DECKS=[{ax:'z',c:9*CELL+HALF,a:3,b:12,H:7.5,hw:6.2},{ax:'z',c:3*CELL+HALF,a:4,b:10,H:6.6,hw:6.2},{ax:'x',c:13*CELL+HALF,a:2,b:8,H:7,hw:6.2},{ax:'z',c:13*CELL+HALF,a:8,b:13,H:7,hw:6.2},{ax:'x',c:7*CELL+HALF,a:11,b:14,H:6.8,hw:6.2}];
 for(const D of DECKS){D.r0=D.a*CELL+ROAD+2;D.r1=(D.a+1)*CELL-2;D.r2=D.b*CELL+ROAD+2;D.r3=(D.b+1)*CELL-2}
-function rampTop(ix,iz,nx,nz){if(nx!==ix)return false;for(const D of DECKS){if(abs(ix*CELL+HALF-D.c)>1)continue;if((iz===D.a+1&&nz===D.a)||(iz===D.b&&nz===D.b+1))return true}return false}
-function deckH(x,z){for(const D of DECKS){if(abs(x-D.c)>D.hw||z<D.r0||z>D.r3)continue;
-    if(z<D.r1){const t=(z-D.r0)/(D.r1-D.r0);return D.H*t*t*(3-2*t)}if(z<=D.r2)return D.H;const t=(z-D.r2)/(D.r3-D.r2);const u=1-t;return D.H*u*u*(3-2*u)}return-1}
+function rampTop(ix,iz,nx,nz){for(const D of DECKS){const ci=Math.round((D.c-HALF)/CELL);
+    if(D.ax==='z'){if(ix!==ci||nx!==ix)continue;if((iz===D.a+1&&nz===D.a)||(iz===D.b&&nz===D.b+1))return true}
+    else{if(iz!==ci||nz!==iz)continue;if((ix===D.a+1&&nx===D.a)||(ix===D.b&&nx===D.b+1))return true}}return false}
+function deckH(x,z){for(const D of DECKS){const u=D.ax==='x'?x:z,v=D.ax==='x'?z:x;if(abs(v-D.c)>D.hw||u<D.r0||u>D.r3)continue;
+    if(u<D.r1){const t=(u-D.r0)/(D.r1-D.r0);return D.H*t*t*(3-2*t)}if(u<=D.r2)return D.H;const t=(u-D.r2)/(D.r3-D.r2);const w=1-t;return D.H*w*w*(3-2*w)}return-1}
 const BUMPS=[];
 function bumpH(x,z){for(const b of BUMPS){if(x<b.x0||x>b.x1||z<b.z0||z>b.z1)continue;const d=b.ax?(x-(b.x0+b.x1)/2):(z-(b.z0+b.z1)/2),c=cos(clamp(d/1.6,-1,1)*PI/2);return .17*c*c}return 0}
 function groundH(x,z,y){if(x>INTZ.x0&&x<INTZ.x1&&z>INTZ.z0&&z<INTZ.z1)return CURB;if(x<0||z<0||x>=SIZE||z>=SIZE)return outerH(x,z);
@@ -1414,7 +1417,7 @@ function clubRope(open){const c=CLUB.rope;if(!c)return;const it=c.it;if(open){it
 // =====================================================================
 //  PLAN DE LA VILLE (16 × 16 blocs) : quartiers, bâtiments, relief
 // =====================================================================
-const SPECIAL={'11,7':'tune','5,5':'club','2,8':'garage','6,8':'gun','10,9':'hosp','4,9':'pol','8,4':'bank','6,2':'shops','3,6':'shops','10,5':'shops','6,11':'shops','9,7':'gas','3,12':'gas','9,12':'gas','12,4':'gas','2,3':'style','8,10':'style','13,9':'style'};
+const SPECIAL={'4,2':'bank','7,13':'bank','1,5':'bank','10,2':'bank','11,7':'tune','5,5':'club','2,8':'garage','6,8':'gun','10,9':'hosp','4,9':'pol','8,4':'bank','6,2':'shops','3,6':'shops','10,5':'shops','6,11':'shops','9,7':'gas','3,12':'gas','9,12':'gas','12,4':'gas','2,3':'style','8,10':'style','13,9':'style'};
 const PARKS=new Set(['2,5','3,10','5,12','8,12','12,10','11,2','1,8']);
 const LAKES=new Set(['5,0','10,1']);
 const HIDEOUTS=['13,3','14,6','12,8'];
@@ -1796,27 +1799,34 @@ function worldGenSteps(){
   st.push(outerGen);
   return st}
 function buildDecks(){const conc=[.7,.7,.68],dk=[.5,.5,.5];
-  for(const D of DECKS){const c=D.c,hw=D.hw,x0=c-hw,x1=c+hw,G=S.ground,F=S.flat;
-    const surf=(za,zb,n)=>{for(let i=0;i<n;i++){const z0=za+(zb-za)*i/n,z1=za+(zb-za)*(i+1)/n,h0=deckH(c,z0+.001),h1=deckH(c,z1-.001);
-        G.mb(c,(z0+z1)/2).quad([x0,h0+.06,z0],[x1,h0+.06,z0],[x1,h1+.06,z1],[x0,h1+.06,z1],[0,1,0],[1,1,1],[1,1,1],[[x0/14,z0/14],[x1/14,z0/14],[x1/14,z1/14],[x0/14,z1/14]]);
-        for(const sx of[-1,1]){const x=c+sx*hw;F.mb(c,(z0+z1)/2).qd([x,0,z0],[x,0,z1],[x,h1+.02,z1],[x,h0+.02,z0],conc,[c,h0/2,(z0+z1)/2]);
-          F.mb(c,(z0+z1)/2).box(x-.18,h0,z0,x+.18,h0+.9,z1,conc,{ao:.95})}}};               // muret
+  // un viaduc n'est gardé que si toutes ses routes existent (pas d'eau dessous)
+  for(let i=DECKS.length-1;i>=0;i--){const D=DECKS[i],ci=Math.round((D.c-HALF)/CELL);let ok=true;for(let k=D.a;k<=D.b;k++){if(!(D.ax==='z'?segOK(ci,k,ci,k+1):segOK(k,ci,k+1,ci)))ok=false}if(!ok)DECKS.splice(i,1)}
+  for(const D of DECKS){const c=D.c,hw=D.hw,X=D.ax==='x',G=S.ground,F=S.flat;
+    // (v = travers, u = le long du viaduc) -> monde
+    const W=(v,y,u)=>X?[u,y,v]:[v,y,u],mb=(st,v,u)=>X?st.mb(u,v):st.mb(v,u),hAt=u=>deckH(...(X?[u,c]:[c,u]));
+    const box=(m,v0,y0,u0,v1,y1,u1,col,o)=>X?m.box(u0,y0,v0,u1,y1,v1,col,o):m.box(v0,y0,u0,v1,y1,u1,col,o);
+    const aabb=(v0,u0,v1,u1,h)=>X?addAABB(u0,v0,u1,v1,h):addAABB(v0,u0,v1,u1,h);
+    const surf=(ua,ub,n)=>{for(let i=0;i<n;i++){const u0=ua+(ub-ua)*i/n,u1=ua+(ub-ua)*(i+1)/n,h0=hAt(u0+.001),h1=hAt(u1-.001);
+        const P=[W(c-hw,h0+.06,u0),W(c+hw,h0+.06,u0),W(c+hw,h1+.06,u1),W(c-hw,h1+.06,u1)];
+        mb(G,c,(u0+u1)/2).qd(P[0],P[1],P[2],P[3],[1,1,1],W(c,-20,(u0+u1)/2),P.map(q=>[q[0]/14,q[2]/14]));
+        for(const sx of[-1,1]){const v=c+sx*hw;mb(F,c,(u0+u1)/2).qd(W(v,0,u0),W(v,0,u1),W(v,h1+.02,u1),W(v,h0+.02,u0),conc,W(c,h0/2,(u0+u1)/2));
+          box(mb(F,c,(u0+u1)/2),v-.18,h0,u0,v+.18,h0+.9,u1,conc,{ao:.95})}}};       // muret
     surf(D.r0,D.r1,14);surf(D.r2,D.r3,14);
-    // dessous des rampes : bloc plein (on ne peut plus rouler « dans » la rampe depuis le bas)
-    for(let z=D.r0;z<D.r1;z+=3){const h=deckH(c,z+.001);if(h>=2.2)addAABB(x0,z,x1,min(D.r1,z+3),h-.6).ramp=true}
-    for(let z=D.r2;z<D.r3;z+=3){const z1=min(D.r3,z+3),h=deckH(c,z1-.001);if(h>=2.2)addAABB(x0,z,x1,z1,h-.6).ramp=true}
+    // dessous des rampes : plein
+    for(let u=D.r0;u<D.r1;u+=3){const h=hAt(u+.001);if(h>=3)aabb(c-hw,u,c+hw,min(D.r1,u+3),h-1.8).ramp=true}
+    for(let u=D.r2;u<D.r3;u+=3){const u1=min(D.r3,u+3),h=hAt(u1-.001);if(h>=3)aabb(c-hw,u,c+hw,u1,h-1.8).ramp=true}
     // tablier
-    for(let z=D.r1;z<D.r2;z+=40){const z1=min(D.r2,z+40);G.mb(c,(z+z1)/2).topUV(x0,z,x1,z1,D.H+.02,[1,1,1],x0/14,z/14,x1/14,z1/14);
-      F.mb(c,(z+z1)/2).box(x0-.3,D.H-.75,z,x1+.3,D.H,z1,conc,{ao:.8,bottom:true});
-      for(const sx of[-1,1])F.mb(c,(z+z1)/2).box(c+sx*hw-.2,D.H,z,c+sx*hw+.2,D.H+1.0,z1,conc,{ao:.95})}
+    for(let u=D.r1;u<D.r2;u+=40){const u1=min(D.r2,u+40);const m=mb(G,c,(u+u1)/2);if(X)m.topUV(u,c-hw,u1,c+hw,D.H+.02,[1,1,1],u/14,(c-hw)/14,u1/14,(c+hw)/14);else m.topUV(c-hw,u,c+hw,u1,D.H+.02,[1,1,1],(c-hw)/14,u/14,(c+hw)/14,u1/14);
+      box(mb(F,c,(u+u1)/2),c-hw-.3,D.H-.75,u,c+hw+.3,D.H,u1,conc,{ao:.8,bottom:true});
+      for(const sx of[-1,1])box(mb(F,c,(u+u1)/2),c+sx*hw-.2,D.H,u,c+sx*hw+.2,D.H+1.0,u1,conc,{ao:.95})}
     // marquage central
-    for(let z=D.r0+2;z<D.r3-2;z+=7){const h=deckH(c,z)+.04;if(h<.1)continue;S.marks.mb(c,z).box(c-.08,h,z,c+.08,h+.01,z+3.5,[.95,.95,.95],{ao:1})}
-    // piliers (sur les bas-côtés, jamais au milieu d'un carrefour)
-    for(let z=D.r1+6;z<D.r2-3;z+=16){if(((z%CELL)+CELL)%CELL<ROAD+3)continue;for(const sx of[-1,1]){const x=c+sx*(hw+1.1);F.mb(x,z).box(x-.55,0,z-.55,x+.55,D.H-.7,z+.55,dk,{ao:.85});addAABB(x-.55,z-.55,x+.55,z+.55,D.H-.75)}}}}
+    for(let u=D.r0+2;u<D.r3-2;u+=7){const h=hAt(u)+.04;if(h<.1)continue;box(mb(S.marks,c,u),c-.08,h,u,c+.08,h+.01,u+3.5,[.95,.95,.95],{ao:1})}
+    // piliers (bas-côtés, jamais dans un carrefour)
+    for(let u=D.r1+6;u<D.r2-3;u+=16){if(((u%CELL)+CELL)%CELL<ROAD+3)continue;for(const sx of[-1,1]){const v=c+sx*(hw+1.1);box(mb(F,v,u),v-.55,0,u-.55,v+.55,D.H-.7,u+.55,dk,{ao:.85});aabb(v-.55,u-.55,v+.55,u+.55,D.H-.75)}}}}
 function buildBumps(){const R=mulb(1717);
   for(let i=0;i<40&&BUMPS.length<14;i++){const ax=R()<.5,k=1+((R()*(NB-2))|0),s=1+((R()*(NB-3))|0);
     // segment de route : entre les carrefours s et s+1, sur la ligne k
-    const c=k*CELL+HALF,m=s*CELL+ROAD+BLOCK/2,x=ax?m:c,z=ax?c:m;if(deckH(x,z)>=0||abs(x-9*CELL-HALF)<8||abs(x-3*CELL-HALF)<8)continue;
+    const c=k*CELL+HALF,m=s*CELL+ROAD+BLOCK/2,x=ax?m:c,z=ax?c:m;if(deckH(x,z)>=0||DECKS.some(D=>abs((D.ax==='x'?z:x)-D.c)<9))continue;
     const bx=floor(x/CELL),bz=floor(z/CELL),zn=zoneOf(clamp(bx,0,NB-1),clamp(bz,0,NB-1));if(zn==='water')continue;if(!(ax?segOK(s,k,s+1,k):segOK(k,s,k,s+1)))continue;
     const b=ax?{ax:1,x0:x-1.6,x1:x+1.6,z0:z-HALF+.5,z1:z+HALF-.5}:{ax:0,x0:x-HALF+.5,x1:x+HALF-.5,z0:z-1.6,z1:z+1.6};BUMPS.push(b);
     const n=8,F=S.flat.mb(x,z);for(let j=0;j<n;j++){const t0=j/n,t1=(j+1)/n,col=(j%2)?[.95,.8,.1]:[.12,.12,.12];
@@ -1879,7 +1889,8 @@ function buildStore(side,bx,bz,kind){
     POIS.push({id:'eat',x:ep.x,z:ep.z,r:2.8,prompt:d.name+' : '+d.food.n+' ('+d.food.p+' $) — redonne de la vie',act:()=>eatAt(r),y:2.2,l:-1})}
   return s}
 // ---------- banque centrale (grande salle, coffre au fond) ----------
-function buildBank(bx,bz,X0,Z0,X1,Z1){
+const BANK_NAMES=['Banque Alpina','Crédit Fou','Banque du Port','Épargne Folle','Banque Royale'];
+function buildBank(bx,bz,X0,Z0,X1,Z1){const BN=BANK_NAMES[BANKS.length%BANK_NAMES.length];
   const R=new Room(2,bx,bz,17,24,6.2),I=R.I,hw=R.hw,D=R.D,t=R.t,H=R.H;
   shell(R,{out:hexs('#d8d2c4'),trim:hexs('#8a6d1e'),roof:hexs('#555'),inCb:[.62,.56,.42],inCt:[.94,.9,.8],tile:[.96,.94,.9],du:1.8,dh:3.4,wins:[[-14,-4],[4,14]],wy0:1,wy1:4.2});
   // colonnes à l'entrée
@@ -1893,8 +1904,8 @@ function buildBank(bx,bz,X0,Z0,X1,Z1){
   for(const[u,v]of[[-9,6],[9,6]])R.solid(u-1.2,v-.6,u+1.2,v+.6,.15,.9,[.55,.35,.2],.85);
   // 3 caissiers
   const tellers=[];for(const u of[-8,0,8]){const p=R.pt(u,12.9);tellers.push(mkActor(p.x,.14,p.z,R.yawOut,mkLook({shirt:hexc(0xeeeeee),pants:hexc(0x1a1d30),front:true,hair:hexc(0x2a1f18)}),{pose:'idle',face:true,r:.5}))}
-  const sp=R.pt(0,-.3);bannerPlane('BANQUE\nALPINA','#0b3d91','#ffffff',sp.x+R.nx*.05,H+.6,sp.z+R.nz*.05,14,3.2,R.nx,R.nz,'#fff');
-  const b={name:'Banque Alpina',R,door:R.pt(0,-3.5),inside:R.pt(0,3),vault:R.pt(0,D-8.2),tellers,bx,bz,x:R.X(0,D/2),z:R.Z(0,D/2),pays:2500};
+  const sp=R.pt(0,-.3);bannerPlane(BN.toUpperCase().replace(' ','\n'),'#0b3d91','#ffffff',sp.x+R.nx*.05,H+.6,sp.z+R.nz*.05,14,3.2,R.nx,R.nz,'#fff');
+  const b={name:BN,R,door:R.pt(0,-3.5),inside:R.pt(0,3),vault:R.pt(0,D-8.2),tellers,bx,bz,x:R.X(0,D/2),z:R.Z(0,D/2),pays:2500};
   BANKS.push(b);return b}
 // ---------- commissariat : accueil, bureaux, cellules, parking ----------
 const POL_CARS=[];
@@ -4221,7 +4232,7 @@ function startRobStore(src,kinds,star){
 reg('rob1','B','Braquage de commerce',src=>startRobStore(src,['conv','pharma','pizza','electro'],2));
 reg('rob2','B','Braquage de la bijouterie',src=>startRobStore(src,['jewel'],3));
 reg('bank','B','Casse de la banque',src=>{
-  const b=BANKS[0],guards=[];let loot=0;
+  const b=nearestOf(BANKS,P.x,P.z,0,99999)||BANKS[0],guards=[];let loot=0;
   startM(src,{title:'Casse de la banque',reward:m=>loot||2500,
     stages:[sGo(b.door,'Va à la banque Alpina (point jaune) — arme-toi !',{r:8}),
       m=>({hint:'',enter:m=>{m.prog=0;say('Menace les caissiers, puis ouvre le coffre !',3.5)},
@@ -5380,6 +5391,7 @@ $('gfxBtn').addEventListener('click',gfxToggle);$('gfxBtn2').addEventListener('c
 $('mis').addEventListener('click',()=>{if(!game.mission)openShop('missions')});
 // lieux sur lesquels le point de la carte « s'aimante »
 function mapSnapTargets(){const L=[],add=(x,z,name)=>{if(isFinite(x)&&isFinite(z))L.push({x,z,name})};
+  for(const b of BANKS)add(b.door.x,b.door.z,b.name);
   const GN={[GUN_L]:'Armurerie',[GAR_L]:'Concessionnaire',[CLUB_L]:'Cabaret Le Néon',4:'Garage Turbo'};
   for(const q of GUIDES)add(q.x,q.z,GN[q.l]||'Boutique');
   for(const s of STORES)add(s.door.x,s.door.z,s.name);
@@ -5633,31 +5645,46 @@ const SAVEK0=null;
 // ---------- compte en ligne (même compte que Cubia / Piège Infernal) ----------
 const ACC=()=>{try{return window.CB?CB.acct():null}catch(e){return null}};
 function curKey(){const a=ACC();return a?'villefolle3d_acc_'+a.p.toLowerCase():saveKey(PROF.cur)}
-const CLOUD={st:'off',lastPush:0,timer:0,busy:false};
+const CLOUD={st:'off',lastPush:0,timer:0,busy:false,pulled:false,booted:false};
 function cloudErr(e){const m=String(e&&e.message||e);return /404|PGRST202|Could not find/.test(m)?'missing':'net'}
 async function vfCloudPull(){const a=ACC();if(!a)return'off';
   try{const r=await CB.rpc('vf_load',{p_pseudo:a.p,p_pin:a.pin});
     if(!r||!r.ok){CLOUD.st=r&&r.err==='bad'?'badlogin':'net';return CLOUD.st}
     let loc=null;try{loc=JSON.parse(localStorage.getItem(curKey())||'null')}catch(e){}
     let cl=null;try{cl=r.data?JSON.parse(r.data):null}catch(e){}
-    if(cl&&(!loc||(cl.ts||0)>(loc.ts||0))){localStorage.setItem(curKey(),r.data);CLOUD.st='loaded'}
-    else if(loc&&(!cl||(loc.ts||0)>(cl.ts||0))){CLOUD.st='ok';vfPush(true)}else CLOUD.st='ok';
+    CLOUD.cloudData=cl;
+    // on compare avec la sauvegarde telle qu'elle était AVANT le démarrage de la partie (une partie vide sauvée ensuite ne compte pas)
+    const locTs=CLOUD.booted?(CLOUD.bootTs||0):(loc&&loc.ts)||0;
+    if(cl&&(cl.ts||0)>locTs){
+      if(CLOUD.booted){CLOUD.pulled=true;CLOUD.st='newer';return CLOUD.st} // trop tard : la partie a déjà démarré, on ne touche à rien
+      backupSave(curKey());localStorage.setItem(curKey(),r.data);CLOUD.st='loaded'}
+    else if(loc&&(!cl||(loc.ts||0)>(cl.ts||0))){CLOUD.st='ok';CLOUD.pulled=true;vfPush(false)}else CLOUD.st='ok';
+    CLOUD.pulled=true;
     return CLOUD.st}catch(e){CLOUD.st=cloudErr(e);return CLOUD.st}}
-async function vfPush(force){const a=ACC();if(!a||CLOUD.busy||CLOUD.st==='missing'||CLOUD.st==='badlogin')return;
-  const d=localStorage.getItem(curKey());if(!d)return;CLOUD.busy=true;
-  try{const r=await CB.rpc('vf_save',{p_pseudo:a.p,p_pin:a.pin,p_data:d});CLOUD.lastPush=Date.now();if(r&&r.ok){if(CLOUD.st!=='loaded')CLOUD.st='ok'}else CLOUD.st=r&&r.err==='bad'?'badlogin':'net'}
+async function vfPush(force){const a=ACC();if(!a||CLOUD.busy||CLOUD.st==='missing'||CLOUD.st==='badlogin'||CLOUD.st==='newer')return;
+  if(!CLOUD.pulled){vfCloudPull();return} // jamais d'envoi tant qu'on n'a pas lu la sauvegarde en ligne
+  const d=localStorage.getItem(curKey());if(!d)return;
+  // garde-fou : ne pas remplacer une partie avancée par une partie presque vide
+  try{const L=JSON.parse(d),C=CLOUD.cloudData;if(C&&saveScore(C)>saveScore(L)+5000&&!force){CLOUD.st='guard';return}}catch(e){}
+  CLOUD.busy=true;
+  try{const r=await CB.rpc('vf_save',{p_pseudo:a.p,p_pin:a.pin,p_data:d});CLOUD.lastPush=Date.now();if(r&&r.ok){try{CLOUD.cloudData=JSON.parse(d)}catch(e){}if(CLOUD.st!=='loaded')CLOUD.st='ok'}else CLOUD.st=r&&r.err==='bad'?'badlogin':'net'}
   catch(e){CLOUD.st=cloudErr(e)}CLOUD.busy=false}
 function vfQueuePush(){if(!ACC())return;clearTimeout(CLOUD.timer);const w=max(1500,20000-(Date.now()-CLOUD.lastPush));CLOUD.timer=setTimeout(()=>vfPush(),w)}
-addEventListener('visibilitychange',()=>{if(document.hidden&&game.state!=='title'){saveGame();if(ACC())vfPush(true)}});
+addEventListener('visibilitychange',()=>{if(document.hidden&&game.state!=='title'){saveGame();if(ACC())vfPush()}});
 addEventListener('pagehide',()=>{if(game.state!=='title')saveGame()});
-const CLOUD_TXT={loaded:'☁️ Progression chargée depuis ton compte',ok:'☁️ Sauvegarde en ligne active',net:'☁️ Hors ligne : sauvegarde sur l’appareil (réessaie plus tard)',missing:'☁️ Sauvegarde en ligne pas encore activée (lance supabase5.sql dans Supabase)',badlogin:'☁️ Pseudo ou PIN refusé : reconnecte-toi (bouton Compte)',off:''};
+// « valeur » d'une sauvegarde (pour ne pas écraser une partie riche par une vide)
+function saveScore(o){if(!o||typeof o!=='object')return 0;let v=(+o.m||0)+(o.d|0)*500+(o.s|0)*3000;const own=Array.isArray(o.o)?o.o:[];const PR=[0,0,2200,3200,5500,12000];for(let i=2;i<6;i++)if(own[i])v+=PR[i];
+  if(o.g&&typeof o.g==='object')for(const t in o.g)v+=(VT[t]&&VT[t].price)||0;if(Array.isArray(o.bz))v+=o.bz.length*5000;return v}
+function backupSave(k){try{const d=localStorage.getItem(k);if(!d)return;const L=JSON.parse(localStorage.getItem('villefolle3d_backups')||'[]');L.unshift({k,t:Date.now(),d});localStorage.setItem('villefolle3d_backups',JSON.stringify(L.slice(0,6)))}catch(e){}}
+const CLOUD_TXT={newer:'☁️ Une sauvegarde plus récente est en ligne : recharge la page pour la récupérer',guard:'☁️ Sauvegarde en ligne protégée : ta partie en ligne est plus avancée (va dans Compte pour choisir)',loaded:'☁️ Progression chargée depuis ton compte',ok:'☁️ Sauvegarde en ligne active',net:'☁️ Hors ligne : sauvegarde sur l’appareil (réessaie plus tard)',missing:'☁️ Sauvegarde en ligne pas encore activée (lance supabase5.sql dans Supabase)',badlogin:'☁️ Pseudo ou PIN refusé : reconnecte-toi (bouton Compte)',off:''};
 
 function savePos(){if(game.state!=='play'&&game.state!=='paused')return game.resumeSave||null;if(P.dead)return null;
   if(game.inside){const d=game.inside.b.door;return{x:d.x,z:d.z,yaw:d.yaw}}
   if(P.x<-1000)return null;const c=P.car;
   if(c&&!c.s.air&&!c.s.boat)return{x:c.x,z:c.z,yaw:c.yaw,car:{t:c.type,col:c.col,plate:c.plate,flat:!!c.flat,own:!!c.owned}};
   if(c)return null;return{x:P.x,z:P.z,yaw:P.yaw}}
-function saveGame(){const now=Date.now(),hot=[];for(const p of HOT){const u=HOT_UNTIL.get(p)||now+86400000;if(u>now)hot.push([p,u])}
+function saveGame(){if(!game.loaded)return; // jamais de sauvegarde avant d'avoir chargé la progression
+  const now=Date.now(),hot=[];for(const p of HOT){const u=HOT_UNTIL.get(p)||now+86400000;if(u>now)hot.push([p,u])}
   const wan=wantedLevel()>0?{w:game.wanted,ck:game.copKills|0,until:now+86400000,ls:game.lastSeen||{x:P.x,z:P.z}}:null;
   try{localStorage.setItem(curKey(),JSON.stringify({pos:savePos(),wan,bolo:game.bolo||null,hot,ts:Date.now(),m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}vfQueuePush()}
 function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null');if(!s)return;
@@ -5690,9 +5717,9 @@ function boot(){
   run()}
 function bootFinish(){
   if(ACC()){$('gen').textContent='☁️ Récupération de ta progression…';Promise.race([vfCloudPull(),new Promise(r=>setTimeout(r,8000))]).then(bootFinish2,bootFinish2)}else bootFinish2()}
-function bootFinish2(){
+function bootFinish2(){CLOUD.booted=true;try{const o=JSON.parse(localStorage.getItem(curKey())||'null');CLOUD.bootTs=(o&&o.ts)||0}catch(e){CLOUD.bootTs=0}
   P.x=SPAWN.x;P.z=SPAWN.z;P.y=groundH(P.x,P.z);P.yaw=SPAWN.yaw;CAM.yaw=SPAWN.yaw;
-  loadGame();for(const t in P.garage)if(!P.garage[t].lost)spawnOwned(t);
+  loadGame();game.loaded=true;for(const t in P.garage)if(!P.garage[t].lost)spawnOwned(t);
   const q=new URLSearchParams(location.search);if(q.get('t'))TIME=parseFloat(q.get('t'));
   applyTime(TIME);
   P.invuln=5;
@@ -5704,6 +5731,7 @@ function bootFinish2(){
   $('storyInfo').textContent=storyIdx()>0?(storyIdx()>=STORY.length?'Histoire terminée — rejoue-la ou explore librement.':'Histoire : chapitre '+(storyIdx()+1)+' / '+STORY.length+(storyLeft()>0?' · encore '+storyLeft()+' contrats avant la suite':'')+' (progression sauvegardée)'):'Histoire : '+STORY.length+' chapitres (~30 h) : entre chaque chapitre, réussis des contrats. Monde libre : fais ce que tu veux. Multijoueur : retrouve tes amis.';
   {const a=ACC(),t=CLOUD_TXT[CLOUD.st]||'';if(a)$('storyInfo').textContent=$('storyInfo').textContent+' · '+(t||'☁️ Compte : '+a.p)}
   setInterval(()=>{if(game.state==='play'&&!P.dead)saveGame()},60000);
+  if(ACC()&&!CLOUD.pulled)setTimeout(()=>vfCloudPull().then(st=>{if(st==='newer')say(CLOUD_TXT.newer,6)}),1500);
   if(q.get('auto')){startGame(q.get('auto')==='story'?'story':'free')}
   requestAnimationFrame(frame)}
 window.__G={game,P,cars,peds,CAM,IN,KB,pickups,markers,startGame,wantedLevel,hitPed,mkCar,mkPed,enterCar,exitCar,setTime:h=>{TIME=h},onCrime:(a,x,z,s)=>onCrime(a,x,z,s),respawnAt,HOSP,POLS,SPAWN,gtime,PT,startDelivery,startRace,startSteal,startGang,MDEFS,OWN,PLACES,POIS,CLUB,WEAPONS,SHOPCARS,VT,rockets,explosion,openShop,closeShop,buyWeapon,buyAmmo,buyCar,callCar,insureCar,clubPay,clubBar,nearPOI,addAmmo,altWeapon,saveGame,loadGame,SHOP_COL,mDead,trafficSpawn,spawnPedNear,aiInit,get TIME(){return TIME}};
@@ -5744,7 +5772,19 @@ setTimeout(()=>{try{boot()}catch(e){reportErr(e);console.error(e)}},50);
   $('accLogin').onclick=()=>accGo(false);$('accReg').onclick=()=>accGo(true);
   $('accOut').onclick=()=>{saveGame();vfPush(true).finally(()=>{try{CB.logout()}catch(e){}location.reload()})};
   $('accSync').onclick=async()=>{saveGame();ashow('Envoi…');await vfPush(true);ashow(CLOUD.st==='ok'||CLOUD.st==='loaded'?'Sauvegardé en ligne ✓':CLOUD_TXT[CLOUD.st]||'Erreur',!(CLOUD.st==='ok'||CLOUD.st==='loaded'))};
-  $('profBtn').onclick=()=>{$('prof').style.display='flex';render();accRender();show('');ashow('')};
+  function svRender(){const box=$('svList');box.innerHTML='';const seen=new Set(),L=[];
+    const addS=(label,raw,src)=>{if(!raw)return;let o=null;try{o=JSON.parse(raw)}catch(e){return}if(!o||typeof o!=='object')return;const sig=(o.ts||0)+'|'+(o.m||0);if(seen.has(sig))return;seen.add(sig);L.push({label,raw,o,src})};
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!/^villefolle3d_(v1|p_|acc_)/.test(k))continue;addS(k==='villefolle3d_v1'?'Profil Joueur':k.startsWith('villefolle3d_p_')?'Profil '+k.slice(15):'Compte '+k.slice(17),localStorage.getItem(k),k)}
+    try{for(const b of JSON.parse(localStorage.getItem('villefolle3d_backups')||'[]'))addS('Copie de secours',b.d,'backup')}catch(e){}
+    if(CLOUD.cloudData)addS('En ligne',JSON.stringify(CLOUD.cloudData),'cloud');
+    L.sort((a,b)=>saveScore(b.o)-saveScore(a.o));
+    if(!L.length){box.innerHTML='<small>Aucune sauvegarde trouvée.</small>';return}
+    for(const it of L){const o=it.o,own=Array.isArray(o.o)?o.o:[],guns=['Pistolet',own[2]?'Mitraillette':'',own[3]?'Pompe':'',own[4]?'Fusil d’assaut':'',own[5]?'Lance-roquettes':''].filter(Boolean).join(', ');
+      const r=document.createElement('div');r.className='row';r.style.justifyContent='space-between';r.style.background='#0007';r.style.borderRadius='8px';r.style.padding='6px 10px';
+      r.innerHTML='<small style="text-align:left">'+it.label+' · '+(o.ts?new Date(o.ts).toLocaleString('fr-FR'):'date inconnue')+'<br>💵 '+(Math.floor(+o.m||0)).toLocaleString('fr-FR')+' $ · 🔫 '+guns+' · 🚗 '+(o.g?Object.keys(o.g).length:0)+' · 📖 chap. '+((o.s|0)+1)+'</small>';
+      const b=document.createElement('button');b.className='btn g';b.textContent='Reprendre';b.onclick=()=>{if(!confirm('Reprendre cette sauvegarde ? (ta partie actuelle est gardée en copie de secours)'))return;backupSave(curKey());o.ts=Date.now();localStorage.setItem(curKey(),JSON.stringify(o));
+        if(ACC()){CLOUD.pulled=true;CLOUD.st='ok';CLOUD.cloudData=null;vfPush(true).finally(()=>location.reload())}else location.reload()};r.appendChild(b);box.appendChild(r)}}
+  $('profBtn').onclick=()=>{$('prof').style.display='flex';render();accRender();svRender();show('');ashow('')};
   setTimeout(accRender,0);
   $('profBack').onclick=()=>{$('prof').style.display='none'};
   $('profNew').onclick=()=>{const n=clean($('profName').value),pin=$('profPin').value.replace(/\D/g,'').slice(0,4);
