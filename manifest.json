@@ -1,11 +1,12 @@
 {
- "name": "Piège Infernal",
- "short_name": "Piège",
- "start_url": "jeu.html",
+ "name": "Piège Infernal Games",
+ "short_name": "PI Games",
+ "id": "./index.html",
+ "start_url": "./index.html",
  "scope": "./",
  "display": "standalone",
- "background_color": "#14141c",
- "theme_color": "#14141c",
+ "background_color": "#14122b",
+ "theme_color": "#14122b",
  "icons": [
   {
    "src": "icon-192.png",
