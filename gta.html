@@ -213,6 +213,7 @@ try{var P=CanvasRenderingContext2D.prototype;['fillText','strokeText','measureTe
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0b0a1e"><title>Ville Folle 3D</title>
 <link rel="icon" type="image/png" href="icon-192.png">
+<script src="cbcloud.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap">
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -314,7 +315,7 @@ a.lnk{color:#ffb703;text-decoration:none;font-size:16px}
 .mpbox h1{margin:0;font-size:40px}.mpbox p{margin:0;font-size:15px;color:#c8c8e0}.mpbox .row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
 #mpName{font:700 24px Oswald,Impact,sans-serif;color:#ffd166}
 #mpNick{font:700 24px Oswald,Impact,sans-serif;letter-spacing:1px;text-align:center;width:240px;padding:6px;border-radius:6px;border:2px solid #fff6;background:#0007;color:#fff}
-#prof{background:#000b;overflow:auto;z-index:12;justify-content:flex-start}#profName,#profPin,#profCode{font:600 18px Inter,sans-serif;padding:8px;border-radius:6px;border:2px solid #fff6;background:#0007;color:#fff}#profList{display:flex;flex-direction:column;gap:8px}#profMsg{min-height:20px;font-size:14px}#mpMsg{min-height:20px;color:#ffd166;font-size:14px}
+#prof{background:#000b;overflow:auto;z-index:12;justify-content:flex-start}#accName,#accPin,#profName,#profPin,#profCode{font:600 18px Inter,sans-serif;padding:8px;border-radius:6px;border:2px solid #fff6;background:#0007;color:#fff}#profList{display:flex;flex-direction:column;gap:8px}#profMsg{min-height:20px;font-size:14px}#mpMsg{min-height:20px;color:#ffd166;font-size:14px}
 #dlg{position:fixed;left:0;right:0;bottom:0;z-index:8;display:none;justify-content:center;padding:14px;pointer-events:auto}
 #dlg .dbox{background:#0c0b1ef2;border:2px solid #ffb703;border-radius:10px;padding:12px 18px;max-width:640px;width:100%;color:#fff;box-shadow:0 6px 30px #000a}
 #dlg b{color:#ffb703;font:700 20px Oswald,Impact,sans-serif;letter-spacing:1px}#dlg p{margin:6px 0 10px;font-size:17px;line-height:1.35;min-height:46px}
@@ -359,11 +360,19 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>B</kbd> braquer un commerce · <kbd>J</kbd> mode justicier (en voiture de police) · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
- <div><button class="btn g" id="profBtn">Profil</button></div>
+ <div><button class="btn g" id="profBtn">Compte / Profil</button></div>
  <div id="storyInfo"></div>
  <div><a class="lnk" href="index.html">← Tous les jeux</a> &nbsp;·&nbsp; <a class="lnk" href="gta2d.html">Version 2D légère</a></div>
 </div>
-<div class="ov" id="prof"><div class="pbox mpbox"><h1>PROFILS</h1>
+<div class="ov" id="prof"><div class="pbox mpbox"><h1>COMPTE</h1>
+ <div id="accBox" style="border:2px solid #ffb703;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;align-items:center;width:100%">
+  <b style="font-size:20px">☁️ Compte en ligne</b>
+  <small id="accInfo" style="color:#c8c8e0;text-align:center">Le même compte que Cubia et Piège Infernal (pseudo + PIN). Ta progression (histoire, monde libre, multijoueur) est sauvegardée en ligne et te suit sur tous tes appareils.</small>
+  <div class="row" id="accForm"><input id="accName" maxlength="16" placeholder="Pseudo" autocomplete="username"><input id="accPin" maxlength="12" inputmode="numeric" type="password" placeholder="PIN (4 à 12 chiffres)" autocomplete="current-password"></div>
+  <div class="row" id="accBtns"><button class="btn" id="accLogin">Connexion</button><button class="btn g" id="accReg">Créer un compte</button></div>
+  <div class="row"><button class="btn g" id="accSync" style="display:none">Sauvegarder maintenant</button><button class="btn g" id="accOut" style="display:none">Déconnexion</button></div>
+  <div id="accMsg" style="min-height:20px;font-size:14px"></div></div>
+ <h1 style="font-size:26px;margin-top:6px">PROFILS SUR CET APPAREIL</h1>
  <p>Chaque profil garde sa propre progression (argent, armes, voitures, histoire) sur cet appareil. Le PIN est un simple verrou, pas une vraie sécurité.</p>
  <div id="profList"></div>
  <div class="row"><input id="profName" maxlength="14" placeholder="Nouveau pseudo" autocomplete="off"><input id="profPin" maxlength="4" inputmode="numeric" placeholder="PIN (option)" style="width:120px"><button class="btn g" id="profNew">Créer</button></div>
@@ -1971,13 +1980,18 @@ function spawnAirport(){
   for(const[x,z,y]of[[gW[1]+12,A.fz0+14,PI/2],[gM[1]+16,A.fz0+16,PI/2]]){const c=mkCar('suv',x,z,y,'parked');c.sleep=true;c.hasDriver=false;c.col='#4b5320';c.mat=paintMat('#4b5320')}
   for(const[x,z,y]of POL_CARS){const c=mkCar('cop',x,z,y+PI/2*0,'parked');c.sleep=true;c.hasDriver=false;c.cop=true}
   // police militaire
-  const mp=(x,z,yaw)=>{const p=mkPed('cop',x,z);p.look=milLook();p.mp=true;p.keep=true;p.hp=95;p.gun=true;p.yaw=yaw;p.home=[x,z];p.state='walk';p.gunK=1;return p};
+  const mp=(x,z,yaw)=>{const p=mkPed('cop',x,z);p.look=milLook();p.mp=true;p.keep=true;p.hp=95;p.gun=true;p.yaw=yaw;p.home=[x,z];p.post=[x,z];p.state='walk';p.gunK=2;return p};MIL_POSTS.length=0;
   mp(gW[0]-1,A.fz0+5,0);mp(gW[1]+1.5,A.fz0+5,0);mp(gM[0]-1,A.fz0+5,0);mp(gM[1]+1.5,A.fz0+5,0);
-  mp(830,Z0+90,PI);mp(850,Z0+98,0);mp(690,Z0+84,0);mp(520,Z0+90,0);mp(640,A.apz1+6,0);mp(900,A.fz1-12,PI)}
+  mp(830,Z0+90,PI);mp(850,Z0+98,0);mp(690,Z0+84,0);mp(520,Z0+90,0);mp(640,A.apz1+6,0);mp(900,A.fz1-12,PI);
+  mp(495,Z0+62,0);mp(600,Z0+66,0);mp(845,Z0+120,PI);mp(705,Z0+108,0);
+  for(const p of peds)if(p.mp)MIL_POSTS.push(p.post.slice())}
+const MIL_POSTS=[];
 function milLook(){return{skin:pick(SKINS),shirt:[.3,.36,.2],pants:[.26,.3,.17],hair:[.15,.12,.1],shoe:[.08,.07,.06],cap:[.88,.9,.84],sc:rnd(1,1.07),vest:true}}
 function mpAlarm(msg){
   if((game.mpAlert||0)>0){game.mpAlert=max(game.mpAlert,60);return}
-  game.mpAlert=90;game.wanted=max(game.wanted,2.2);game.seenT=0;
+  game.mpAlert=90;game.wanted=max(game.wanted,2.2);game.seenT=0;game.lastSeen={x:P.x,z:P.z};
+  // renforts : 2 jeeps militaires partent des portails
+  for(const[x,z]of[[500,AP.fz0+20],[780,AP.fz0+20]]){const c=mkCar('suv',x,z,PI,'cop','#4b5320');c.cop=true;c.mil=true;c.hasDriver=true;c.hp=1500;c.label='Jeep militaire'}
   say(msg||'POLICE MILITAIRE ! Zone interdite : ils ouvrent le feu !',3.5)}
 function driftUpdate(dt){const c=P.car;
   if(c&&!c.s.air&&!c.s.bike&&(c.slip||0)>3.2&&abs(c.vf||0)>11){if(!game.drift)game.drift={s:0,hp:c.hp,show:0};const D=game.drift;
@@ -1989,9 +2003,18 @@ function airportUpdate(dt){indoorUpdate();driftUpdate(dt);gangAmbient(dt);events
   const alarm=(game.mpAlert||0)>0;
   for(const p of peds)if(p.mp){p.hot=alarm&&p.state!=='dead'}
   const low=!P.car||!P.car.s.air||(P.car.alt||0)<30;
-  if(inAirbase(P.x,P.z)&&low&&!P.dead){
-    if(!alarm&&!game.warned){game.warned=true;say('Bienvenue à l’aéroport ! Les avions sont là-bas… (en voler un fâche la police militaire)',4)}
-  }else{game.trespass=max(0,(game.trespass||0)-dt*2);if(game.trespass<=0)game.warned=false}}
+  // on s'approche des avions : les militaires arrivent, sommations, puis ils tirent
+  let nearPlane=false;if(low&&!P.dead&&inAirbase(P.x,P.z))for(const c of cars){if(!c.s.air||c===P.car||c.mode==='wreck')continue;if(hyp(c.x-P.x,c.z-P.z)<48){nearPlane=true;break}}
+  if(nearPlane&&!alarm){game.trespass=(game.trespass||0)+dt;
+    if(!game.warned){game.warned=true;say('🪖 « HALTE ! Zone militaire : éloigne-toi des avions ! »',3.2);sfx('fail')}
+    else if(game.trespass>3.5&&!game.warned2){game.warned2=true;say('🪖 « Dernier avertissement ! »',2.4)}
+    game.milT=(game.milT||0)-dt;if(game.milT<=0){game.milT=1;const sol=peds.filter(p=>p.mp&&p.state!=='dead').sort((a,b)=>hyp(a.x-P.x,a.z-P.z)-hyp(b.x-P.x,b.z-P.z)).slice(0,4);
+      sol.forEach((p,i)=>{const a=atan2(p.x-P.x,p.z-P.z)+(i-1.5)*.5;p.home=[P.x+sin(a)*6,P.z+cos(a)*6];p.aim=1})}
+    if(game.trespass>7)mpAlarm('🪖 Les militaires ouvrent le feu !')}
+  else{game.trespass=max(0,(game.trespass||0)-dt*2);if(game.trespass<=0){game.warned=false;game.warned2=false;for(const p of peds)if(p.mp&&p.post&&!alarm)p.home=p.post}}
+  // les militaires tués reviennent quand tu es loin
+  game.milRT=(game.milRT||0)-dt;if(game.milRT<=0){game.milRT=20;if(!alarm&&hyp(P.x-635,P.z-(AP.apz0+60))>350){const alive=peds.filter(p=>p.mp&&p.state!=='dead').length;
+    for(let i=alive;i<MIL_POSTS.length;i++){const q=MIL_POSTS[i],p=mkPed('cop',q[0],q[1]);p.look=milLook();p.mp=true;p.keep=true;p.hp=95;p.gun=true;p.home=q.slice();p.post=q.slice();p.state='walk';p.gunK=2}}}}
 
 // =====================================================================
 //  ENVIRONNEMENT : cycle jour/nuit, dessin du monde statique
@@ -2954,7 +2977,7 @@ function pedPop(dt){
   if(game.tPed<=0){game.tPed=.12;let n=0;for(const p of peds)if(p.kind==='ped'&&p.state!=='dead')n++;if(n<(game.maxPed||80)){spawnPedNear(P.x,P.z,28,135,'ped');if(n<(game.maxPed||80)-8)spawnPedNear(P.x,P.z,28,135,'ped')}}
   for(let i=peds.length-1;i>=0;i--){const p=peds[i],d=hyp(p.x-P.x,p.z-P.z);
     if(p.keep&&!p.gone)continue;
-    if(p.gone||(p.kind==='ped'&&(d>190||(p.state==='dead'&&p.corpseT>16&&!visSphere(p.x,1,p.z,1))||p.corpseT>40))||(p.kind==='cop'&&p.state==='dead'&&p.corpseT>20)||(p.kind==='cop'&&wantedLevel()===0&&(d>110||(!visSphere(p.x,1,p.z,2)&&d>40)))){peds.splice(i,1)}}}
+    if(p.gone||(p.kind==='ped'&&(d>190||(p.state==='dead'&&p.corpseT>16&&!visSphere(p.x,1,p.z,1))||p.corpseT>40))||(p.kind==='cop'&&p.state==='dead'&&p.corpseT>20)||(p.kind==='cop'&&!p.mp&&wantedLevel()===0&&(d>110||(!visSphere(p.x,1,p.z,2)&&d>40)))){peds.splice(i,1)}}}
 
 // ---------- entrée / sortie de voiture ----------
 function nearestCar(x,z,maxd){let best=null,bd=maxd;
@@ -3278,7 +3301,7 @@ function copsUpdate(dt){
   if(L>0&&game.tDep<=0){game.tDep=1.2;let nf=0;for(const p of peds)if(p.kind==='cop'&&!p.mp&&p.state!=='dead')nf++;
     for(const c of cars){if(!c.cop||c.mode!=='cop'||c.deployed)continue;const d=hyp(c.x-tx,c.z-tz);
       if(d<26&&(!P.car||hyp(P.car.vx,P.car.vz)<4)&&hyp(c.vx,c.vz)<9&&nf<2+L*2){c.deployed=true;c.mode='idle';c.keep=false;
-        for(let i=0;i<(c.swat?4:L>=5?3:L>=3?2:1);i++){const s=i%2?1:-1,p=mkPed('cop',c.x+cos(c.yaw)*s*(c.s.W/2+.8+(i>1?1.2:0)),c.z-sin(c.yaw)*s*(c.s.W/2+.8)+(i>1?1.5:0));p.hp=(c.swat?110:60)+L*16;p.alert=10;p.state='walk';if(c.swat){p.gunK=2;p.swat=true}nf++}}}}
+        for(let i=0;i<(c.swat?4:L>=5?3:L>=3?2:1);i++){const s=i%2?1:-1,p=mkPed('cop',c.x+cos(c.yaw)*s*(c.s.W/2+.8+(i>1?1.2:0)),c.z-sin(c.yaw)*s*(c.s.W/2+.8)+(i>1?1.5:0));p.hp=(c.swat?110:60)+L*16;p.alert=10;p.state='walk';if(c.swat){p.gunK=2;p.swat=true}if(c.mil){p.look=milLook();p.gunK=2;p.hp=110+L*10}nf++}}}}
   if(L===0)for(const c of cars)if(c.mode==='cop')copToPatrol(c);
   // les policiers à pied hors-jeu quand la recherche est finie : ils partent
   if(L===0){for(const p of peds)if(p.kind==='cop'&&!p.mp&&!p.leave){p.leave=true;p.gone=!visSphere(p.x,1,p.z,2)||hyp(p.x-P.x,p.z-P.z)>60}}
@@ -4408,7 +4431,7 @@ $('mpJoin').onclick=()=>{const code=MP_ROOM,nick=mpCleanName($('mpNick').value);
     if(!ok){$('mpMsg').textContent='Connexion impossible pour le moment (réseau ?). Tu peux jouer en solo.';try{MP.ws&&MP.ws.close()}catch(e){}MP.ws=null;return}
     MP.on=true;MP.onClose=()=>{if(MP.on){MP.on=false;say('Connexion multijoueur perdue — tu continues en solo.',4);document.body.classList.remove('mp');MP.players.clear()}};
     $('mp').style.display='none';document.body.classList.add('mp');startGame('multi');mpSend('hi',{i:MP.id,a:MP.a,b:MP.b,n:MP.nick})})};
-$('goMulti').onclick=()=>{if($('goMulti').disabled)return;$('title').style.display='none';$('mp').style.display='flex';let n='';try{n=localStorage.getItem('vf-nick')||''}catch(e){}if(n)$('mpNick').value=mpCleanName(n);else mpRandomName()};
+$('goMulti').onclick=()=>{if($('goMulti').disabled)return;$('title').style.display='none';$('mp').style.display='flex';let n='';try{n=localStorage.getItem('vf-nick')||''}catch(e){}{const a=ACC();if(a)n=a.p}if(n)$('mpNick').value=mpCleanName(n);else mpRandomName()};
 
 // =====================================================================
 //  MISSIONS v3 : des dizaines de variantes (lieux, ennemis, véhicules, récits différents)
@@ -5190,9 +5213,29 @@ try{const x=JSON.parse(localStorage.getItem(PROFK)||'null');if(x&&Array.isArray(
 function profSave(){try{localStorage.setItem(PROFK,JSON.stringify(PROF))}catch(e){}}
 function saveKey(n){return n==='Joueur'?'villefolle3d_v1':'villefolle3d_p_'+n}
 const SAVEK0=null;
+// ---------- compte en ligne (même compte que Cubia / Piège Infernal) ----------
+const ACC=()=>{try{return window.CB?CB.acct():null}catch(e){return null}};
+function curKey(){const a=ACC();return a?'villefolle3d_acc_'+a.p.toLowerCase():saveKey(PROF.cur)}
+const CLOUD={st:'off',lastPush:0,timer:0,busy:false};
+function cloudErr(e){const m=String(e&&e.message||e);return /404|PGRST202|Could not find/.test(m)?'missing':'net'}
+async function vfCloudPull(){const a=ACC();if(!a)return'off';
+  try{const r=await CB.rpc('vf_load',{p_pseudo:a.p,p_pin:a.pin});
+    if(!r||!r.ok){CLOUD.st=r&&r.err==='bad'?'badlogin':'net';return CLOUD.st}
+    let loc=null;try{loc=JSON.parse(localStorage.getItem(curKey())||'null')}catch(e){}
+    let cl=null;try{cl=r.data?JSON.parse(r.data):null}catch(e){}
+    if(cl&&(!loc||(cl.ts||0)>(loc.ts||0))){localStorage.setItem(curKey(),r.data);CLOUD.st='loaded'}
+    else if(loc&&(!cl||(loc.ts||0)>(cl.ts||0))){CLOUD.st='ok';vfPush(true)}else CLOUD.st='ok';
+    return CLOUD.st}catch(e){CLOUD.st=cloudErr(e);return CLOUD.st}}
+async function vfPush(force){const a=ACC();if(!a||CLOUD.busy||CLOUD.st==='missing'||CLOUD.st==='badlogin')return;
+  const d=localStorage.getItem(curKey());if(!d)return;CLOUD.busy=true;
+  try{const r=await CB.rpc('vf_save',{p_pseudo:a.p,p_pin:a.pin,p_data:d});CLOUD.lastPush=Date.now();if(r&&r.ok){if(CLOUD.st!=='loaded')CLOUD.st='ok'}else CLOUD.st=r&&r.err==='bad'?'badlogin':'net'}
+  catch(e){CLOUD.st=cloudErr(e)}CLOUD.busy=false}
+function vfQueuePush(){if(!ACC())return;clearTimeout(CLOUD.timer);const w=max(1500,20000-(Date.now()-CLOUD.lastPush));CLOUD.timer=setTimeout(()=>vfPush(),w)}
+addEventListener('visibilitychange',()=>{if(document.hidden&&ACC()&&game.state!=='title'){saveGame();vfPush(true)}});
+const CLOUD_TXT={loaded:'☁️ Progression chargée depuis ton compte',ok:'☁️ Sauvegarde en ligne active',net:'☁️ Hors ligne : sauvegarde sur l’appareil (réessaie plus tard)',missing:'☁️ Sauvegarde en ligne pas encore activée (lance supabase5.sql dans Supabase)',badlogin:'☁️ Pseudo ou PIN refusé : reconnecte-toi (bouton Compte)',off:''};
 
-function saveGame(){try{localStorage.setItem(saveKey(PROF.cur),JSON.stringify({m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}}
-function loadGame(){try{const s=JSON.parse(localStorage.getItem(saveKey(PROF.cur))||'null');if(!s)return;
+function saveGame(){try{localStorage.setItem(curKey(),JSON.stringify({ts:Date.now(),m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}vfQueuePush()}
+function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null');if(!s)return;
   game.storyIdx=Math.max(0,Math.min(STORY.length,s.s|0));game.storyRep=Math.max(0,s.r|0);
   const L3=v=>Math.max(0,Math.min(3,v|0));if(Array.isArray(s.u))for(let i=1;i<6;i++){const o=s.u[i]||{};P.up[i]={rate:L3(o.rate),mag:L3(o.mag),dmg:L3(o.dmg)}}
   if(Array.isArray(s.pk))P.pkgs=s.pk.filter(v=>Number.isInteger(v)&&v>=0&&v<PKG_N).slice(0,PKG_N);
@@ -5216,6 +5259,8 @@ function boot(){
     bootFinish()}catch(e){reportErr(e);console.error(e)}};
   run()}
 function bootFinish(){
+  if(ACC()){$('gen').textContent='☁️ Récupération de ta progression…';Promise.race([vfCloudPull(),new Promise(r=>setTimeout(r,8000))]).then(bootFinish2,bootFinish2)}else bootFinish2()}
+function bootFinish2(){
   P.x=SPAWN.x;P.z=SPAWN.z;P.y=groundH(P.x,P.z);P.yaw=SPAWN.yaw;CAM.yaw=SPAWN.yaw;
   loadGame();for(const t in P.garage)if(!P.garage[t].lost)spawnOwned(t);
   const q=new URLSearchParams(location.search);if(q.get('t'))TIME=parseFloat(q.get('t'));
@@ -5227,6 +5272,8 @@ function bootFinish(){
   game.state='title';$('gen').style.display='none';
   for(const id of['go','goStory','goMulti']){$(id).disabled=false}
   $('storyInfo').textContent=storyIdx()>0?(storyIdx()>=STORY.length?'Histoire terminée — rejoue-la ou explore librement.':'Histoire : chapitre '+(storyIdx()+1)+' / '+STORY.length+(storyLeft()>0?' · encore '+storyLeft()+' contrats avant la suite':'')+' (progression sauvegardée)'):'Histoire : '+STORY.length+' chapitres (~30 h) : entre chaque chapitre, réussis des contrats. Monde libre : fais ce que tu veux. Multijoueur : retrouve tes amis.';
+  {const a=ACC(),t=CLOUD_TXT[CLOUD.st]||'';if(a)$('storyInfo').textContent=$('storyInfo').textContent+' · '+(t||'☁️ Compte : '+a.p)}
+  setInterval(()=>{if(game.state==='play'&&!P.dead)saveGame()},60000);
   if(q.get('auto')){startGame(q.get('auto')==='story'?'story':'free')}
   requestAnimationFrame(frame)}
 window.__G={game,P,cars,peds,CAM,IN,KB,pickups,markers,startGame,wantedLevel,hitPed,mkCar,mkPed,enterCar,exitCar,setTime:h=>{TIME=h},onCrime:(a,x,z,s)=>onCrime(a,x,z,s),respawnAt,HOSP,POLS,SPAWN,gtime,PT,startDelivery,startRace,startSteal,startGang,MDEFS,OWN,PLACES,POIS,CLUB,WEAPONS,SHOPCARS,VT,rockets,explosion,openShop,closeShop,buyWeapon,buyAmmo,buyCar,callCar,insureCar,clubPay,clubBar,nearPOI,addAmmo,altWeapon,saveGame,loadGame,SHOP_COL,mDead,trafficSpawn,spawnPedNear,aiInit,get TIME(){return TIME}};
@@ -5237,7 +5284,7 @@ setTimeout(()=>{try{boot()}catch(e){reportErr(e);console.error(e)}},50);
   const box=$('profList'),msg=$('profMsg');
   const clean=t=>String(t||'').replace(/[^A-Za-z0-9À-ÿ _-]/g,'').trim().slice(0,14);
   function show(t,bad){msg.textContent=t;msg.style.color=bad?'#ff8a8a':'#9fe29f'}
-  function label(){$('profBtn').textContent='Profil : '+PROF.cur}
+  function label(){const a=ACC();$('profBtn').textContent=a?'Compte : '+a.p:'Profil : '+PROF.cur}
   function render(){box.innerHTML='';
     for(const p of PROF.list){const r=document.createElement('div');r.className='row';
       const b=document.createElement('button');b.className='btn g';b.textContent=(p.n===PROF.cur?'● ':'')+p.n+(p.pin?' 🔒':'');
@@ -5253,7 +5300,22 @@ setTimeout(()=>{try{boot()}catch(e){reportErr(e);console.error(e)}},50);
     if(p.pin){const x=prompt('Code PIN de '+p.n+' ?');if(x!==p.pin){show('Mauvais code',1);return}}
     try{localStorage.removeItem(saveKey(p.n))}catch(e){}
     PROF.list=PROF.list.filter(q=>q!==p);if(PROF.cur===p.n){PROF.cur=PROF.list[0].n;reload();return}profSave();render()}
-  $('profBtn').onclick=()=>{$('prof').style.display='flex';render();show('')};
+  const am=$('accMsg'),ashow=(t,bad)=>{am.textContent=t;am.style.color=bad?'#ff8a8a':'#9fe29f'};
+  const ERR={bad:'Pseudo ou PIN incorrect.',locked:'Trop d’essais : attends 10 minutes.',taken:'Ce pseudo est déjà pris (si c’est toi : Connexion).',badname:'Pseudo : 2 à 16 lettres, chiffres, - ou _.',badpin:'PIN : 4 à 12 chiffres.'};
+  function accRender(){const a=ACC();$('accForm').style.display=a?'none':'flex';$('accBtns').style.display=a?'none':'flex';$('accOut').style.display=a?'':'none';$('accSync').style.display=a?'':'none';
+    $('accInfo').textContent=a?'Connecté : '+a.p+' — ta progression (histoire, monde libre, multijoueur) est sauvegardée en ligne. '+(CLOUD_TXT[CLOUD.st]||''):'Le même compte que Cubia et Piège Infernal (pseudo + PIN). Ta progression (histoire, monde libre, multijoueur) est sauvegardée en ligne et te suit sur tous tes appareils.';
+    if(a)$('profBtn').textContent='Compte : '+a.p}
+  async function accGo(reg){if(!window.CB){ashow('Service de compte indisponible.',1);return}
+    const n=$('accName').value.trim(),pin=$('accPin').value.trim();ashow('Connexion…');
+    try{const r=reg?await CB.register(n,pin):await CB.login(n,pin);if(!r.ok){ashow(ERR[r.err]||'Erreur, réessaie.',1);return}
+      // la progression de ce profil part dans le compte s'il n'en a pas encore sur cet appareil
+      saveGame();const k='villefolle3d_acc_'+(r.pseudo||n).toLowerCase();try{if(!localStorage.getItem(k)){const d=JSON.parse(localStorage.getItem(saveKey(PROF.cur))||'null');if(d){d.ts=1;localStorage.setItem(k,JSON.stringify(d))}}}catch(e){}
+      ashow('Connecté ! Chargement de ta progression…');setTimeout(()=>location.reload(),600)}catch(e){ashow('Impossible de joindre le serveur.',1)}}
+  $('accLogin').onclick=()=>accGo(false);$('accReg').onclick=()=>accGo(true);
+  $('accOut').onclick=()=>{saveGame();vfPush(true).finally(()=>{try{CB.logout()}catch(e){}location.reload()})};
+  $('accSync').onclick=async()=>{saveGame();ashow('Envoi…');await vfPush(true);ashow(CLOUD.st==='ok'||CLOUD.st==='loaded'?'Sauvegardé en ligne ✓':CLOUD_TXT[CLOUD.st]||'Erreur',!(CLOUD.st==='ok'||CLOUD.st==='loaded'))};
+  $('profBtn').onclick=()=>{$('prof').style.display='flex';render();accRender();show('');ashow('')};
+  setTimeout(accRender,0);
   $('profBack').onclick=()=>{$('prof').style.display='none'};
   $('profNew').onclick=()=>{const n=clean($('profName').value),pin=$('profPin').value.replace(/\D/g,'').slice(0,4);
     if(n.length<2){show('Pseudo trop court',1);return}
