@@ -1,0 +1,133 @@
+SITE DE JEUX - FICHIERS A PUBLIER (GitHub Pages)
+=================================================
+Mets TOUS ces fichiers à la racine du dépôt (remplace ceux qui existent) :
+
+ index.html        accueil façon Poki (choix du jeu)
+ piege.html        ancienne page d'accueil de Piège Infernal
+ jeu.html          le jeu Piège Infernal (inchangé)
+ cubia.html        menu principal Cubia (solo / multijoueur / compte / options)
+ blocs.html        le jeu Cubia
+ cbcloud.js        sauvegarde en ligne + serveurs (OBLIGATOIRE pour Cubia)
+ gta.html          Ville Folle 3D (ville ouverte façon GTA, 100% hors ligne, aucun fichier en plus)
+ gta2d.html        Ville Folle 2D (ancienne version légère vue du dessus)
+ g-snake.html g-2048.html g-memoire.html g-morpion.html g-flappy.html g-briques.html   mini-jeux
+ manifest.json sw.js icon-192.png icon-512.png apple-touch-icon.png   (inchangés)
+
+SUPABASE (une seule fois) :
+ Supabase > SQL Editor > New query > colle tout supabase4.sql > Run.
+ (supabase.sql, 2 et 3 doivent déjà avoir été lancés.)
+ Sans ça, Cubia marche en solo sur l'appareil mais pas de sauvegarde en ligne ni de serveurs.
+
+MULTIJOUEUR : Compte Cubia (même pseudo+PIN que Piège Infernal) > Multijoueur > Créer un serveur.
+ Donne le code à 6 caractères à tes potes : Multijoueur > Par code.
+
+COMMANDES CUBIA (clavier) : WASD bouger, flèches caméra, Shift droit casser (maintenir),
+ Entrée poser, Shift gauche sneak, Espace sauter, Ctrl ou W deux fois courir, "," "." objet.
+
+VILLE FOLLE 3D (gta.html) :
+ Tablette : joystick à gauche (apparaît où tu poses le doigt), glisse à droite pour tourner la caméra,
+  boutons : 🔫 tirer (en voiture : frein à main) · ⤴ sauter (en voiture : klaxon) · 🚗 monter/descendre
+  (devient 🛒 près d'une boutique) · 🏃 courir · 🔫 changer d'arme.
+ Clavier : WASD bouger/conduire, flèches caméra, Maj gauche courir, Espace saut/frein à main,
+  Entrée ou Maj droit tirer, F monter/descendre/acheter, H klaxon, C caméra, R radio,
+  Q ou touches 1 à 5 : armes, T téléphone, Y messages rapides, Echap pause (grande carte avec toutes les missions).
+ LIEUX : A = armurerie AMMU-FOLLE (pistolet, mitraillette, fusil à pompe, fusil d'assaut, lance-roquettes,
+  munitions, gilet) · $ = concessionnaire AUTO FOLLE (9 voitures à acheter, couleur au choix, ta voiture
+  t'attend devant le magasin ; si elle est détruite : assurance 20 %) · N = cabaret Le Néon
+  (entrée 50 $, spectacle de danse en tenue de soirée, DJ, bar de jus de fruits qui redonne de la vie).
+ VILLE (v2) : 16 x 16 quartiers (4 fois plus grande) : centre-ville avec gratte-ciel, quartiers résidentiels, plage avec
+  boardwalk, port avec conteneurs et grue, zone industrielle, forêt et lacs au nord, parcs, friches des gangs.
+ MODES (écran titre) : HISTOIRE (10 chapitres avec dialogues, lettre H bleue, progression sauvegardée), MONDE LIBRE,
+  MULTIJOUEUR (même code de salle que tes amis ; messages rapides prédéfinis uniquement, touche Y ou bouton 💬).
+ MISSIONS : 4 types de contacts (lettre colorée) : B orange = braquages (supérette, bijouterie, banque, fourgon blindé,
+  chauffeur de braqueurs) · G violet = gangs (chef à tabasser à mains nues, mauvais payeurs, combats clandestins, raid,
+  chasseur de primes, nettoyage, défense) · V rouge = voitures (course, vol, poursuite, filature, contre-la-montre, évasion…)
+  · S jaune = services (taxi, ambulance, livraisons, VIP, coursier…). Chaque contact tire une mission au hasard
+  (plus de 110 missions différentes : livraisons de fleurs/gâteau/œuvres d'art, chasses aux bandes du port ou de la plage, boss à mains nues, courses thématiques, poursuites, collectes, visites guidées, évasions… jamais deux fois la même d'affilée).
+ DIFFICULTÉ CROISSANTE : plus tu as d'étoiles, plus la police est nombreuse (jusqu'à 9 voitures), rapide, résistante et précise, et plus il faut rester caché longtemps pour la semer.
+ POLICE : 5 étoiles très difficiles (3 étoiles = avoir abattu un policier, 4 = 4 policiers, 5 = 8 policiers).
+ PERSONNAGES : corps lissés avec visage, cheveux, vêtements, et articulations (coudes, genoux) bien visibles de près.
+ VISÉE : il faut vraiment viser. Tête = quasi mort sur le coup, torse = 2-3 balles, jambes = dégâts réduits mais le PNJ est blessé et ne peut plus marcher (il rampe).
+ BAGARRES : si tu frappes ou tires sur un passant, il peut riposter à mains nues, et des gens autour (et d'autres qui arrivent en courant) viennent l'aider. Éloigne-toi ou monte en voiture pour qu'ils abandonnent.
+ FOULE : on croise maintenant des personnes âgées (cheveux gris, lentes) et des enfants. Les enfants sont protégés : on ne peut ni les frapper ni leur tirer dessus, ils s'enfuient simplement.
+ BOUTONS TACTILES : dessinés en vraies icônes (pistolet gris, voiture, porte, klaxon…) au lieu d'emoji.
+ CARTE : touche le radar (ou touche M sur clavier) pour afficher la grande carte en jeu.
+ TÉLÉPHONE (touche T ou bouton 📱) : fais apparaître tes voitures achetées devant toi contre une petite somme.
+ Sauvegarde automatique sur l'appareil : argent, armes, munitions, voitures achetées.
+ Pour cette mise à jour, un seul fichier à remplacer sur GitHub : gta.html (les autres sont inchangés).
+
+=== NOUVEAUTÉS : COMMISSARIAT, AÉROPORT, MONTAGNE ===
+COMMISSARIAT (quartier Vieux-Quai) : hall avec comptoir, agents, 2 cellules.
+  Au comptoir, paie une amende (400 $ x nombre d'étoiles) pour effacer ta recherche.
+AÉROPORT MILITAIRE (au sud de la ville, route à la sortie x=635) :
+  3 avions à hélice + 3 jets, pistes, tour, hangars, clôture.
+  Surveillé par la police militaire : si tu entres ou voles un avion -> alarme = 3 étoiles (90 s).
+  Avion : W/S gaz, A/D tourner, Espace monter, Shift/Ctrl descendre. Atterris puis F pour sortir.
+  Tactile : bouton haut / bouton A pour monter / descendre.
+MONT FOLLE (à l'est, route à la sortie z=635) : route en spirale jusqu'au sommet (150 m), point de vue.
+CARTE (touche M ou clic sur le radar) : montre maintenant montagne et aéroport.
+PERSONNAGES : épaules reliées au début des bras (plus de bout de bras qui dépasse).
+
+=== PROFILS, MUNITIONS, GRAPHISMES ===
+PROFILS : bouton "Profil" sur l'écran titre. Plusieurs profils sur le même appareil, chacun avec sa progression, PIN optionnel (simple verrou).
+  Changer d'appareil : Exporter -> copie le code -> Importer sur l'autre appareil.
+  (La progression reste dans le navigateur : si tu vides les données de Safari, elle disparaît -> exporte un code de temps en temps.)
+MUNITIONS : beaucoup plus chères et en plus petite quantité (pistolet 20 balles = 220 $, roquettes 2 = 1 800 $), armes plus chères, moins de munitions au sol.
+GRAPHISMES : meilleure précision de profondeur (moins de surfaces qui clignotent / scintillent de loin).
+
+=== BAGARRES & PERFORMANCES ===
+BAGARRES : seul le PNJ que tu attaques se défend. Plus de renforts qui apparaissent ; rarement (1 chance sur 4) un seul ami proche l'aide.
+PERFORMANCES : le jeu n'affiche plus ce qui est trop loin pour être vu (brouillard), résolution max réduite sur iPad, et baisse de résolution/PNJ plus rapide si l'image saccade.
+
+=== RELIEF, MOTOS, MISSION TOUJOURS AFFICHÉE ===
+RELIEF : la ville reste plate (rues), mais hors de la ville il y a maintenant des collines et 8 rampes de saut (bande de terre beige) :
+  nord-est (après la porte est), sud-est, et sud-ouest. Visibles sur la grande carte (points jaunes = rampes). Mont Folle et son relief existent toujours.
+VÉHICULES : motos (Moto 1 800 $, Moto sport 12 000 $) et plus de sportives en circulation. Achat chez AUTO FOLLE.
+MISSIONS : il y a toujours une ligne en haut de l'écran : la mission en cours, ou « Prochaine mission : <type> <flèche> <distance> » vers la plus proche.
+
+=== VISÉE VERTICALE ===
+Quand tu vises/tires à pied, glisse le doigt (zone droite de l'écran) ou la souris/les flèches haut-bas pour régler la hauteur du tir.
+Glisser vers le haut = viser plus haut (balcons, fenêtres, avions), vers le bas = viser plus bas (jambes, sol). Le viseur reste au centre.
+TIR + VISÉE AU MÊME DOIGT (tablette) : maintiens le bouton de tir et fais glisser ton pouce vers le haut/bas (ou les côtés) : tu tires en continu et tu règles la hauteur (et la direction) en même temps. Le bras du personnage suit la hauteur visée.
+
+=== MODE HISTOIRE : « LE ROI DE VILLE FOLLE » (12 chapitres + cinématiques) ===
+Tu joues Alex, venu à Ville Folle pour retrouver son grand frère Théo. Rico, Marta, l'inspectrice Moreau, le boss Vargas...
+Cherche la lettre H bleue sur la carte. Chaque chapitre = cinématique (caméra, bandes noires, dialogues) + mission + cinématique de fin.
+Pendant une cinématique : toucher l'écran / Entrée = phrase suivante, bouton « Passer » ou Échap = tout sauter.
+Chapitres 11 et 12 : montée au sommet du Mont Folle (combat contre les hommes de Vargas) puis évasion en avion depuis l'aéroport militaire (la police militaire t'attaque !), avec la scène finale.
+Ta progression d'histoire est sauvegardée (profil actif). Si tu avais commencé l'ancienne histoire (9 chapitres), tu reprends au chapitre du même numéro.
+
+=== VILLE IRRÉGULIÈRE : BAIES, CANAL ET PONTS ===
+La ville n'est plus un carré : des baies et des canaux découpent la côte (nord, nord-est, est, sud-est, sud) avec des quais à garde-corps.
+Un canal au sud-est sépare la zone industrielle ; les routes qui le traversent sont des ponts. Voitures, piétons et missions évitent l'eau (murs invisibles).
+Visible sur la minicarte et la grande carte (eau en bleu).
+
+=== Carte, points et vol de voiture ===
+- Carte (pause / tap sur le radar) : touche la carte pour placer TON point jaune (faisceau jaune dans le monde + flèche sur le radar). Touche près du point pour l'enlever. Il disparaît quand tu l'atteins.
+- Missions : le DÉPART (D blanc) et l'ARRIVÉE / OBJECTIF (★ + cercle) s'affichent sur la grande carte avec un trait pointillé ; sur le radar les points hors portée restent collés au bord.
+- Voiture au bord de la route : appuie sur Utiliser -> tu casses la vitre (éclats), tu ouvres la portière de l'intérieur et tu t'installes. Petite alerte police (1 étoile max possible).
+Seul gta.html est à remplacer.
+
+=== Essence ===
+- 4 stations-service (E orange sur radar et carte). Jauge orange sous la barre de vie de la voiture.
+- Plein : arrête-toi sous l'auvent, le plein se fait tout seul (0,50 $ le %, ~50 $ pour un plein).
+- Réservoir vide : le moteur ne répond plus -> va à une station ou prends une autre voiture. Pendant une mission, pas de consommation.
+Seul gta.html est à remplacer.
+
+=== Itinéraire, argent, relooking, police ===
+- Point sur la carte : l'itinéraire le plus court par les routes s'affiche en jaune sur la grande carte ET sur le radar (en bleu pour l'objectif d'une mission).
+- Plus d'argent par terre dans la rue : l'argent vient seulement des missions.
+- Mort : tu perds entre 500 et 1000 $ (5 % de ton argent, min 500, max 1000). Modifiable dans p6_game.js (respawnAt(HOSP,...)).
+- Coiffeur (C violet sur la carte) : coupe + couleur 40 $ ; Magasin de vêtements : haut/pantalon 60 $, casquette 30 $. 3 boutiques dans la ville.
+- Quand la police te recherche, un AVIS DE RECHERCHE (cheveux + haut) s'affiche. Change coiffure ET vêtements : elle t'oublie. Sinon, si tu reviens dans le quartier, un policier te reconnaît (2 étoiles). Le look est sauvegardé.
+- Un policier à moins de ~22 m voit ton arme sortie : avertissement puis il t'attaque. Mets les poings (arme 0) pour te promener tranquille.
+Seul gta.html est à remplacer.
+
+=== MISSIONS À L'ÉCRAN + VERSION ALLEMANDE ===
+Missions : touche la ligne « 📋 Missions » en haut (ou touche J). La liste affiche les
+missions proches : « Lancer maintenant » te téléporte et démarre, « Y aller » pose un point
+sur la carte. Impossible pendant une mission ou si la police te cherche.
+Allemand : bouton « 🇩🇪 Deutsch » (en bas à droite) sur index, cubia, piege et gta. Le choix
+est mémorisé (même clé que jeu.html, qui garde son propre bouton). Les autres jeux suivent la langue.
+Fichiers à remplacer sur GitHub : index, cubia, blocs, piege, gta, gta2d, g-snake, g-2048,
+g-briques, g-flappy, g-memoire, g-morpion (.html). jeu.html ne change pas.

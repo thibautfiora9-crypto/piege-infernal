@@ -259,6 +259,7 @@ h1{background:linear-gradient(90deg,#ff4d4d,#ffb020,#35e08a,#38b6ff,#b36bff);-we
 <button class="mode" id="m-solo" data-ic="🔥"><b>Solo</b><span id="m-solo-sub">Reprendre au niveau 1</span></button>
 <button class="mode" id="m-duo" disabled data-ic="👥"><b>Multijoueur en ligne</b><span id="m-duo-sub">Connexion...</span></button>
 <button class="mode" id="m-pick" data-ic="🎯"><b>Choisir un niveau</b><span id="m-pick-sub">Niveau 1</span></button>
+<button class="mode" id="m-blocs" data-ic="⛏️"><b>Cubia · monde de blocs</b><span>Construis et explore, mode créatif</span></button>
 <button class="mode" id="m-sr" data-ic="⏱️"><b>Speed run</b><span id="m-sr-sub">10 niveaux durs, chrono</span></button>
 <button class="mode" id="m-shop" data-ic="🛒"><b>Boutique</b><span id="m-shop-sub">Skins et objets</span></button>
 <button class="mode" id="m-fr" data-ic="👥"><b>Amis <span id="frb" class="badge" hidden></span></b><span id="m-fr-sub">Amis et messages</span></button>
@@ -1661,4 +1662,5 @@ document.querySelectorAll('.langb').forEach(b=>b.onclick=()=>{setLang(LANG==='de
 setLang(LANG);
 </script>
 
+<script>document.getElementById('m-blocs').onclick=function(){location.href='blocs.html'}</script>
 </body></html>
