@@ -357,7 +357,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <h1>VILLE<br><span>FOLLE</span></h1>
  <p>Une ville ouverte en 3D : vole des voitures, fais des missions, évite la police… ou affronte-la !</p>
  <p class="help"><b>Tablette</b> : joystick à gauche · glisse à droite pour tourner la caméra · boutons à droite<br>
- <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>B</kbd> braquer un commerce · <kbd>J</kbd> mode justicier (en voiture de police) · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
+ <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>B</kbd> braquer un commerce · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
  <div><button class="btn g" id="profBtn">Compte / Profil</button> <button class="btn g" id="gfxBtn2">Graphismes</button></div>
@@ -842,7 +842,7 @@ function inBlockCoord(v){if(v<0||v>=SIZE)return false;const m=v%CELL;return m>=R
 const INTZ={x0:-1700,x1:-1250,z0:520,z1:640};
 function groundH(x,z){if(x>INTZ.x0&&x<INTZ.x1&&z>INTZ.z0&&z<INTZ.z1)return CURB;if(x<0||z<0||x>=SIZE||z>=SIZE)return outerH(x,z);return(inBlockCoord(x)&&inBlockCoord(z))?CURB:0}
 // point (3D) dans un obstacle ? (pour caméra / balles)
-function solidPoint(x,y,z){const a=queryNear(x,z,.1);for(const it of a){if(it.circ)continue;if(x>it.x0&&x<it.x1&&z>it.z0&&z<it.z1&&y<it.h)return it}return null}
+function solidPoint(x,y,z){const a=queryNear(x,z,.1);for(const it of a){if(it.circ||it.water)continue;if(x>it.x0&&x<it.x1&&z>it.z0&&z<it.z1&&y<it.h)return it}return null}
 
 // ---------- textures procédurales (façades, sol, trottoirs…) ----------
 const shade=(hex,k)=>{const n=parseInt(hex.slice(1),16),f=c=>Math.max(0,Math.min(255,Math.round(c*(1+k))));return'rgb('+f(n>>16&255)+','+f(n>>8&255)+','+f(n&255)+')'};
@@ -1416,7 +1416,8 @@ function segOK(ax,az,bx,bz){
   if(az===bz){const x=Math.min(ax,bx);return landB(x,az-1)||landB(x,az)||BRIDGES.has('h:'+x+','+az)}
   const z=Math.min(az,bz);return landB(ax-1,z)||landB(ax,z)||BRIDGES.has('v:'+ax+','+z)}
 const WEXT=[];
-function waterRect(x0,z0,x1,z1){S.sea.mb((x0+x1)/2,(z0+z1)/2).top(x0,z0,x1,z1,.07,[1,1,1]);addAABB(x0,z0,x1,z1,60)}
+const WATER_RECTS=[];
+function waterRect(x0,z0,x1,z1){S.sea.mb((x0+x1)/2,(z0+z1)/2).top(x0,z0,x1,z1,.07,[1,1,1]);const it=addAABB(x0,z0,x1,z1,60);it.water=true;WATER_RECTS.push({x0,z0,x1,z1})}
 const SPAWN={x:0,z:0,yaw:0},HOSP={x:0,z:0,yaw:0},POLS={x:0,z:0,yaw:0};
 const HIDE=[],STORES=[],BANKS=[];
 function zoneOf(bx,bz){const k=bx+','+bz;if(WATER.has(k))return'water';if(SPECIAL[k])return SPECIAL[k];if(PARKS.has(k))return'park';
@@ -1498,7 +1499,7 @@ GEN.down=c=>{const lots=splitLots(c.I0x,c.I0z,c.I1x,c.I1z,wint(1,2));
     if(wr(0,1)<.3){const k=wpick([['COLA-FOLLE','#c1121f','#fff'],['BIG BOUM\nBURGER','#f4a100','#7a1f00'],['PIZZA\nPRONTO','#2a7f3f','#fff'],['BANQUE\nALPINA','#0b3d91','#fff'],['RADIO\nFOLLE 98.7','#7b2cbf','#ffe066']]);
       signPlane(k[0],k[1],k[2],(L[0]+L[2])/2,pod+4,L[1]-.2,12,6,0,-1,36)}}};
 GEN.water=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c;
-  S.sea.mb(cx,cz).top(X0+.4,Z0+.4,X1-.4,Z1-.4,.07,[1,1,1]);addAABB(X0,Z0,X1,Z1,60);
+  S.sea.mb(cx,cz).top(X0+.4,Z0+.4,X1-.4,Z1-.4,.07,[1,1,1]);addAABB(X0,Z0,X1,Z1,60).water=true;WATER_RECTS.push({x0:X0,z0:Z0,x1:X1,z1:Z1});
   const f=S.flat.mb(cx,cz),pc=[.72,.72,.7];
   if(segOK(bx,bz,bx+1,bz))f.box(X0,0,Z0,X1,.95,Z0+.4,pc,{ao:.8});
   if(segOK(bx,bz+1,bx+1,bz+1))f.box(X0,0,Z1-.4,X1,.95,Z1,pc,{ao:.8});
@@ -1777,7 +1778,7 @@ function worldGenSteps(){
 function worldGenFinish(){
   roadsGen();buildInteriors();
   {const EE=SIZE+2000,ES=SIZE+2000,EN=-1900; // bout du monde (loin) ; à l'ouest, la mer après la plage
-    addAABB(-132,EN-60,-72,ES+60,50);addAABB(-132,EN-60,EE+60,EN,50);
+    addAABB(-132,EN-60,-72,ES+60,50).water=true;addAABB(-132,EN-60,EE+60,EN,50);
     addAABB(EE,EN-60,EE+60,ES+60,50);addAABB(-132,ES,EE+60,ES+60,50)}
   fixDoors();
   for(const k in S){const v=S[k];if(v instanceof Stat)v.build()}for(const a of S.tl)for(const s of a)s.build();
@@ -2190,7 +2191,10 @@ const VT={
   jet:{L:14,W:2.7,span:9.8,air:true,vmax:140,acc:24,brake:20,steer:.5,wb:5,vs:42,vr:56,climb:22,turn:.55,cols:['#6b705c','#9ca3af','#4a4e3f'],name:'Avion de chasse'},
   moto:{L:2.1,W:.85,vmax:46,acc:17,brake:26,steer:.72,wb:1.35,bike:1,cols:['#e63946','#1d4ed8','#111827','#f59e0b','#16a34a','#f8fafc'],name:'Moto',price:1800},
   motoS:{L:2.2,W:.85,vmax:68,acc:25,brake:32,steer:.68,wb:1.4,bike:1,cols:['#ff006e','#ffd60a','#00b4d8','#f8f9fa','#1b1b1e'],name:'Moto sport',price:12000},
-  limo:{L:6.9,W:1.95,vmax:33,acc:7.5,brake:20,steer:.46,wb:4.4,cols:['#101014','#f1f1f4','#2a2a35'],name:'Limousine',price:18000}
+  limo:{L:6.9,W:1.95,vmax:33,acc:7.5,brake:20,steer:.46,wb:4.4,cols:['#101014','#f1f1f4','#2a2a35'],name:'Limousine',price:18000},
+  boat:{L:5.4,W:2.1,vmax:30,acc:8,brake:9,steer:.5,wb:3.2,boat:1,cols:['#f1f1f4','#1d4ed8','#e63946','#111827','#ffd166'],name:'Bateau'},
+  boatS:{L:6.2,W:2.2,vmax:40,acc:11,brake:10,steer:.48,wb:3.6,boat:1,cols:['#ff006e','#f8f9fa','#00b4d8','#1b1b1e'],name:'Hors-bord'},
+  boatcop:{L:6,W:2.2,vmax:36,acc:10,brake:10,steer:.5,wb:3.4,boat:1,cols:['#f4f4f6'],name:'Police maritime'}
 };
 const SHOPCARS=['moto','mini','sedan','pickup','suv','van','muscle','sport','motoS','limo','super'];
 const paintMats={};function paintMat(hex){if(!paintMats[hex]){paintMats[hex]=mkMat({tint:hexc(parseInt(hex.slice(1),16)),spec:.95,shin:90})}return paintMats[hex]}
@@ -2271,10 +2275,28 @@ function riderMesh(type){
   E([[0,1.46,-.22,.15,.15,.17]],hm);                                 // casque
   E([[0,1.45,-.075,.11,.065,.035]],vz);                              // visière
   return RIDERGEO[type]=new GMesh(B)}
+function boatGeo(type){
+  const s=VT[type],Pm=new MB(),D=new MB(),hw=s.W/2,hl=s.L/2,wh=[1,1,1],cop=type==='boatcop',sp=type==='boatS',dark=[.1,.1,.12],glass=[.12,.18,.26],wood=[.55,.38,.22],cream=[.92,.9,.84];
+  // coque : arrière plat, étrave pointue, fond en V
+  loftZ(Pm,[[-hl,hw*.93,-.15,.72,.22,.3],[-hl+.5,hw,-.3,.8,.26,.5],[hl*.25,hw*.97,-.32,.86,.26,.55],[hl-1.1,hw*.72,-.2,.92,.22,.4],[hl-.35,hw*.3,.1,.97,.1,.12],[hl,hw*.05,.55,.99,.03,.03]],wh,{k:3});
+  // bande de couleur sur la coque
+  loftZ(D,[[-hl+.02,hw*.94+.012,.38,.5,.03,.03],[-hl+.5,hw+.012,.4,.52,.03,.03],[hl*.25,hw*.97+.012,.42,.54,.03,.03],[hl-1.1,hw*.72+.012,.44,.56,.03,.03],[hl-.42,hw*.34+.01,.46,.58,.02,.02]],cop?[.1,.3,.85]:sp?[.05,.05,.06]:[.12,.32,.7],{k:2,caps:false});
+  // pont, banquettes, console, pare-brise
+  D.box(-hw*.82,.78,-hl+.25,hw*.82,.82,hl-1.5,cop?[.75,.76,.78]:wood,{ao:1});
+  D.box(-hw*.78,.82,-hl+.3,hw*.78,1.18,-hl+.95,cream,{ao:.9});D.box(-hw*.78,1.18,-hl+.3,hw*.78,1.5,-hl+.5,cream,{ao:.9});
+  D.box(-.55,.82,.2,.55,1.35,.85,cop?[.85,.86,.9]:wh,{ao:.85});D.box(-.18,1.35,.25,.18,1.42,.45,dark,{ao:1});
+  loftZ(D,[[.82,.62,1.3,1.32,.02,.02],[.98,.6,1.3,1.72,.1,.02],[1.02,.6,1.3,1.72,.1,.02]],glass,{k:2});
+  if(cop){D.box(-.7,.82,-.6,.7,1.95,.15,[.9,.91,.94],{ao:.85});D.box(-.72,1.4,-.62,.72,1.75,.17,glass,{ao:1});D.box(-.75,1.95,-.65,.75,2.02,.2,[.2,.22,.6],{ao:1})}
+  // moteur hors-bord
+  D.box(-.28,.25,-hl-.42,.28,1.15,-hl+.02,[.12,.12,.14],{ao:.9});D.box(-.24,1.15,-hl-.38,.24,1.3,-hl-.02,cop?[.2,.3,.8]:sp?[.9,.1,.3]:[.85,.85,.88],{ao:1});D.box(-.06,-.45,-hl-.3,.06,.25,-hl-.2,dark,{ao:1});
+  // feux de navigation
+  D.box(-hw*.4-.06,.95,hl-.9,-hw*.4+.06,1.02,hl-.8,[.9,.1,.1],{ao:1});D.box(hw*.4-.06,.95,hl-.9,hw*.4+.06,1.02,hl-.8,[.1,.9,.2],{ao:1});
+  return carGeos[type]={paint:new GMesh(Pm),detail:new GMesh(D)}}
 function carGeo(type){
   if(carGeos[type])return carGeos[type];
   if(VT[type].bike)return motoGeo(type);
   if(VT[type].air)return planeGeo(type);
+  if(VT[type].boat)return boatGeo(type);
   const s=VT[type],Pm=new MB(),D=new MB(),W=s.W,L=s.L,hw=W/2,hl=L/2,wh=[1,1,1];
   const bump=[.2,.21,.25],dark=[.09,.1,.12],glass=[.09,.13,.19],tire=[.05,.05,.06],light=[1,.96,.8],tail=[.85,.05,.05],chrome=[.62,.64,.7];
   const wheel=(x,z,r,w)=>{const sg=x>0?1:-1;x+=sg*.05;
@@ -2408,7 +2430,7 @@ function stepCar(c,inp,dt){
   a-=vf*abs(vf)*.0008;
   vf+=a*dt;if(inp.hb)vf*=(1-.55*dt);
   c.gk=inp.hb?.2:min(1,(c.gk===undefined?1:c.gk)+dt*1.4); // adhérence arrière : chute au frein à main, revient doucement
-  const grip=(abs(vf)>25?5.4:7)*c.gk*((c.slip||0)>3.2&&thr>.3&&!inp.hb&&!s.bike?.55:1);vl*=Math.exp(-grip*dt);
+  const grip=(abs(vf)>25?5.4:7)*(s.boat?.35:1)*c.gk*((c.slip||0)>3.2&&thr>.3&&!inp.hb&&!s.bike?.55:1);vl*=Math.exp(-grip*dt);
   c.slip=abs(vl);
   const spd=abs(vf),maxSt=s.steer*tS/(1+spd/24);
   let yr=vf*Math.tan((inp.steer||0)*maxSt)/s.wb;if(inp.hb)yr*=1.8;
@@ -2535,7 +2557,9 @@ function aiCar(c,dt){
 function nodeOf(v){return clamp(Math.round((v-HALF)/CELL),0,NB)}
 function losClear(x0,z0,x1,z1){const n=Math.ceil(hyp(x1-x0,z1-z0)/4);for(let i=1;i<n;i++){const t=i/n;if(solidPoint(x0+(x1-x0)*t,1.4,z0+(z1-z0)*t))return false}return true}
 const searchR=L=>70+L*28;
-function copAI(c,dt){
+// une « vraie » unité de police : conduite par un policier (pas la voiture du joueur, pas une voiture vide)
+function copUnit(c){return c.cop&&c!==P.car&&(c.mode==='cop'||c.mode==='ai'||c.block)}
+function copAI(c,dt){if(c.s.boat)return boatCopAI(c,dt);
   const L=wantedLevel(),saw=game.seenT<1.5||!game.lastSeen;
   let tx,tz,tvx=0,tvz=0;
   if(saw){tx=P.car?P.car.x:P.x;tz=P.car?P.car.z:P.z;tvx=P.car?P.car.vx:0;tvz=P.car?P.car.vz:0}
@@ -3033,7 +3057,7 @@ let say=()=>{},bigMsg=()=>{};
 // et plus on a d'étoiles, plus chaque nouveau crime pèse peu.
 // qui a vu le crime ? 'cop' (policier), 'civ' (passant qui appelle la police) ou null (personne)
 function crimeWitness(x,z){
-  for(const c of cars)if(c.cop&&c.mode!=='wreck'&&c.mode!=='parked'&&hyp(c.x-x,c.z-z)<110&&losClear(c.x,c.z,x,z))return'cop';
+  for(const c of cars)if(copUnit(c)&&hyp(c.x-x,c.z-z)<110&&losClear(c.x,c.z,x,z))return'cop';
   for(const p of peds)if(p.kind==='cop'&&p.state!=='dead'&&hyp(p.x-x,p.z-z)<90&&losClear(p.x,p.z,x,z))return'cop';
   for(const p of peds){if(p.kind!=='ped'||p.state==='dead'||p.state==='ko')continue;const d=hyp(p.x-x,p.z-z);if(d<38&&losClear(p.x,p.z,x,z))return'civ'}
   return null}
@@ -3099,7 +3123,19 @@ function trafficSpawn(){
     let ok=true;for(const c of cars){if(abs(c.x-px)<9&&abs(c.z-pz)<9){ok=false;break}}if(!ok)continue;
     const c=mkCar(carTypeRoll(),px,pz,atan2(DX[d],DZ[d]),'ai');aiInit(c,d,lane);const sp=c.ai.cruise*.9;c.vx=DX[d]*sp;c.vz=DZ[d]*sp;c.vf=sp;return c}
   return null}
-function copSpawn(){
+function boatCopSpawn(){for(let tries=0;tries<24;tries++){const a=rnd(0,TAU),d=rnd(80,170),x=P.x+cos(a)*d,z=P.z+sin(a)*d;if(!isWaterAt(x,z)||!isWaterAt(x+3,z)||!isWaterAt(x-3,z)||!isWaterAt(x,z+3)||!isWaterAt(x,z-3))continue;
+    if(visSphere(x,1,z,3)&&d<110)continue;const c=mkCar('boatcop',x,z,atan2(P.x-x,P.z-z),'cop');c.cop=true;c.hasDriver=true;c.label='Police maritime';return c}return null}
+function boatCopAI(c,dt){const L=wantedLevel(),saw=game.seenT<1.5||!game.lastSeen,T=P.car||P;
+  let tx=saw?T.x:game.lastSeen.x,tz=saw?T.z:game.lastSeen.z;const tvx=saw&&P.car?P.car.vx:0,tvz=saw&&P.car?P.car.vz:0;tx+=tvx*.7;tz+=tvz*.7;
+  const dist=hyp(tx-c.x,tz-c.z),vf=c.vf||0;let des=atan2(tx-c.x,tz-c.z);
+  // évite la terre : sonde devant, gauche et droite
+  const look=(a,d)=>isWaterAt(c.x+sin(a)*d,c.z+cos(a)*d);
+  if(!look(des,14)){for(const o of[.5,-.5,1,-1,1.6,-1.6,2.4,-2.4]){if(look(des+o,14)){des+=o;break}}}
+  const df=angd(c.yaw,des);let tv=c.s.vmax*(.75+L*.05);if(abs(df)>1)tv*=.45;if(dist<16)tv=max(4,hyp(tvx,tvz)+3);if(!saw&&dist<20)tv=6;
+  if(abs(vf)<1&&tv>3){c.stuck+=dt;if(c.stuck>1.2){c.rev=1.1;c.revSt=Math.random()<.5?-1:1;c.stuck=0}}else c.stuck=max(0,c.stuck-dt);
+  if(c.rev>0){c.rev-=dt;return{thr:0,brk:1,steer:c.revSt,hb:false}}
+  return{thr:clamp((tv-vf)*.5,0,1),brk:clamp((vf-tv)*.6,0,1),steer:-clamp(df*2,-1,1),hb:false}}
+function copSpawn(){if(P.car&&P.car.s.boat)return boatCopSpawn();
   for(let tries=0;tries<10;tries++){
     const a=rnd(0,TAU),dist=rnd(110,190),x=P.x+cos(a)*dist,z=P.z+sin(a)*dist;if(x<14||z<14||x>SIZE-14||z>SIZE-14)continue;
     const horiz=Math.random()<.5;let d,lane=Math.random()<.5?0:1,px,pz;
@@ -3111,7 +3147,7 @@ function copSpawn(){
 function removeCar(c){const i=cars.indexOf(c);if(i>=0)cars.splice(i,1)}
 function trafficUpdate(dt){
   game.tTraf=(game.tTraf||0)-dt;
-  if(game.tTraf<=0){game.tTraf=.3;let n=0,nc=0;for(const c of cars){if(c.mode==='ai')n++;if(c.mode==='cop')nc++}
+  if(game.tTraf<=0){game.tTraf=.3;let n=0,nc=0;const inB=!!(P.car&&P.car.s.boat);for(const c of cars){if(c.mode==='ai')n++;if(c.mode==='cop'&&!!c.s.boat===inB)nc++}
     if(n<(game.maxAI||24))trafficSpawn();
     const L=wantedLevel(),want=[0,2,3,5,7,9][L];if(L>=4)game.tTraf=.15;if(nc<want&&game.seenT<60+L*10){const c=copSpawn();if(c)c.hp=1000*(1+.22*L)}}
   // retrait des voitures lointaines / bloquées
@@ -3144,8 +3180,29 @@ function enterCar(c){
   if(game.mission&&game.mission.onEnter)game.mission.onEnter(c);
   if(wasAir){c.th=0;c.vy=0;say(IN.touch?c.s.name+' : joystick avant = gaz, côtés = virer · MONTER / DESCENDRE à droite':c.s.name+' : W/S gaz · A/D virer · Espace monter · Maj/Ctrl descendre',5.5);if(inAirbase(c.x,c.z))mpAlarm('Tu voles un avion militaire ! La police militaire ouvre le feu !')}
   else say((c.label||c.s.name)+(c.cop?' de police':''),1.6)}
+// ---------- navigation ----------
+function spawnBoats(){const R=mulb(909);
+  for(const z of[260,480,700,920,1120]){const c=mkCar(R()<.4?'boatS':'boat',-75.6,z,-PI/2,'parked');c.sleep=true;c.y=waterY(c.x,c.z)-.22}
+  let n=0;for(const k of WATER){if(n>=8)break;const[bx,bz]=k.split(',').map(Number);if(bx<0||bz<0||bx>=NB||bz>=NB)continue;
+    for(const[dx,dz]of[[0,-1],[-1,0],[1,0],[0,1]]){if(!landB(bx+dx,bz+dz))continue;const X0=bx*CELL+ROAD,Z0=bz*CELL+ROAD,X1=X0+BLOCK,Z1=Z0+BLOCK;
+      const x=dx<0?X0+2.4:dx>0?X1-2.4:(X0+X1)/2,z=dz<0?Z0+2.4:dz>0?Z1-2.4:(Z0+Z1)/2,yaw=dz!==0?PI/2:0;
+      if(!isWaterAt(x+(dz!==0?2.8:0),z+(dx!==0?2.8:0))||!isWaterAt(x-(dz!==0?2.8:0),z-(dx!==0?2.8:0)))continue;
+      const c=mkCar(R()<.35?'boatS':'boat',x,z,yaw,'parked');c.sleep=true;c.y=waterY(c.x,c.z)-.22;n++;break}}}
+function seaAt(x,z){return x<-73&&x>-1850&&z>-1850&&z<SIZE+1850}
+function isWaterAt(x,z){if(seaAt(x,z))return true;for(const r of WATER_RECTS)if(x>r.x0+.6&&x<r.x1-.6&&z>r.z0+.6&&z<r.z1-.6)return true;return false}
+function waterY(x,z){return seaAt(x,z)?-.12:.07}
+function boatBlocked(c){circlesOf(c,_pc);for(let k=0;k<3;k++){const x=_pc[k*2],z=_pc[k*2+1];if(!isWaterAt(x,z))return true;
+    for(const it of queryNear(x,z,c.s.W*.5))if(!it.water&&it.h>.5&&circHit(it,x,z,c.s.W*.45))return true}return false}
+function stepBoat(c,inp,dt){const ox=c.x,oz=c.z,oy=c.yaw;stepCar(c,inp,dt);
+  if(boatBlocked(c)){const sp=hyp(c.vx,c.vz);c.x=ox;c.z=oz;c.yaw=oy;c.vx*=-.25;c.vz*=-.25;c.vf=(c.vf||0)*-.25;c.yawRate=0;if(sp>9&&c===P.car){shake=max(shake,.5);hurtCar(c,sp*4)}}
+  const t=gtime.t+c.id*1.7,sp=abs(c.vf||0);c.y=waterY(c.x,c.z)-.22+sin(t*1.6)*.05;
+  c.pitch=lerp(c.pitch,sin(t*1.3)*.025-clamp(sp/40,0,.09)+(c.vf>3?0:0),min(1,dt*3));c.roll=lerp(c.roll,sin(t*1.1)*.035+clamp(c.yawRate*sp*.01,-.12,.12),min(1,dt*3));
+  if(sp>4&&Math.random()<.6){const fx=sin(c.yaw),fz=cos(c.yaw);fxDust(c.x-fx*c.s.L*.55+rnd(-.4,.4),c.y+.3,c.z-fz*c.s.L*.55+rnd(-.4,.4),1,[.92,.96,1])}}
+function boatLand(c){let best=null,bd=1e9;for(let r=1.5;r<=16;r+=1)for(let k=0;k<20;k++){const a=k/20*TAU,x=c.x+cos(a)*(c.s.W/2+r),z=c.z+sin(a)*(c.s.W/2+r);if(isWaterAt(x,z)||x<-72)continue;
+    let ok=true;for(const it of queryNear(x,z,.5))if(circHit(it,x,z,.4)){ok=false;break}if(ok){const d=hyp(x-c.x,z-c.z);if(d<bd){bd=d;best={x,z}}}}return best}
 function exitCar(emergency){
   const c=P.car;if(!c)return;
+  let land=null;if(c.s.boat){land=boatLand(c);if(!land&&!emergency){say('Approche-toi d’un quai ou de la plage pour descendre du bateau',2.2);return}}
   const lx=cos(c.yaw),lz=-sin(c.yaw);let ok=false;
   for(const s of[1,-1]){const x=c.x+lx*s*(c.s.W/2+.9),z=c.z+lz*s*(c.s.W/2+.9);
     let blocked=false;const it=queryNear(x,z,.6);for(const w of it)if(circHit(w,x,z,.4)){blocked=true;break}
@@ -3154,6 +3211,7 @@ function exitCar(emergency){
   P.y=groundH(P.x,P.z);P.vx=c.vx*.5;P.vz=c.vz*.5;P.vy=emergency?3:0;P.ground=!emergency;P.yaw=c.yaw+PI/2;
   c.mode=c.cop&&false?'ai':'idle';c.keep=!!c.owned;P.car=null;sfx('door');
   if(emergency){P.ragdoll=1.4}
+  if(c.s.boat){if(land){P.x=land.x;P.z=land.z}else respawnAt(HOSP,0,true);P.y=groundH(P.x,P.z);P.vx=P.vz=0;P.ragdoll=0;P.ground=true;c.mode='parked';c.sleep=false}
   CAM.free=0}
 
 // ---------- tir ----------
@@ -3198,7 +3256,7 @@ function playerShoot(dt){
   if(w.rocket){
     const r=rayCast(CAM.x,CAM.y,CAM.z,fx,fy,fz,90,max(1.2,CAM.curD-.3));
     fireRocket(mx,my,mz,CAM.x+fx*r.t,CAM.y+fy*r.t,CAM.z+fz*r.t);scarePeds(P.x,P.z,45);
-    if(wantedLevel()===0){let near=false;for(const c of cars)if(c.cop&&hyp(c.x-P.x,c.z-P.z)<130)near=true;for(const p of peds)if(p.kind==='cop'&&hyp(p.x-P.x,p.z-P.z)<110)near=true;if(near)onCrime(.5,P.x,P.z,true,1)}
+    if(wantedLevel()===0){let near=false;for(const c of cars)if(copUnit(c)&&hyp(c.x-P.x,c.z-P.z)<130)near=true;for(const p of peds)if(p.kind==='cop'&&hyp(p.x-P.x,p.z-P.z)<110)near=true;if(near)onCrime(.5,P.x,P.z,true,1)}
     return}
   const np=w.pellets||1,dm=new Map(),cm=new Map(),zs=new Map();let fxN=0;
   for(let k=0;k<np;k++){
@@ -3215,7 +3273,7 @@ function playerShoot(dt){
   // les piétons proches fuient
   scarePeds(P.x,P.z,28);
   // la police entend les coups
-  if(wantedLevel()===0){let near=false;for(const c of cars)if(c.cop&&hyp(c.x-P.x,c.z-P.z)<120)near=true;for(const p of peds)if(p.kind==='cop'&&hyp(p.x-P.x,p.z-P.z)<100)near=true;if(near)onCrime(.35,P.x,P.z,true,1)}}
+  if(wantedLevel()===0){let near=false;for(const c of cars)if(copUnit(c)&&hyp(c.x-P.x,c.z-P.z)<120)near=true;for(const p of peds)if(p.kind==='cop'&&hyp(p.x-P.x,p.z-P.z)<100)near=true;if(near)onCrime(.35,P.x,P.z,true,1)}}
 // menacer avec l'arme : passants (argent ou fuite) et caissiers (braquage libre)
 function aimThreat(dt){
   if(P.car||!P.wpn||P.aim<.5||game.state!=='play')return;
@@ -3330,7 +3388,7 @@ function playerDrive(dt){
   const c=P.car;P.enterT=max(0,P.enterT-dt);
   if(IN.use&&P.enterT<=0){IN.use=false;if(c.s.air&&((c.alt||0)>1.5||abs(c.vf||0)>9)){say('Pose l’avion et arrête-toi avant de descendre !',2.2)}else{exitCar(false);return}}IN.use=false;
   const air=!!c.s.air,inp={thr:max(0,IN.sy),brk:max(0,-IN.sy),steer:IN.sx,hb:air?false:IN.hb};
-  if(!air){if(c.fuel===undefined)c.fuel=.45+Math.random()*.55;const sp=hyp(c.vx,c.vz),gs=atGas(c.x,c.z);
+  if(!air&&!c.s.boat){if(c.fuel===undefined)c.fuel=.45+Math.random()*.55;const sp=hyp(c.vx,c.vz),gs=atGas(c.x,c.z);
     if(gs&&sp<3&&c.fuel<1){if(game.money>=1){const add=min(1-c.fuel,dt*.14),cost=add*100*.5;c.fuel+=add;game.fcost=(game.fcost||0)+cost;if(game.fcost>=1){const pay=floor(game.fcost);game.money=max(0,game.money-pay);game.fcost-=pay}if(c.fuel>=.999){c.fuel=1;say('Plein fait !',1.8)}}else say('Pas assez d’argent pour l’essence',1.5)}
     else if(!game.mission){c.fuel=max(0,c.fuel-dt*(.0002+sp*.00003+inp.thr*.00015))}
     if(c.fuel<=0){inp.thr=0;if((game.t|0)%6===0&&!c.fuelMsg){c.fuelMsg=1;say('Plus d’essence ! Cherche une station (E orange sur la carte)',3)}}else c.fuelMsg=0}
@@ -3373,7 +3431,7 @@ function updateGame(dt){
     else if(c.mode==='wreck'){inp={thr:0,brk:.2,steer:0,hb:false}}
     if(c.hitT>0)c.hitT-=dt;if(c.hornT>0)c.hornT-=dt;
     if(c.mode==='parked'&&hyp(c.vx,c.vz)<.12&&abs(c.yawRate)<.02){c.sleep=true;c.vx=c.vz=0;c.yawRate=0}
-    if(c.s.air)stepPlane(c,inp,dt);else stepCar(c,inp,dt);collideStatic(c,dt);
+    if(c.s.air)stepPlane(c,inp,dt);else if(c.s.boat)stepBoat(c,inp,dt);else{stepCar(c,inp,dt);collideStatic(c,dt)}
     // fumée / feu
     if(c.mode!=='wreck'){
       if(c.hp<420&&c.mode!=='burning'){c.smokeT-=dt;if(c.smokeT<=0){c.smokeT=c.hp<200?.06:.14;const fx=sin(c.yaw),fz=cos(c.yaw);fxSmoke(c.x+fx*1.8,c.y+1,c.z+fz*1.8,1);if(c.hp<200)fxBlack(c.x+fx*1.8,c.y+1,c.z+fz*1.8)}}
@@ -3405,7 +3463,7 @@ let showArea=()=>{};
 // ---------- barrages et herses (3 étoiles et plus) ----------
 function roadblockUpdate(dt,L,tx,tz){
   game.rbT=(game.rbT===undefined?18:game.rbT)-dt;
-  if(L<3||!P.car||P.car.s.air||game.rbT>0||game.seenT>3)return;const sp=hyp(P.car.vx,P.car.vz);if(sp<9)return;
+  if(L<3||!P.car||P.car.s.air||P.car.s.boat||game.rbT>0||game.seenT>3)return;const sp=hyp(P.car.vx,P.car.vz);if(sp<9)return;
   const dx=P.car.vx/sp,dz=P.car.vz/sp,alongX=abs(dx)>abs(dz),sg=alongX?Math.sign(dx):Math.sign(dz);
   for(const dd of[150,190,120]){const ni=nodeOf(tx+dx*dd),nj=nodeOf(tz+dz*dd);if(!interOK(ni,nj))continue;
     const cx=ni*CELL+HALF,cz=nj*CELL+HALF;if(hyp(cx-tx,cz-tz)<90)continue;
@@ -3420,17 +3478,17 @@ function roadblockUpdate(dt,L,tx,tz){
   game.rbT=4}
 function spikesUpdate(dt){if(!game.spikes)game.spikes=[];
   for(let i=game.spikes.length-1;i>=0;i--){const k=game.spikes[i];k.t-=dt;if(k.t<=0){game.spikes.splice(i,1);continue}
-    for(const c of cars){if(c.s.air||c.flat||c.cop)continue;if(c.x>k.x0-1&&c.x<k.x1+1&&c.z>k.z0-1&&c.z<k.z1+1){c.flat=true;if(c===P.car){say('💥 Pneus crevés ! (répare au Garage Turbo)',3);sfx('glass');shake=max(shake,.6)}}}}}
+    for(const c of cars){if(c.s.air||c.s.boat||c.flat||c.cop)continue;if(c.x>k.x0-1&&c.x<k.x1+1&&c.z>k.z0-1&&c.z<k.z1+1){c.flat=true;if(c===P.car){say('💥 Pneus crevés ! (répare au Garage Turbo)',3);sfx('glass');shake=max(shake,.6)}}}}}
 function drawSpikes(){if(!game.spikes)return;for(const k of game.spikes){const cx=(k.x0+k.x1)/2,cz=(k.z0+k.z1)/2;bPlain.flat(cx,.09,cz,(k.x1-k.x0)/2,(k.z1-k.z0)/2,0,[.12,.12,.14,.95]);
   const n=8,ax=k.x1-k.x0>k.z1-k.z0;for(let i=0;i<n;i++){const t=(i+.5)/n,x=ax?k.x0+(k.x1-k.x0)*t:cx,z=ax?cz:k.z0+(k.z1-k.z0)*t;bPlain.flat(x,.1,z,.18,.18,PI/4,[.85,.85,.9,1])}}}
 // ---------- police ----------
-function copToPatrol(c){c.mode='ai';const d=Math.round(c.yaw/(PI/2))%4;aiInit(c,(((1-d)%4)+4)%4,0)}
+function copToPatrol(c){if(c.s.boat){c.mode='idle';c.boatGone=true;return}c.mode='ai';const d=Math.round(c.yaw/(PI/2))%4;aiInit(c,(((1-d)%4)+4)%4,0)}
 function copsUpdate(dt){
   const L=wantedLevel();
   // la police voit-elle le joueur ?
   let seen=false;const tx=P.car?P.car.x:P.x,tz=P.car?P.car.z:P.z;
   if(L>0&&!P.dead){
-    for(const c of cars){if(!c.cop||c.mode==='wreck'||c.mode==='parked')continue;if(hyp(c.x-tx,c.z-tz)<62&&losClear(c.x,c.z,tx,tz)){seen=true;break}}
+    for(const c of cars){if(!copUnit(c))continue;if(hyp(c.x-tx,c.z-tz)<62&&losClear(c.x,c.z,tx,tz)){seen=true;break}}
     if(!seen)for(const p of peds){if(p.kind!=='cop'||p.state==='dead')continue;if(hyp(p.x-tx,p.z-tz)<55&&losClear(p.x,p.z,tx,tz)){seen=true;break}}
     if(seen){game.seenT=0;game.lastSeen={x:tx,z:tz};game.escT=0}else game.seenT+=dt;
     if(!game.lastSeen)game.lastSeen={x:tx,z:tz};
@@ -3445,11 +3503,11 @@ function copsUpdate(dt){
   }else game.seenT=min(game.seenT+dt,99);
   spikesUpdate(dt);
   if(L===0){game.wanted=0;game.copKills=0;game.lastSeen=null;game.escT=0}
-  for(let i=cars.length-1;i>=0;i--){const c=cars[i];if(!c.block)continue;const d=hyp(c.x-tx,c.z-tz);if((L===0&&(d>90||!visSphere(c.x,1,c.z,3)))||d>340){if(c===P.car){c.block=false;continue}cars.splice(i,1)}}
+  for(let i=cars.length-1;i>=0;i--){const c=cars[i];if(!c.block&&!c.boatGone)continue;const d=hyp(c.x-tx,c.z-tz);if((L===0&&(d>90||!visSphere(c.x,1,c.z,3)))||d>340){if(c===P.car){c.block=false;continue}cars.splice(i,1)}}
   // déploiement des policiers à pied
   game.tDep=(game.tDep||0)-dt;
   if(L>0&&game.tDep<=0){game.tDep=1.2;let nf=0;for(const p of peds)if(p.kind==='cop'&&!p.mp&&p.state!=='dead')nf++;
-    for(const c of cars){if(!c.cop||c.mode!=='cop'||c.deployed)continue;const d=hyp(c.x-tx,c.z-tz);
+    for(const c of cars){if(!c.cop||c.mode!=='cop'||c.deployed||c.s.boat)continue;const d=hyp(c.x-tx,c.z-tz);
       if(d<26&&(!P.car||hyp(P.car.vx,P.car.vz)<4)&&hyp(c.vx,c.vz)<9&&nf<2+L*2){c.deployed=true;c.mode='idle';c.keep=false;
         for(let i=0;i<(c.swat?4:L>=5?3:L>=3?2:1);i++){const s=i%2?1:-1,p=mkPed('cop',c.x+cos(c.yaw)*s*(c.s.W/2+.8+(i>1?1.2:0)),c.z-sin(c.yaw)*s*(c.s.W/2+.8)+(i>1?1.5:0));p.hp=(c.swat?110:60)+L*16;p.alert=10;p.state='walk';if(c.swat){p.gunK=2;p.swat=true}if(c.mil){p.look=milLook();p.gunK=2;p.hp=110+L*10}nf++}}}}
   if(L===0)for(const c of cars)if(c.mode==='cop')copToPatrol(c);
@@ -5405,7 +5463,7 @@ setInterval(()=>{if(game.state==='play'&&!game.paused)saveGame()},8000);
 addEventListener('pagehide',saveGame);
 // ---------- démarrage du monde ----------
 function boot(){
-  const steps=worldGenSteps().concat([worldGenFinish,spawnParked,spawnAirport,worldPickups,setupMarkers]);let i=0;
+  const steps=worldGenSteps().concat([worldGenFinish,spawnParked,spawnBoats,spawnAirport,worldPickups,setupMarkers]);let i=0;
   const run=()=>{try{
     if(i<steps.length){steps[i++]();$('gen').textContent='Génération de la ville… '+Math.round(i/(steps.length+1)*100)+' %';setTimeout(run,0);return}
     bootFinish()}catch(e){reportErr(e);console.error(e)}};
