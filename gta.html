@@ -356,7 +356,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <h1>VILLE<br><span>FOLLE</span></h1>
  <p>Une ville ouverte en 3D : vole des voitures, fais des missions, évite la police… ou affronte-la !</p>
  <p class="help"><b>Tablette</b> : joystick à gauche · glisse à droite pour tourner la caméra · boutons à droite<br>
- <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>B</kbd> braquer un commerce · <kbd>J</kbd> mode justicier (en voiture de police) · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
+ <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>B</kbd> braquer un commerce · <kbd>J</kbd> mode justicier (en voiture de police) · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
  <div><button class="btn g" id="profBtn">Profil</button></div>
@@ -1979,7 +1979,12 @@ function mpAlarm(msg){
   if((game.mpAlert||0)>0){game.mpAlert=max(game.mpAlert,60);return}
   game.mpAlert=90;game.wanted=max(game.wanted,2.2);game.seenT=0;
   say(msg||'POLICE MILITAIRE ! Zone interdite : ils ouvrent le feu !',3.5)}
-function airportUpdate(dt){indoorUpdate();gangAmbient(dt);eventsUpdate(dt);sprayUpdate();bizUpdate(dt);
+function driftUpdate(dt){const c=P.car;
+  if(c&&!c.s.air&&!c.s.bike&&(c.slip||0)>3.2&&abs(c.vf||0)>11){if(!game.drift)game.drift={s:0,hp:c.hp,show:0};const D=game.drift;
+    if(c.hp<D.hp-25){say('💥 Drift raté !',1.4);game.drift=null;return}D.hp=c.hp;D.s+=dt*abs(c.vf)*c.slip*.09;D.t=.8;D.show-=dt;if(D.show<=0){D.show=.25;say('DRIFT  '+Math.round(D.s)+' pts',.5)}return}
+  const D=game.drift;if(!D)return;D.t-=dt;if(D.t>0)return;const pts=Math.round(D.s);game.drift=null;
+  if(pts>=15){const m=min(600,Math.round(pts/3));game.money+=m;sfx('cash');bigMsg('Drift '+pts+' pts','<small>+'+m+' $</small>',1.8,'#ffb703')}}
+function airportUpdate(dt){indoorUpdate();driftUpdate(dt);gangAmbient(dt);eventsUpdate(dt);sprayUpdate();bizUpdate(dt);
   if((game.mpAlert||0)>0){game.mpAlert-=dt;if(wantedLevel()===0)game.mpAlert=0}
   const alarm=(game.mpAlert||0)>0;
   for(const p of peds)if(p.mp){p.hot=alarm&&p.state!=='dead'}
@@ -2237,13 +2242,14 @@ function stepCar(c,inp,dt){
   if(brk>0){if(vf>1)a-=brk*s.brake*tB;else a-=brk*s.acc*.5*clamp(1-(-vf)/(s.vmax*.28),0,1)}
   if(thr===0&&brk===0&&abs(vf)>.01)a-=Math.sign(vf)*min(abs(vf)/dt,1.4);
   a-=vf*abs(vf)*.0008;
-  vf+=a*dt;if(inp.hb)vf*=(1-1.25*dt);
-  const grip=inp.hb?1.1:(abs(vf)>25?5.2:6.5);vl*=Math.exp(-grip*dt);
+  vf+=a*dt;if(inp.hb)vf*=(1-.55*dt);
+  c.gk=inp.hb?.2:min(1,(c.gk===undefined?1:c.gk)+dt*1.4); // adhérence arrière : chute au frein à main, revient doucement
+  const grip=(abs(vf)>25?5.4:7)*c.gk*((c.slip||0)>3.2&&thr>.3&&!inp.hb&&!s.bike?.55:1);vl*=Math.exp(-grip*dt);
   c.slip=abs(vl);
-  const spd=abs(vf),maxSt=s.steer*tS/(1+spd/13);
-  let yr=vf*Math.tan((inp.steer||0)*maxSt)/s.wb;if(inp.hb)yr*=1.45;
-  const maxYr=14/max(spd,4);yr=clamp(yr,-maxYr,maxYr);
-  c.yawRate=lerp(c.yawRate,yr,1-Math.exp(-8*dt));
+  const spd=abs(vf),maxSt=s.steer*tS/(1+spd/24);
+  let yr=vf*Math.tan((inp.steer||0)*maxSt)/s.wb;if(inp.hb)yr*=1.8;
+  const maxYr=(inp.hb?24:16)/max(spd,4.5);yr=clamp(yr,-maxYr,maxYr);
+  c.yawRate=lerp(c.yawRate,yr,1-Math.exp(-(inp.hb?6:10)*dt));
   if(spd<.35&&thr===0&&brk===0){vf=0;c.yawRate*=.5}
   c.steerV=lerp(c.steerV,inp.steer||0,1-Math.exp(-9*dt));
   c.vx=fx*vf+rx*vl;c.vz=fz*vf+rz*vl;c.vf=vf;
@@ -2251,19 +2257,20 @@ function stepCar(c,inp,dt){
   c.x+=c.vx*dt;c.z+=c.vz*dt;
   c.y=lerp(c.y,groundH(c.x,c.z),min(1,dt*10));
   c.roll=lerp(c.roll,s.bike?clamp(c.yawRate*vf*.022,-.5,.5):clamp(c.yawRate*vf*.012,-.09,.09),min(1,dt*6));c.pitch=lerp(c.pitch,clamp(-a*.004,-.05,.05),min(1,dt*6));
-  if(inp.hb&&abs(vf)>6&&c.slip>2.2){fxDust(c.x-fx*1.3-rx*.8,.2,c.z-fz*1.3-rz*.8,1,[.85,.85,.88]);fxDust(c.x-fx*1.3+rx*.8,.2,c.z-fz*1.3+rz*.8,1,[.85,.85,.88])}}
+  if(abs(vf)>6&&c.slip>(inp.hb?2.2:3.4)&&!s.bike){fxDust(c.x-fx*1.3-rx*.8,.2,c.z-fz*1.3-rz*.8,1,[.85,.85,.88]);fxDust(c.x-fx*1.3+rx*.8,.2,c.z-fz*1.3+rz*.8,1,[.85,.85,.88])}}
 function stepPlane(c,inp,dt){
   const s=c.s,fx=sin(c.yaw),fz=cos(c.yaw),pl=c.mode==='player';let vf=c.vf||0,vy=c.vy||0;
   const gh0=groundH(c.x,c.z),alt=c.y-gh0,onG=alt<=.15&&vy<=.6,dmg=c.hp<250?.6:1;
   c.alt=alt;
-  if(pl){if(inp.thr>0)c.th=min(1,(c.th||0)+dt*.5*inp.thr);if(inp.brk>0)c.th=max(0,(c.th||0)-dt*.9*inp.brk)}else c.th=0;
+  if(pl){if(inp.thr>0)c.th=min(1,(c.th||0)+dt*.9*inp.thr);if(inp.brk>0)c.th=max(0,(c.th||0)-dt*1.2*inp.brk)}else c.th=0;
   const th=c.th||0;
   let a=th*s.acc*dmg*clamp(1.08-vf/(s.vmax*dmg),0,1)-vf*abs(vf)*.0011;
   if(onG){if(th<.04)a-=Math.sign(vf)*min(abs(vf)/dt,1.1);if(inp.brk>0&&th<.04&&vf>0)a-=inp.brk*s.brake}
   const lift=clamp((vf-s.vs)/(s.vr-s.vs),0,1),pit=(inp.up?1:0)-(inp.down?1:0);
   let vyT=0;
-  if(onG){vyT=(pit>0&&vf>=s.vr)?s.climb*.55:0}
-  else{vyT=pit>0?s.climb*lift:pit<0?-min(s.climb*lift,1.6+alt*.3):0;vyT-=(1-lift)*(10+(s.vs-vf)*.35)}
+  if(onG){vyT=((pit>0||(c.th>.55&&pit>=0))&&vf>=s.vr)?s.climb*.6:0; // décolle tout seul à la bonne vitesse si les gaz sont ouverts
+    if(pl&&c.th>.3&&vf>4&&!c.toldTO){c.toldTO=true;say('✈️ Plein gaz… l’avion décolle tout seul à '+Math.round(s.vr*3.6)+' km/h',3)}}
+  else{c.toldTO=false;vyT=pit>0?s.climb*lift:pit<0?-min(s.climb*lift,1.6+alt*.3):(alt<25&&c.th>.55?s.climb*.35*lift:0);vyT-=(1-lift)*(10+(s.vs-vf)*.35)}
   vy=lerp(vy,vyT,1-Math.exp(-(onG?4:2.4)*dt));
   a-=max(vy,0)*.32;a+=max(-vy,0)*.22;
   vf=max(vf+a*dt,onG?(inp.brk>0&&th<.04?0:-.5):s.vs*.55);
@@ -2962,7 +2969,7 @@ function enterCar(c){
   const wasAir=!!c.s.air;P.car=c;c.mode='player';c.ai=null;c.sleep=false;c.hornT=0;c.keep=true;P.aim=0;P.punchT=0;P.fallT=0;P.enterT=.35;sfx('door');
   CAM.yaw=c.yaw;CAM.free=0;CAM.curD=max(CAM.curD,6);CAM.pitch=.3;
   if(game.mission&&game.mission.onEnter)game.mission.onEnter(c);
-  if(wasAir){c.th=0;c.vy=0;say(c.s.name+' : W/S gaz · A/D virer · Espace monter · Maj/Ctrl descendre',5.5);if(inAirbase(c.x,c.z))mpAlarm('Tu voles un avion militaire ! La police militaire ouvre le feu !')}
+  if(wasAir){c.th=0;c.vy=0;say(IN.touch?c.s.name+' : joystick avant = gaz, côtés = virer · MONTER / DESCENDRE à droite':c.s.name+' : W/S gaz · A/D virer · Espace monter · Maj/Ctrl descendre',5.5);if(inAirbase(c.x,c.z))mpAlarm('Tu voles un avion militaire ! La police militaire ouvre le feu !')}
   else say((c.label||c.s.name)+(c.cop?' de police':''),1.6)}
 function exitCar(emergency){
   const c=P.car;if(!c)return;
@@ -4771,7 +4778,7 @@ function updateHUD(dt){
   // flash rouge quand on est touché
   setS('hitf','opacity',String(clamp(P.hitFlash*.9+(P.hp<30&&P.hp>0?.25+.15*Math.sin(game.t*7):0),0,1)));
   // boutons tactiles contextuels
-  if(IN.touch){const sh=!car&&!!nearPOI();if(HC.sh!==sh){HC.sh=sh;if(!car)$('bC').innerHTML=ic(sh?'cart':'car',40)}const dr=!!car,pl=!!(car&&car.s.air);if(HC.dr!==dr||HC.pl!==pl){HC.dr=dr;HC.pl=pl;$('bA').innerHTML=ic(dr?(pl?'down':'brake'):'gun',40);$('bB').innerHTML=ic(dr?(pl?'jump':'horn'):'jump',34);$('bC').innerHTML=ic(dr?'door':'car',40);$('bD').style.display=dr?'none':'flex';$('bE').style.display=dr?'none':'flex';$('bF').style.display=dr?'none':'flex'}}}
+  if(IN.touch){const sh=!car&&!!nearPOI();if(HC.sh!==sh){HC.sh=sh;if(!car)$('bC').innerHTML=ic(sh?'cart':'car',40)}const dr=!!car,pl=!!(car&&car.s.air);if(HC.dr!==dr||HC.pl!==pl){HC.dr=dr;HC.pl=pl;$('bA').innerHTML=ic(dr?(pl?'down':'brake'):'gun',40)+(dr?'<small>'+(pl?'DESCENDRE':'DRIFT')+'</small>':'');$('bB').innerHTML=ic(dr?(pl?'jump':'horn'):'jump',34)+(dr?'<small>'+(pl?'MONTER':'KLAXON')+'</small>':'');$('bC').innerHTML=ic(dr?'door':'car',40);$('bD').style.display=dr?'none':'flex';$('bE').style.display=dr?'none':'flex';$('bF').style.display=dr?'none':'flex'}}}
 
 // ---------- radar ----------
 
