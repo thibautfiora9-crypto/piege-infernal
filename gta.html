@@ -5806,27 +5806,37 @@ const ACC=()=>{try{return window.CB?CB.acct():null}catch(e){return null}};
 function curKey(){const a=ACC();return a?'villefolle3d_acc_'+a.p.toLowerCase():saveKey(PROF.cur)}
 const CLOUD={st:'off',lastPush:0,timer:0,busy:false,pulled:false,booted:false};
 function cloudErr(e){const m=String(e&&e.message||e);return /404|PGRST202|Could not find/.test(m)?'missing':'net'}
+// Versions : game.cv = version en ligne dont descend la partie en cours. Le serveur refuse
+// toute sauvegarde qui ne part pas de la dernière version (conflit) : plus aucun écrasement possible.
+function applyCloud(cl,ver){backupSave(curKey());cl.cv=ver;try{localStorage.setItem(curKey(),JSON.stringify(cl))}catch(e){}game.cv=ver;CLOUD.cloudData=cl;
+  if(game.loaded){loadGame();if(game.state!=='title'){game.resume=null;game.resumeSave=null;game.resumeWanted=null;say('☁️ Progression récupérée depuis ton compte',5)}}}
+function vfResolve(cl,ver){CLOUD.ver=ver;let loc=null;try{loc=JSON.parse(localStorage.getItem(curKey())||'null')}catch(e){}
+  if(!cl){game.cv=ver;return loc?'push':'ok'}
+  if(!loc){applyCloud(cl,ver);return'loaded'}
+  const base=game.cv!==undefined?game.cv:loc.cv;
+  if(base===ver){game.cv=ver;return(loc.ts||0)>(cl.ts||0)?'push':'ok'}
+  // deux parties différentes (autre appareil, vieille partie, partie vide…) : on garde la plus avancée
+  const sl=saveScore(loc),sc=saveScore(cl);
+  if(sc>sl||(sc===sl&&(cl.ts||0)>=(loc.ts||0))){applyCloud(cl,ver);return'loaded'}
+  backupSave(curKey());game.cv=ver;return'push'}
 async function vfCloudPull(){const a=ACC();if(!a)return'off';
   try{const r=await CB.rpc('vf_load',{p_pseudo:a.p,p_pin:a.pin});
     if(!r||!r.ok){CLOUD.st=r&&r.err==='bad'?'badlogin':'net';return CLOUD.st}
-    let loc=null;try{loc=JSON.parse(localStorage.getItem(curKey())||'null')}catch(e){}
     let cl=null;try{cl=r.data?JSON.parse(r.data):null}catch(e){}
-    CLOUD.cloudData=cl;
-    // on compare avec la sauvegarde telle qu'elle était AVANT le démarrage de la partie (une partie vide sauvée ensuite ne compte pas)
-    const locTs=CLOUD.booted?(CLOUD.bootTs||0):(loc&&loc.ts)||0;
-    if(cl&&(cl.ts||0)>locTs){
-      if(CLOUD.booted){CLOUD.pulled=true;CLOUD.st='newer';return CLOUD.st} // trop tard : la partie a déjà démarré, on ne touche à rien
-      backupSave(curKey());localStorage.setItem(curKey(),r.data);CLOUD.st='loaded'}
-    else if(loc&&(!cl||(loc.ts||0)>(cl.ts||0))){CLOUD.st='ok';CLOUD.pulled=true;vfPush(false)}else CLOUD.st='ok';
-    CLOUD.pulled=true;
+    if(game.loaded)saveGame(true);
+    const res=vfResolve(cl,Number(r.ver)||0);CLOUD.pulled=true;if(res!=='loaded'&&cl)CLOUD.cloudData=cl;
+    CLOUD.st=res==='loaded'?'loaded':'ok';if(res==='push')vfPush();
     return CLOUD.st}catch(e){CLOUD.st=cloudErr(e);return CLOUD.st}}
-async function vfPush(force){const a=ACC();if(!a||CLOUD.busy||CLOUD.st==='missing'||CLOUD.st==='badlogin'||CLOUD.st==='newer')return;
-  if(!CLOUD.pulled){vfCloudPull();return} // jamais d'envoi tant qu'on n'a pas lu la sauvegarde en ligne
-  const d=localStorage.getItem(curKey());if(!d)return;
-  // garde-fou : ne pas remplacer une partie avancée par une partie presque vide
-  try{const L=JSON.parse(d),C=CLOUD.cloudData;if(C&&saveScore(C)>saveScore(L)+5000&&!force){CLOUD.st='guard';return}}catch(e){}
+async function vfPush(force){const a=ACC();if(!a||CLOUD.busy||CLOUD.st==='missing'||CLOUD.st==='badlogin')return;
+  if(!CLOUD.pulled||game.cv===undefined){vfCloudPull();return} // jamais d'envoi tant qu'on n'a pas lu la sauvegarde en ligne
+  const d=localStorage.getItem(curKey());if(!d)return;let L;try{L=JSON.parse(d)}catch(e){return}
+  const nv=Math.max(Date.now(),(game.cv||0)+1);L.cv=nv;const js=JSON.stringify(L);
   CLOUD.busy=true;
-  try{const r=await CB.rpc('vf_save',{p_pseudo:a.p,p_pin:a.pin,p_data:d});CLOUD.lastPush=Date.now();if(r&&r.ok){try{CLOUD.cloudData=JSON.parse(d)}catch(e){}if(CLOUD.st!=='loaded')CLOUD.st='ok'}else CLOUD.st=r&&r.err==='bad'?'badlogin':'net'}
+  try{const r=await CB.rpc('vf_save2',{p_pseudo:a.p,p_pin:a.pin,p_data:js,p_base:game.cv,p_ver:nv});CLOUD.lastPush=Date.now();
+    if(r&&r.ok){game.cv=nv;CLOUD.ver=nv;CLOUD.cloudData=L;if(CLOUD.st!=='loaded')CLOUD.st='ok';try{const o=JSON.parse(localStorage.getItem(curKey()));if(o){o.cv=nv;localStorage.setItem(curKey(),JSON.stringify(o))}}catch(e){}}
+    else if(r&&r.err==='conflict'){CLOUD.busy=false;const sv=Number(r.ver)||0;if(force){game.cv=sv;return vfPush(false)}
+      let cl=null;try{cl=r.data?JSON.parse(r.data):null}catch(e){}const res=vfResolve(cl,sv);CLOUD.st=res==='loaded'?'loaded':'ok';if(res==='push')return vfPush();return}
+    else CLOUD.st=r&&r.err==='bad'?'badlogin':'net'}
   catch(e){CLOUD.st=cloudErr(e)}CLOUD.busy=false}
 function vfQueuePush(){if(!ACC())return;clearTimeout(CLOUD.timer);const w=max(1500,20000-(Date.now()-CLOUD.lastPush));CLOUD.timer=setTimeout(()=>vfPush(),w)}
 addEventListener('visibilitychange',()=>{if(document.hidden&&game.state!=='title'){saveGame();if(ACC())vfPush()}});
@@ -5842,10 +5852,10 @@ function savePos(){if(game.state!=='play'&&game.state!=='paused')return game.res
   if(P.x<-1000)return null;const c=P.car;
   if(c&&!c.s.air&&!c.s.boat)return{x:c.x,z:c.z,yaw:c.yaw,car:{t:c.type,col:c.col,plate:c.plate,flat:!!c.flat,own:!!c.owned}};
   if(c)return null;return{x:P.x,z:P.z,yaw:P.yaw}}
-function saveGame(){if(!game.loaded)return; // jamais de sauvegarde avant d'avoir chargé la progression
+function saveGame(np){if(!game.loaded||game.noSave)return; // jamais de sauvegarde avant d'avoir chargé la progression
   const now=Date.now(),hot=[];for(const p of HOT){const u=HOT_UNTIL.get(p)||now+86400000;if(u>now)hot.push([p,u])}
   const wan=wantedLevel()>0?{w:game.wanted,ck:game.copKills|0,until:now+86400000,ls:game.lastSeen||{x:P.x,z:P.z}}:null;
-  try{localStorage.setItem(curKey(),JSON.stringify({pos:savePos(),wan,bolo:game.bolo||null,hot,ts:Date.now(),m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}vfQueuePush()}
+  try{localStorage.setItem(curKey(),JSON.stringify({pos:savePos(),wan,bolo:game.bolo||null,hot,ts:Date.now(),m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,cv:game.cv,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}if(!np)vfQueuePush()}
 function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null');if(!s)return;
   game.storyIdx=Math.max(0,Math.min(STORY.length,s.s|0));game.storyRep=Math.max(0,s.r|0);
   const fin=v=>typeof v==='number'&&isFinite(v),now=Date.now();
@@ -5878,7 +5888,7 @@ function bootFinish(){
   if(ACC()){$('gen').textContent='☁️ Récupération de ta progression…';Promise.race([vfCloudPull(),new Promise(r=>setTimeout(r,8000))]).then(bootFinish2,bootFinish2)}else bootFinish2()}
 function bootFinish2(){CLOUD.booted=true;try{const o=JSON.parse(localStorage.getItem(curKey())||'null');CLOUD.bootTs=(o&&o.ts)||0}catch(e){CLOUD.bootTs=0}
   P.x=SPAWN.x;P.z=SPAWN.z;P.y=groundH(P.x,P.z);P.yaw=SPAWN.yaw;CAM.yaw=SPAWN.yaw;
-  loadGame();game.loaded=true;for(const t in P.garage)if(!P.garage[t].lost)spawnOwned(t);
+  loadGame();if(game.cv===undefined){try{const o=JSON.parse(localStorage.getItem(curKey())||'null');if(o&&o.cv!==undefined)game.cv=o.cv}catch(e){}}game.loaded=true;for(const t in P.garage)if(!P.garage[t].lost)spawnOwned(t);
   const q=new URLSearchParams(location.search);if(q.get('t'))TIME=parseFloat(q.get('t'));
   applyTime(TIME);
   P.invuln=5;
@@ -5929,8 +5939,8 @@ setTimeout(()=>{try{boot()}catch(e){reportErr(e);console.error(e)}},50);
       saveGame();const k='villefolle3d_acc_'+(r.pseudo||n).toLowerCase();try{if(!localStorage.getItem(k)){const d=JSON.parse(localStorage.getItem(saveKey(PROF.cur))||'null');if(d){d.ts=1;localStorage.setItem(k,JSON.stringify(d))}}}catch(e){}
       ashow('Connecté ! Chargement de ta progression…');setTimeout(()=>location.reload(),600)}catch(e){ashow('Impossible de joindre le serveur.',1)}}
   $('accLogin').onclick=()=>accGo(false);$('accReg').onclick=()=>accGo(true);
-  $('accOut').onclick=()=>{saveGame();vfPush(true).finally(()=>{try{CB.logout()}catch(e){}location.reload()})};
-  $('accSync').onclick=async()=>{saveGame();ashow('Envoi…');await vfPush(true);ashow(CLOUD.st==='ok'||CLOUD.st==='loaded'?'Sauvegardé en ligne ✓':CLOUD_TXT[CLOUD.st]||'Erreur',!(CLOUD.st==='ok'||CLOUD.st==='loaded'))};
+  $('accOut').onclick=()=>{saveGame(true);vfPush().finally(()=>{game.noSave=true;try{CB.logout()}catch(e){}location.reload()})};
+  $('accSync').onclick=async()=>{saveGame(true);ashow('Envoi…');await vfPush();ashow(CLOUD.st==='ok'||CLOUD.st==='loaded'?'Sauvegardé en ligne ✓':CLOUD_TXT[CLOUD.st]||'Erreur',!(CLOUD.st==='ok'||CLOUD.st==='loaded'))};
   function svRender(){const box=$('svList');box.innerHTML='';const seen=new Set(),L=[];
     const addS=(label,raw,src)=>{if(!raw)return;let o=null;try{o=JSON.parse(raw)}catch(e){return}if(!o||typeof o!=='object')return;const sig=(o.ts||0)+'|'+(o.m||0);if(seen.has(sig))return;seen.add(sig);L.push({label,raw,o,src})};
     for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!/^villefolle3d_(v1|p_|acc_)/.test(k))continue;addS(k==='villefolle3d_v1'?'Profil Joueur':k.startsWith('villefolle3d_p_')?'Profil '+k.slice(15):'Compte '+k.slice(17),localStorage.getItem(k),k)}
@@ -5942,7 +5952,7 @@ setTimeout(()=>{try{boot()}catch(e){reportErr(e);console.error(e)}},50);
       const r=document.createElement('div');r.className='row';r.style.justifyContent='space-between';r.style.background='#0007';r.style.borderRadius='8px';r.style.padding='6px 10px';
       r.innerHTML='<small style="text-align:left">'+it.label+' · '+(o.ts?new Date(o.ts).toLocaleString('fr-FR'):'date inconnue')+'<br>💵 '+(Math.floor(+o.m||0)).toLocaleString('fr-FR')+' $ · 🔫 '+guns+' · 🚗 '+(o.g?Object.keys(o.g).length:0)+' · 📖 chap. '+((o.s|0)+1)+'</small>';
       const b=document.createElement('button');b.className='btn g';b.textContent='Reprendre';b.onclick=()=>{if(!confirm('Reprendre cette sauvegarde ? (ta partie actuelle est gardée en copie de secours)'))return;backupSave(curKey());o.ts=Date.now();localStorage.setItem(curKey(),JSON.stringify(o));
-        if(ACC()){CLOUD.pulled=true;CLOUD.st='ok';CLOUD.cloudData=null;vfPush(true).finally(()=>location.reload())}else location.reload()};r.appendChild(b);box.appendChild(r)}}
+        game.noSave=true;if(ACC()){CLOUD.pulled=true;CLOUD.st='ok';CLOUD.cloudData=null;if(game.cv===undefined)game.cv=CLOUD.ver||0;vfPush(true).finally(()=>location.reload())}else location.reload()};r.appendChild(b);box.appendChild(r)}}
   $('profBtn').onclick=()=>{$('prof').style.display='flex';render();accRender();svRender();show('');ashow('')};
   setTimeout(accRender,0);
   $('profBack').onclick=()=>{$('prof').style.display='none'};
