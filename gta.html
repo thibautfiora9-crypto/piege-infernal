@@ -2310,7 +2310,7 @@ const VT={
   boatcop:{L:6,W:2.2,vmax:36,acc:10,brake:10,steer:.5,wb:3.4,boat:1,cols:['#f4f4f6'],name:'Police maritime'}
 };
 const SHOPCARS=['moto','mini','sedan','pickup','suv','van','muscle','sport','motoS','limo','super'];
-const paintMats={};function paintMat(hex){if(!paintMats[hex]){paintMats[hex]=mkMat({tint:hexc(parseInt(hex.slice(1),16)),spec:.95,shin:90})}return paintMats[hex]}
+const paintMats={};function paintMat(hex,fin){const k=hex+(fin||'');if(!paintMats[k]){const t=hexc(parseInt(hex.slice(1),16));paintMats[k]=fin==='mat'?mkMat({tint:t,spec:.08,shin:8}):fin==='chrome'?mkMat({tint:t.map(v=>min(1,v*.75+.25)),spec:2.2,shin:160}):mkMat({tint:t,spec:.95,shin:90})}return paintMats[k]}
 const wreckMat=mkMat({tint:[.1,.1,.1],spec:.02}),detailMat=mkMat({spec:.45,shin:60});
 const copRedMat=mkMat({lit:false,tint:[1,.1,.1],fog:true}),copBlueMat=mkMat({lit:false,tint:[.1,.3,1],fog:true});
 const LBMESH=(()=>{const m=new MB();m.box(-.22,0,-.12,.22,.12,.12,[1,1,1],{ao:1});return new GMesh(m)})();
@@ -2507,6 +2507,8 @@ function drawCar(c){
   drawMesh(g.paint,c.mode==='wreck'?wreckMat:c.mat,_M);drawMesh(g.detail,detailMat,_M);
   if(c.doorA>.02&&!c.s.bike&&!c.s.air){const hz=c.s.L*.14,hx=c.s.W/2;const wx=_M[0]*hx+_M[8]*hz+_M[12],wy=_M[1]*hx+_M[9]*hz+_M[13]+.0,wz=_M[2]*hx+_M[10]*hz+_M[14];mtrs(_L,wx,wy,wz,c.yaw-c.doorA,c.pitch,c.roll);drawMesh(doorMesh(),c.mat,_L)}
   if(c.s.bike&&(c.mode==='player'||c.mode==='ai'||c.mode==='cop'))drawMesh(riderMesh(c.type),detailMat,_M);
+  if(c.neon&&c.mode!=='wreck'){const n=hexc(parseInt(c.neon.slice(1),16)),k=.35+ENV.night*.55,L2=c.s.L*.36,W2=c.s.W*.36,fx=sin(c.yaw),fz=cos(c.yaw);
+    for(const[a,b2]of[[1,1],[1,-1],[-1,1],[-1,-1],[0,1],[0,-1]]){const x=c.x+fx*L2*a+fz*W2*b2,z=c.z+fz*L2*a-fx*W2*b2;bGlow.bill(x,c.y+.12,z,1.6,[n[0],n[1],n[2],k])}}
   if(c.type==='plane'&&c.mode!=='wreck'){const sp=(c.mode==='player'?(c.th||0):0),ang=gtime.t*(sp>.05?90:2)%TAU,lx=0,ly=1.25,lz=3.12;
     const wx=_M[0]*lx+_M[4]*ly+_M[8]*lz+_M[12],wy=_M[1]*lx+_M[5]*ly+_M[9]*lz+_M[13],wz=_M[2]*lx+_M[6]*ly+_M[10]*lz+_M[14];mtrs(_L,wx,wy,wz,c.yaw,c.pitch,c.roll+ang);drawMesh(PROPMESH,detailMat,_L)}
   if(c.cop&&c.mode!=='wreck'&&c.mode!=='parked'){const f=floor(gtime.t*7)%2;
@@ -4044,6 +4046,19 @@ function carSVG(type,col){const s=CARSHAPE[type]||CARSHAPE.sedan,bl=s[0],bh=s[1]
   h+='<rect x="'+x0+'" y="'+(by+bh-5)+'" width="'+bl+'" height="5" rx="2" fill="#0004"/>';
   for(const wx of[x0+bl*.22,x0+bl*.78])h+='<circle cx="'+wx+'" cy="'+(gy-7)+'" r="10" fill="#1a1a1f"/><circle cx="'+wx+'" cy="'+(gy-7)+'" r="4.5" fill="#9aa0ad"/>';
   return h+'</svg>'}
+const CUST_COLS=['#e9edf2','#111216','#c1121f','#ff7b00','#ffd000','#2b9348','#00b4d8','#1d3fbf','#7209b7','#ff4fb0','#8d99ae','#6b4f2a'];
+const NEON_COLS=['#00e5ff','#ff2bd6','#39ff14','#ff1f1f','#ffffff','#ffd000'];
+const CUST_PR={paint:400,mat:1200,chrome:5000,gloss:300,neon:2500};
+function custApply(t){const g=P.garage[t],c=OWN[t];if(!g||!c||!cars.includes(c))return;c.col=g.col;c.mat=paintMat(g.col,g.fin);c.neon=g.neon||null}
+function custRender(){const own=SHOPCARS.filter(t=>P.garage[t]);let h='<div class="it"><div class="tx"><b>🎨 Customise tes voitures</b><small>Peinture, finition et néons sous la voiture (ça brille la nuit). Seulement pour les voitures que tu as achetées.</small></div></div>';
+  if(!own.length)return h+'<div class="it"><div class="tx"><small>Achète d’abord une voiture chez Auto Folle.</small></div></div>';
+  const sw=(a,t,v,col,on,pr)=>'<button data-a="'+a+'" data-t="'+t+'" data-c="'+v+'" title="'+fmt$(pr)+'" style="width:30px;height:30px;border-radius:50%;border:3px solid '+(on?'#ffd000':'#0006')+';background:'+col+';margin:2px;cursor:pointer"'+(game.money<pr&&!on?' disabled':'')+'></button>';
+  for(const t of own){const g=P.garage[t];
+    h+='<div class="it"><div class="tx"><b>'+VT[t].name+'</b><small>Peinture '+fmt$(CUST_PR.paint)+' · Mat '+fmt$(CUST_PR.mat)+' · Chrome '+fmt$(CUST_PR.chrome)+' · Néons '+fmt$(CUST_PR.neon)+'</small></div>'+
+      '<div class="st" style="flex-wrap:wrap"><span style="width:100%">Peinture</span>'+CUST_COLS.map(c=>sw('cpaint',t,c,c,g.col===c,CUST_PR.paint)).join('')+'</div>'+
+      '<div class="st" style="flex-wrap:wrap;gap:4px"><span style="width:100%">Finition</span>'+[['gloss','✨ Brillant'],['mat','🌑 Mat'],['chrome','🪞 Chrome']].map(([f,n])=>{const on=(g.fin||'gloss')===f,pr=CUST_PR[f];return'<button data-a="cfin" data-t="'+t+'" data-c="'+f+'" style="flex:1;background:'+(on?'#2d6a3e':'#3a3a5c')+';color:#fff;border:0;border-radius:6px;padding:6px;font:600 12px Oswald,Impact,sans-serif"'+(on||game.money<pr?' disabled':'')+'>'+n+(on?' ✓':' · '+fmt$(pr))+'</button>'}).join('')+'</div>'+
+      '<div class="st" style="flex-wrap:wrap"><span style="width:100%">Néons</span>'+NEON_COLS.map(c=>sw('cneon',t,c,c,g.neon===c,g.neon?300:CUST_PR.neon)).join('')+'<button data-a="cneon" data-t="'+t+'" data-c="" style="margin:2px 6px;background:#3a3a5c;color:#fff;border:0;border-radius:6px;padding:5px 8px;font:600 12px sans-serif"'+(g.neon?'':' disabled')+'>Aucun</button></div></div>'}
+  return h}
 const TUNE={eng:['Moteur & turbo','Accélération et vitesse max en hausse','#ff6b6b',[1800,4200,9000]],
   arm:['Blindage','La voiture encaisse beaucoup mieux les chocs et les balles','#4aa3ff',[1500,3600,8000]],
   brk:['Freins & pneus sport','Freine plus fort et tourne mieux','#ffb703',[1200,2800,6000]]};
@@ -4090,7 +4105,7 @@ function shopRender(){
     for(const k2 in TUNE){const T=TUNE[k2],l=P.tune[k2]|0;
       h+='<div class="it"><div class="tx"><b>'+T[0]+' '+'★'.repeat(l)+'☆'.repeat(3-l)+'</b><small>'+T[1]+'</small></div>'+
         '<div class="st"><span>Niveau</span>'+shBar(l/3*100,T[2])+'<em>'+l+' / 3</em></div>'+
-        '<div class="bt2"><button data-a="tune" data-t="'+k2+'"'+(l>=3||game.money<T[3][l]?' disabled':'')+'>'+(l>=3?'Niveau max ✓':'Installer niveau '+(l+1)+' · '+fmt$(T[3][l]))+'</button></div></div>'}}
+        '<div class="bt2"><button data-a="tune" data-t="'+k2+'"'+(l>=3||game.money<T[3][l]?' disabled':'')+'>'+(l>=3?'Niveau max ✓':'Installer niveau '+(l+1)+' · '+fmt$(T[3][l]))+'</button></div></div>'}h+=custRender()}
   else if(k==='missions')h=missionRender();
   else if(k==='phone'){
     h+='<div class="it"><div class="tx"><b>🏢 Immobilier</b><small>Rachète des commerces qui te rapportent de l’argent.</small></div><div class="bt2"><button data-a="biz">Voir les commerces</button></div></div>';
@@ -4121,6 +4136,10 @@ $('shop').addEventListener('click',e=>{
   if(a==='buybiz'){const s2=STORES[i],pr=bizPrice(s2);if(!s2||P.biz.includes(i)||game.money<pr){sfx('fail');return}game.money-=pr;P.biz.push(i);shopMsg(s2.name+' est à toi ! +'+fmt$(bizIncome(s2))+' toutes les 3 minutes');sfx('cash');saveGame();shopRender();return}
   if(a==='acc'){if(!accOK(i,ty))return;const pr=accPrice(i,ty);if(hasAcc(i,ty)||game.money<pr){sfx('fail');return}game.money-=pr;(P.acc[i]=P.acc[i]||{})[ty]=1;shopMsg(WEAPONS[i].n+' : '+accName(i,ty)+' installé !');sfx('cash');shopRender();saveGame();return}
   if(a==='up'){const l=upL(i,ty),pr=upPrice(i,ty);if(l>=3||game.money<pr){sfx('fail');return}game.money-=pr;P.up[i][ty]=l+1;if(ty==='mag')P.clip[i]=min(wMag(i),P.ammo[i]|0);shopMsg(WEAPONS[i].n+' : '+UPG[ty][0]+' niveau '+(l+1)+' !');sfx('cash');shopRender();return}
+  if(a==='cpaint'||a==='cfin'||a==='cneon'){const g=P.garage[ty],v=t.dataset.c;if(!g)return;
+    const pr=a==='cpaint'?CUST_PR.paint:a==='cfin'?CUST_PR[v]:(v?(g.neon?300:CUST_PR.neon):0);if(game.money<pr){sfx('fail');return}
+    if(a==='cpaint'){if(g.col===v)return;g.col=v}else if(a==='cfin'){if((g.fin||'gloss')===v)return;g.fin=v==='gloss'?null:v}else{if((g.neon||'')===v)return;g.neon=v||null}
+    game.money-=pr;custApply(ty);shopMsg(VT[ty].name+' : '+(a==='cpaint'?'nouvelle peinture':a==='cfin'?'nouvelle finition':v?'néons installés':'néons retirés')+' !');sfx('cash');shopRender();saveGame();return}
   if(a==='tune'){const l=P.tune[ty]|0,pr=TUNE[ty][3][l];if(l>=3||game.money<pr){sfx('fail');return}game.money-=pr;P.tune[ty]=l+1;shopMsg(TUNE[ty][0]+' niveau '+(l+1)+' installé sur toutes tes voitures !');sfx('cash');shopRender();return}
   if(a==='buy')buyWeapon(i);else if(a==='ammo')buyAmmo(i);else if(a==='eq'){P.wpn=i;shopMsg(WEAPONS[i].n+' équipé');sfx('pick');shopRender()}
   else if(a==='vest'){if(game.money<250||P.armor>=100)return;game.money-=250;P.armor=100;shopMsg('Gilet enfilé ! (−250 $)');sfx('cash');shopRender()}
@@ -4149,7 +4168,7 @@ function garageSpot(L){
   return first}
 function spawnOwned(type){
   const g=P.garage[type];if(!g)return null;const s=VT[type],sp=garageSpot(s.L);
-  const c=mkCar(type,sp.x,sp.z,sp.yaw,'idle',g.col||s.cols[0]);c.owned=true;c.keep=true;c.hasDriver=false;c.label=s.name+' (à toi)';OWN[type]=c;g.lost=false;return c}
+  const c=mkCar(type,sp.x,sp.z,sp.yaw,'idle',g.col||s.cols[0]);c.mat=paintMat(c.col,g.fin);c.neon=g.neon||null;c.owned=true;c.keep=true;c.hasDriver=false;c.label=s.name+' (à toi)';OWN[type]=c;g.lost=false;return c}
 function buyCar(type){const s=VT[type];if(P.garage[type]){shopMsg('Tu as déjà cette voiture',1);return}
   if(game.money<s.price){shopMsg('Pas assez d’argent ('+fmt$(s.price)+')',1);sfx('fail');return}
   game.money-=s.price;P.garage[type]={col:s.cols[SHOP_COL[type]|0]||s.cols[0]};spawnOwned(type);
@@ -5957,6 +5976,7 @@ function gatherLights(){const n=ENV.night;PLIGHTS.n=0;PLIGHTS.p.fill(0);PLIGHTS.
   for(const c of cars){if(c.mode==='parked'||c.mode==='wreck'||c.mode==='idle'||c.s.air)continue;const d=abs(c.x-cx)+abs(c.z-cz);if(d>110)continue;const fx=sin(c.yaw),fz=cos(c.yaw);
     L.push([d-(c===P.car?200:0),c.x+fx*(c.s.L/2+6),c.y+1.2,c.z+fz*(c.s.L/2+6),c===P.car?15:10,1,.93,.78,c===P.car?1.5:.9])}
   if(AIMP.ok&&hasAcc(P.wpn,'lamp')&&AIMP.t<40){const t=max(0,AIMP.t-1.2);L.push([-500,CAM.x+AIMP.f[0]*t,CAM.y+AIMP.f[1]*t+.3,CAM.z+AIMP.f[2]*t,11,1,.97,.85,2.2])}
+  for(const c of cars)if(c.neon&&c.mode!=='wreck'&&abs(c.x-cx)+abs(c.z-cz)<90){const n=hexc(parseInt(c.neon.slice(1),16));L.push([abs(c.x-cx)+abs(c.z-cz)-60,c.x,c.y+.4,c.z,6,n[0],n[1],n[2],1.8])}
   for(const h of HELIS)if(!h.down&&!h.leave&&h.lx!==undefined)L.push([-450,h.lx,groundH(h.lx,h.lz)+3,h.lz,16,1,1,.9,2.6]);
   L.sort((a,b)=>a[0]-b[0]);const k=min(10,L.length);
   for(let i=0;i<k;i++){const q=L[i];PLIGHTS.p.set([q[1],q[2],q[3],q[4]],i*4);PLIGHTS.c.set([q[5]*q[8]*n,q[6]*q[8]*n,q[7]*q[8]*n],i*3)}PLIGHTS.n=k}
@@ -6148,7 +6168,7 @@ function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null
   if(Array.isArray(s.o)){for(let i=2;i<NW;i++)P.own[i]=s.o[i]?1:0}else if(Array.isArray(s.a)&&(s.a[2]|0)>0)P.own[2]=1;
   P.own[0]=1;P.own[1]=1;
   if(s.l){const ok=a=>Array.isArray(a)&&a.length===3&&a.every(v=>typeof v==='number'&&isFinite(v));P.look.style=s.l.st|0;P.look.hairLong=!!s.l.hl;if(ok(s.l.h))P.look.hair=s.l.h;if(ok(s.l.sh))P.look.shirt=s.l.sh;if(ok(s.l.pa))P.look.pants=s.l.pa;P.look.cap=ok(s.l.cp)?s.l.cp:null}
-  if(s.g&&typeof s.g==='object')for(const t of SHOPCARS){const g=s.g[t];if(g&&typeof g.col==='string'&&/^#[0-9a-fA-F]{6}$/.test(g.col))P.garage[t]={col:g.col,lost:!!g.lost}}
+  if(s.g&&typeof s.g==='object')for(const t of SHOPCARS){const g=s.g[t],hx=v=>typeof v==='string'&&/^#[0-9a-fA-F]{6}$/.test(v);if(g&&hx(g.col))P.garage[t]={col:g.col,lost:!!g.lost,neon:hx(g.neon)?g.neon:null,fin:g.fin==='mat'||g.fin==='chrome'?g.fin:null}}
   P.wpn=clamp(s.w|0,0,NW-1);if(P.wpn>0&&(!P.own[P.wpn]||P.ammo[P.wpn]<=0))P.wpn=P.ammo[1]>0?1:altWeapon();
   if(typeof s.t==='number'&&isFinite(s.t))TIME=((s.t%24)+24)%24}catch(e){}}
 setInterval(()=>{if(game.state==='play'&&!game.paused)saveGame()},8000);
