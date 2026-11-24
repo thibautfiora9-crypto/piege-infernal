@@ -396,7 +396,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
 <div id="qchat"></div>
 <div class="ov" id="pause"><div class="pbox"><canvas id="bigmap" width="700" height="631"></canvas>
  <div class="pside"><h1>PAUSE</h1><div class="mzrow"><button class="btn g" id="mzIn">🔍＋</button><button class="btn g" id="mzOut">🔍－</button><button class="btn g" id="mzMe">⌖ Moi</button></div><div id="pinfo"></div><div id="pleg"></div>
- <button class="btn" id="resume">Reprendre</button><button class="btn g" id="rsp">Réapparaître à l'hôpital</button><button class="btn g" id="gfxBtn">Graphismes</button><a class="btn g" href="index.html">Quitter</a></div></div></div>
+ <button class="btn" id="resume">Reprendre</button><button class="btn g" id="rsp">Réapparaître à l'hôpital</button><button class="btn g" id="pvpBtn" style="display:none">PvP</button><button class="btn g" id="gfxBtn">Graphismes</button><a class="btn g" href="index.html">Quitter</a></div></div></div>
 <div class="ov" id="shop"><div class="shbox"><div class="shhead"><h2 id="shTitle"></h2><span id="shMoney"></span><button id="shClose">Fermer ✕</button></div><div id="shList"></div><div id="shMsg" class="ok"></div></div></div>
 <script>
 'use strict';
@@ -4721,7 +4721,7 @@ const MP_URL='wss://sbnkndyvmhmfyijilmqd.supabase.co/realtime/v1/websocket',MP_K
 const MP_ADJ=['Rapide','Malin','Fou','Brave','Rusé','Joyeux','Calme','Super','Turbo','Zen','Cosmique','Épique'];
 const MP_ANI=['Renard','Panda','Lynx','Tigre','Hibou','Dauphin','Koala','Faucon','Loup','Ours','Lapin','Requin'];
 const MP_MSGS=['Salut !','Bien joué !','Suis-moi !','Attention !','Merci !','Aïe !','Rendez-vous ici !','On fait une course ?'];
-const MP={ride:null,on:false,ws:null,room:'',id:'',a:0,b:0,ref:1,hb:0,players:new Map(),sendT:0,ready:false,onClose:null,lastRx:0};
+const MP={pvp:'boss',pvpT:0,ride:null,on:false,ws:null,room:'',id:'',a:0,b:0,ref:1,hb:0,players:new Map(),sendT:0,ready:false,onClose:null,lastRx:0};
 function mpNameOf(a,b){return MP_ANI[b%MP_ANI.length]+' '+MP_ADJ[a%MP_ADJ.length]}
 function mpRandomName(){MP.a=rint(0,MP_ADJ.length-1);MP.b=rint(0,MP_ANI.length-1);$('mpNick').value=mpNameOf(MP.a,MP.b)}
 function mpCleanName(v){return String(v||'').replace(/[^A-Za-zÀ-ÖØ-öø-ÿ0-9 _\-]/g,'').replace(/\s+/g,' ').trim().slice(0,14)}
@@ -4751,8 +4751,9 @@ function mpRecv(ev,d){
   if(ev==='bye'){MP.players.delete(d.i);return}
   let p=MP.players.get(d.i);
   if(!p){if(MP.players.size>=15)return;p={id:d.i,x:0,z:0,y:0,yaw:0,tx:0,tz:0,ty:0,tyaw:0,sp:0,ph:0,car:null,col:'#cc2222',wp:0,say:'',sayT:0,look:mpLook(d.i),a:0,b:0,rx:0,fresh:true,ghost:null};MP.players.set(d.i,p);mpSend('hi',{i:MP.id,a:MP.a,b:MP.b,n:MP.nick})}
-  p.rx=performance.now();if(typeof d.n==='string'){const n=mpCleanName(d.n);if(n.length>=2)p.n=n}
+  p.rx=performance.now();if(typeof d.n==='string'){const n=mpCleanName(d.n);if(n.length>=2)p.n=n}if(d.bo!==undefined)p.boss=!!d.bo&&String(p.n||'').toLowerCase()==='bigboss';
   if(ev==='hi'){p.a=(d.a|0)%MP_ADJ.length;p.b=(d.b|0)%MP_ANI.length;return}
+  if(ev==='pvp'){if(p.boss&&PVP_TXT[d.m]&&(d.ts||0)>=MP.pvpT){const ch=MP.pvp!==d.m;MP.pvp=d.m;MP.pvpT=d.ts||Date.now();if(ch)say(PVP_TXT[d.m]+' (réglé par BIGBOSS)',3);pvpLabel()}return}
   if(ev==='hit'){if(d.t===MP.id)mpOnHit(p,d);return}
   if(ev==='kill'){if(typeof d.k==='string')mpOnKill(p,d);return}
   if(ev==='ride'){if(d.t===MP.id&&P.car)say('👤 '+pN(p)+' est monté dans ta voiture',2.5);p.ride=d.t===MP.id||MP.players.has(d.t)?d.t:null;return}
@@ -4767,12 +4768,19 @@ function mpUpdate(dt){
   for(const[id,p]of MP.players){if(now-p.rx>7000){MP.players.delete(id);continue}
     if(p.flash>0)p.flash-=dt;const k=1-Math.exp(-9*dt);p.x+=(p.tx-p.x)*k;p.z+=(p.tz-p.z)*k;p.y+=(p.ty-p.y)*k;p.yaw+=angd(p.yaw,p.tyaw)*k;p.ph+=dt*p.sp*9;if(p.sayT>0)p.sayT-=dt}
   MP.sendT-=dt;if(MP.sendT<=0&&MP.ready){MP.sendT=.2;const c=P.car;
-    mpSend('pos',{i:MP.id,x:+(c?c.x:P.x).toFixed(1),z:+(c?c.z:P.z).toFixed(1),y:+(c?c.y:P.y).toFixed(1),w:+(c?c.yaw:P.yaw).toFixed(2),s:c?0:+(P.sp||0).toFixed(2),p:c?0:P.wpn,c:c?c.type:null,k:c?c.col:null,l:c&&c.locked?1:0,r:MP.ride||null,n:MP.nick,a:MP.a,b:MP.b})}
+    mpSend('pos',{i:MP.id,x:+(c?c.x:P.x).toFixed(1),z:+(c?c.z:P.z).toFixed(1),y:+(c?c.y:P.y).toFixed(1),w:+(c?c.yaw:P.yaw).toFixed(2),s:c?0:+(P.sp||0).toFixed(2),p:c?0:P.wpn,c:c?c.type:null,k:c?c.col:null,l:c&&c.locked?1:0,r:MP.ride||null,n:MP.nick,bo:isBoss()?1:0,a:MP.a,b:MP.b})}
+  if(isBoss()){MP.pvpSend=(MP.pvpSend||0)-dt;if(MP.pvpSend<=0){MP.pvpSend=6;if(!MP.pvpT)MP.pvpT=Date.now();mpSend('pvp',{i:MP.id,m:MP.pvp,ts:MP.pvpT})}}
   mpHud()}
 // ---------- combat entre joueurs ----------
-function mpHit(p,d,zone){if(!MP.on||!p||d<=0)return;d=Math.min(300,Math.round(d));p.flash=.3;mpSend('hit',{i:MP.id,t:p.id,d,z:zone||'torso'});
+// ---------- PvP : 3 modes, réglés uniquement par le compte BIGBOSS ----------
+const PVP_TXT={all:'⚔️ PvP : tout le monde',boss:'👑 PvP : BIGBOSS seulement',off:'🕊️ PvP désactivé'};
+function isBoss(){const a=ACC();return!!(a&&a.p.toLowerCase()==='bigboss'&&CLOUD.pulled&&CLOUD.st!=='badlogin')}
+function mpCanHurt(){return MP.pvp==='all'||(MP.pvp==='boss'&&isBoss())}
+function mpSetPvp(m){if(!isBoss())return;MP.pvp=m;MP.pvpT=Date.now();mpSend('pvp',{i:MP.id,m,ts:MP.pvpT});say(PVP_TXT[m],2.5);pvpLabel()}
+function pvpLabel(){const b=document.getElementById('pvpBtn');if(b){b.style.display=MP.on&&isBoss()?'':'none';b.textContent=PVP_TXT[MP.pvp]}}
+function mpHit(p,d,zone){if(!MP.on||!p||d<=0)return;if(!mpCanHurt()){if(!game.pvpMsgT||game.t-game.pvpMsgT>5){game.pvpMsgT=game.t;say(MP.pvp==='off'?'🕊️ Le PvP est désactivé par BIGBOSS':'👑 Seul BIGBOSS peut blesser les joueurs',2)}return}d=Math.min(300,Math.round(d));p.flash=.3;mpSend('hit',{i:MP.id,t:p.id,d,z:zone||'torso'});
   if(!game.hmT||game.t-game.hmT>.15){game.hmT=game.t;sfx('hit')}}
-function mpOnHit(p,d){const dmg=clamp(d.d|0,0,300);if(P.dead||game.state!=='play'||P.x<-1000)return;const was=P.dead;
+function mpOnHit(p,d){if(!(MP.pvp==='all'||(MP.pvp==='boss'&&p.boss)))return;const dmg=clamp(d.d|0,0,300);if(P.dead||game.state!=='play'||P.x<-1000)return;const was=P.dead;
   if(P.car&&!P.car.s.air){hurtCar(P.car,dmg*1.4);P.hp-=dmg*.15;P.hitFlash=.6;if(P.hp<=0&&!P.dead)killPlayer()}else hurtPlayer(dmg*(d.z==='head'?1.6:1));
   if(!was&&P.dead){mpSend('kill',{i:MP.id,k:p.id});say('💀 '+pN(p)+' t’a éliminé !',3.5)}}
 function mpOnKill(p,d){const victim=p,killer=d.k===MP.id?null:MP.players.get(d.k);
@@ -4810,11 +4818,11 @@ function mpTags(){
     const sx=(x*VP[0]+y*VP[4]+z*VP[8]+VP[12])/cw,sy=(x*VP[1]+y*VP[5]+z*VP[9]+VP[13])/cw;if(abs(sx)>1.1||abs(sy)>1.1)continue;
     let el=_tagEls[i];if(!el){el=document.createElement('div');el.innerHTML='<i></i><span></span>';box.appendChild(el);_tagEls[i]=el}
     el.style.display='block';el.style.left=((sx+1)/2*W)+'px';el.style.top=((1-sy)/2*H)+'px';
-    const bi=el.firstChild;if(p.sayT>0){bi.style.display='block';bi.textContent=p.say}else bi.style.display='none';el.lastChild.textContent=pN(p);i++}
+    const bi=el.firstChild;if(p.sayT>0){bi.style.display='block';bi.textContent=p.say}else bi.style.display='none';el.lastChild.textContent=(p.boss?'👑 ':'')+pN(p);i++}
   for(;i<_tagEls.length;i++)_tagEls[i].style.display='none'}
 let _hudT=0;
 function mpHud(){if((_hudT++%20)!==0)return;const names=[(MP.nick||mpNameOf(MP.a,MP.b))+' (toi)'];for(const p of MP.players.values())names.push(pN(p));
-  $('mpHud').innerHTML='<b>Ville en ligne</b> · '+names.length+' joueur'+(names.length>1?'s':'')+'<br>'+names.join('<br>')}
+  $('mpHud').innerHTML='<b>Ville en ligne</b> · '+PVP_TXT[MP.pvp]+' · '+names.length+' joueur'+(names.length>1?'s':'')+'<br>'+names.join('<br>')}
 // ---------- messages rapides ----------
 function qchatToggle(){const q=$('qchat');if(!MP.on)return;if(q.style.display==='flex'){q.style.display='none';return}
   q.innerHTML='';MP_MSGS.forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{mpSend('say',{i:MP.id,k});q.style.display='none';say('Toi : '+t,1.8)};q.appendChild(b)});q.style.display='flex'}
@@ -4829,6 +4837,7 @@ addEventListener('pagehide',()=>{if(MP.on)mpSend('bye',{i:MP.id})});
 $('mpDice').onclick=mpRandomName;
 $('mpBack').onclick=()=>{$('mp').style.display='none';$('title').style.display='flex'};
 $('mpJoin').onclick=()=>{const code=MP_ROOM,nick=mpCleanName($('mpNick').value);
+  if(nick.toLowerCase()==='bigboss'&&!isBoss()){$('mpMsg').textContent='Ce pseudo est réservé : connecte-toi avec le compte BIGBOSS.';return}
   if(nick.length<2){$('mpMsg').textContent='Choisis un pseudo de 2 à 14 caractères (lettres, chiffres, espace, - ou _).';return}
   $('mpNick').value=nick;MP.nick=nick;try{localStorage.setItem('vf-nick',nick)}catch(e){}
   $('mpMsg').textContent='Connexion à la ville en ligne…';$('mpJoin').disabled=true;
@@ -5412,13 +5421,13 @@ function drawBigMap(){
   h+='<span><b style="background:#ffd400;color:#000">◆</b>Ton point (touche un lieu)</span><span><b style="background:#fff;color:#000">D</b>Départ de mission · <b style="background:#2c2">★</b>Arrivée</span>';
   $('pleg').innerHTML=h})();
 setInterval(()=>{if(game.paused&&$('pause').style.display==='flex')drawBigMap()},400);
-function togglePause(forceOn){
+function togglePause(forceOn){pvpLabel();
   if(game.state==='title')return;
   const on=forceOn===true?true:!game.paused;if(on&&game.shopOpen)closeShop();game.paused=on;$('pause').style.display=on?'flex':'none';
   if(on){drawBigMap();$('pinfo').textContent='Missions réussies : '+game.done+' · Argent : '+game.money.toLocaleString('fr-FR')+' $ · Voitures : '+Object.keys(P.garage).length+'/'+SHOPCARS.length}
   if(on&&AU.ctx&&AU.ctx.state==='running')AU.ctx.suspend();if(!on&&AU.ctx&&AU.ctx.state==='suspended')AU.ctx.resume()}
 $('resume').addEventListener('click',()=>togglePause(false));
-$('gfxBtn').addEventListener('click',gfxToggle);$('gfxBtn2').addEventListener('click',gfxToggle);gfxLabel();
+$('gfxBtn').addEventListener('click',gfxToggle);$('pvpBtn').addEventListener('click',()=>{const o=['boss','all','off'];mpSetPvp(o[(o.indexOf(MP.pvp)+1)%3])});$('gfxBtn2').addEventListener('click',gfxToggle);gfxLabel();
 $('mis').addEventListener('click',()=>{if(!game.mission)openShop('missions')});
 // lieux sur lesquels le point de la carte « s'aimante »
 function mapSnapTargets(){const L=[],add=(x,z,name)=>{if(isFinite(x)&&isFinite(z))L.push({x,z,name})};
