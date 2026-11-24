@@ -247,6 +247,17 @@ body.play #hud{display:block}
 #scopeO .md::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(12.5% - 2px),#000 calc(12.5% - 2px) 12.5%) center/100% 6px no-repeat,repeating-linear-gradient(transparent 0 calc(12.5% - 2px),#000 calc(12.5% - 2px) 12.5%) center/6px 100% no-repeat}
 #scopeZ{position:absolute;left:50%;top:calc(50% + 30vmin);transform:translateX(-50%);color:#7dff8a;font:600 15px Oswald,Impact,sans-serif;text-shadow:0 0 4px #000;letter-spacing:1px}
 #bZoom{position:absolute;right:calc(18px + env(safe-area-inset-right));top:42%;pointer-events:auto;background:#000a;color:#fff;border:2px solid #fff6;border-radius:30px;padding:10px 14px;font:600 15px Oswald,Impact,sans-serif}
+#wwheel{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:30;background:radial-gradient(circle,rgba(0,0,0,.35),rgba(0,0,0,.75));touch-action:none;user-select:none;-webkit-user-select:none}
+#wwRing{position:relative;width:min(88vmin,600px);height:min(88vmin,600px);border-radius:50%;background:radial-gradient(circle,transparent 0 24%,rgba(10,12,18,.72) 24.5% 49%,transparent 49.5%);box-shadow:0 0 0 2px rgba(255,255,255,.12) inset}
+.wws{position:absolute;width:24%;height:17%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:14px;background:rgba(30,34,44,.85);border:2px solid rgba(255,255,255,.14);color:#fff;transition:transform .08s,background .08s;cursor:pointer}
+.wws .wi svg{width:min(15vmin,96px);height:auto;display:block}.wws .fist{font-size:min(7vmin,40px);line-height:1}
+.wws b{font:600 min(2.6vmin,14px) Oswald,Impact,sans-serif;letter-spacing:.5px;white-space:nowrap}.wws small{font:600 min(2.3vmin,12px) sans-serif;opacity:.75}
+.wws.sel{background:rgba(255,255,255,.95);color:#111;border-color:#ffb703;transform:translate(-50%,-50%) scale(1.12);box-shadow:0 0 18px rgba(255,183,3,.7)}
+.wws:not(.sel) .wi svg{filter:brightness(2.4) contrast(.9)}.wws.lock{opacity:.38}.wws.empty small{color:#ff6b6b;opacity:1}
+#wwC{position:absolute;left:50%;top:50%;width:44%;transform:translate(-50%,-50%);text-align:center;color:#fff;display:flex;flex-direction:column;gap:4px;align-items:center}
+#wwC b{font:700 min(4.4vmin,26px) Oswald,Impact,sans-serif;letter-spacing:1px}#wwC small{font:600 min(2.8vmin,15px) sans-serif;opacity:.85}#wwC em{font-style:normal;font-size:min(3vmin,16px)}
+#wwC button{margin-top:4px;background:#ffb703;color:#111;border:0;border-radius:20px;padding:6px 12px;font:600 min(2.6vmin,13px) Oswald,Impact,sans-serif;cursor:pointer}
+#wwHelp{color:#fff;opacity:.7;font:600 13px sans-serif;margin-top:8px;text-shadow:0 1px 2px #000}
 #cross{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #000;display:none}
 #cross::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;background:#f33;border-radius:50%}
 #big{position:absolute;left:0;right:0;top:34%;text-align:center;font-size:min(11vw,86px);font-weight:700;letter-spacing:4px;text-transform:uppercase;display:none;text-shadow:0 6px 0 #000,0 0 30px #000}
@@ -375,7 +386,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <h1>VILLE<br><span>FOLLE</span></h1>
  <p>Une ville ouverte en 3D : vole des voitures, fais des missions, évite la police… ou affronte-la !</p>
  <p class="help"><b>Tablette</b> : joystick à gauche · glisse à droite pour tourner la caméra · boutons à droite<br>
- <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir à pied / freiner en voiture · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>Entrée</kbd> en voiture : tirer par la fenêtre · <kbd>B</kbd> braquer un commerce / payer un racket · <kbd>K</kbd> échanger tes plaques avec une voiture garée · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> chat (multijoueur)</p>
+ <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir à pied / freiner en voiture · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>Entrée</kbd> en voiture : tirer par la fenêtre · <kbd>B</kbd> braquer un commerce / payer un racket · <kbd>K</kbd> échanger tes plaques avec une voiture garée · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Tab</kbd> roue des armes (ou clic sur le nom de l’arme) · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>9</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> chat (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
  <div><button class="btn g" id="profBtn">Compte / Profil</button> <button class="btn g" id="gfxBtn2">Graphismes</button></div>
@@ -408,7 +419,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
 <div id="cine"><div class="cbar t"></div><div class="cbar b"></div><div id="cfade"></div><div id="ctitle"></div><div id="ctap"></div><div id="csub"><b id="cwho"></b><span id="ctxt"></span></div><button id="cskip">Passer ⏭</button></div>
 <div id="dlg"><div class="dbox"><b id="dlgWho"></b><p id="dlgTxt"></p><button id="dlgNext">Suivant ▶</button></div></div>
 <div id="mpHud"></div><div id="mpTags"></div>
-<div id="qchat"></div><div id="chatlog"></div><div id="scopeO"><i class="sv"></i><i class="sh"></i><b class="md"></b><div id="scopeZ"></div><button id="bZoom">🔍 Zoom</button></div>
+<div id="qchat"></div><div id="chatlog"></div><div id="wwheel"><div id="wwRing"><div id="wwC"></div></div><div id="wwHelp">Choisis ton arme · relâche Tab ou clique</div></div><div id="scopeO"><i class="sv"></i><i class="sh"></i><b class="md"></b><div id="scopeZ"></div><button id="bZoom">🔍 Zoom</button></div>
 <div class="ov" id="pause"><div class="pbox"><canvas id="bigmap" width="700" height="631"></canvas>
  <div class="pside"><h1>PAUSE</h1><div class="mzrow"><button class="btn g" id="mzIn">🔍＋</button><button class="btn g" id="mzOut">🔍－</button><button class="btn g" id="mzMe">⌖ Moi</button></div><div id="pinfo"></div><div id="pleg"></div>
  <button class="btn" id="resume">Reprendre</button><button class="btn g" id="rsp">Réapparaître à l'hôpital</button><button class="btn g" id="pvpBtn" style="display:none">PvP</button><button class="btn g" id="fpsBtn">Visée</button><button class="btn g" id="gfxBtn">Graphismes</button><a class="btn g" href="index.html">Quitter</a></div></div></div>
@@ -5523,7 +5534,35 @@ function pup(e){
 addEventListener('pointerdown',pdown,{passive:false});addEventListener('pointermove',pmove,{passive:false});addEventListener('pointerup',pup);addEventListener('pointercancel',pup);
 addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('mousedown',e=>{if(e.button===2)BT.aimM=true});addEventListener('mouseup',e=>{if(e.button===2)BT.aimM=false});
-$('wpn').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();startReload()});
+$('wpn').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();wwOpen(false)});
+// ---------- roue des armes (comme dans GTA) ----------
+const WW={open:false,sel:0,hold:false};
+function wwBuild(){const R=$('wwRing');for(const el of[...R.querySelectorAll('.wws')])el.remove();
+  for(let i=0;i<NW;i++){const a=-PI/2+i/NW*TAU,el=document.createElement('div'),own=i===0||P.own[i],am=i?P.ammo[i]|0:0;el.className='wws'+(own?'':' lock')+(own&&i&&am<=0?' empty':'');el.dataset.i=i;
+    el.style.left=(50+cos(a)*37)+'%';el.style.top=(50+sin(a)*37)+'%';
+    el.innerHTML=(i===0?'<span class="fist">👊</span>':'<span class="wi">'+WSVG[i]+'</span>')+'<b>'+WEAPONS[i].n+'</b><small>'+(i===0?'∞':own?(am>0?am.toLocaleString('fr-FR'):'vide'):'🔒 armurerie')+'</small>';R.appendChild(el)}
+  wwMark()}
+function wwMark(){for(const el of $('wwRing').querySelectorAll('.wws'))el.classList.toggle('sel',+el.dataset.i===WW.sel);
+  const i=WW.sel,w=WEAPONS[i],own=i===0||P.own[i],acc=own&&i&&ACCP[i]?Object.keys(ACCS).filter(k=>hasAcc(i,k)).map(k=>accName(i,k).split(' ')[0]).join(' '):'';
+  $('wwC').innerHTML='<b>'+w.n+'</b><small>'+(i===0?'Corps à corps':own?((P.clip[i]|0)+' / '+max(0,(P.ammo[i]|0)-(P.clip[i]|0))+' balles'):'Pas encore achetée')+'</small>'+(acc?'<em>'+acc+'</em>':'')+(P.wpn>0&&!w.rocket?'<button id="wwRl">⟳ Recharger</button>':'')}
+function wwOpen(hold){if(WW.open||game.state!=='play'||P.dead||game.shopOpen||game.paused)return;WW.open=true;WW.hold=!!hold;WW.sel=P.wpn;wwBuild();$('wwheel').style.display='flex';IN.fire=IN.fireP=false;sfx('pick')}
+function wwClose(apply){if(!WW.open)return;WW.open=false;$('wwheel').style.display='none';if(apply&&WW.sel!==P.wpn)IN.sel=WW.sel;IN.fire=IN.fireP=false}
+function wwAim(e){const r=$('wwRing').getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),d=hyp(dx,dy);
+  if(d<r.width*.12)return-1;let a=Math.atan2(dy,dx)+PI/2;if(a<0)a+=TAU;const i=Math.round(a/TAU*NW)%NW;if(i!==WW.sel){WW.sel=i;wwMark()}return i}
+{const el=$('wwheel');
+  el.addEventListener('pointermove',e=>{if(WW.open){e.preventDefault();wwAim(e)}});
+  el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(e.target&&e.target.id==='wwRl'){startReload();wwClose(false);return}
+    const r=$('wwRing').getBoundingClientRect(),d=hyp(e.clientX-(r.left+r.width/2),e.clientY-(r.top+r.height/2));if(d>r.width*.6){wwClose(false);return}
+    const i=wwAim(e);if(i<0)return;wwClose(true)});
+  el.addEventListener('wheel',e=>{if(!WW.open)return;e.preventDefault();WW.sel=(WW.sel+(e.deltaY>0?1:NW-1))%NW;wwMark()},{passive:false})}
+addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT'&&e.target.offsetParent!==null)return;
+  if(e.code==='Tab'){e.preventDefault();if(!e.repeat){if(WW.open)wwClose(true);else wwOpen(true)}e.stopImmediatePropagation();return}
+  if(!WW.open)return;
+  if(e.code==='Escape'){wwClose(false);e.preventDefault();e.stopImmediatePropagation()}
+  else if(e.code==='ArrowRight'||e.code==='KeyD'){WW.sel=(WW.sel+1)%NW;wwMark();e.stopImmediatePropagation()}
+  else if(e.code==='ArrowLeft'||e.code==='KeyA'){WW.sel=(WW.sel+NW-1)%NW;wwMark();e.stopImmediatePropagation()}
+  else if(e.code==='Enter'||e.code==='Space'){e.preventDefault();wwClose(true);e.stopImmediatePropagation()}},true);
+addEventListener('keyup',e=>{if(e.code==='Tab'&&WW.open&&WW.hold){e.preventDefault();wwClose(true)}},true);
 document.addEventListener('gesturestart',e=>e.preventDefault());document.addEventListener('gesturechange',e=>e.preventDefault());
 function bindBtn(id,down,up){const el=$(id);const d=e=>{e.preventDefault();e.stopPropagation();setTouchUI();auInit();el.classList.add('act');down&&down()},u=e=>{e.preventDefault();el.classList.remove('act');up&&up()};
   el.addEventListener('pointerdown',d);el.addEventListener('pointerup',u);el.addEventListener('pointercancel',u);el.addEventListener('pointerleave',e=>{if(!(el.hasPointerCapture&&el.hasPointerCapture(e.pointerId)))u(e)})}
@@ -5538,7 +5577,7 @@ bindBtn('bF',()=>{BT.aimT=!BT.aimT;$('bF').classList.toggle('on',BT.aimT)},null)
 bindBtn('bB',()=>{BT.B=true;IN.jump=true},()=>{BT.B=false});
 bindBtn('bC',()=>{IN.use=true});
 bindBtn('bD',()=>{BT.run=!BT.run;$('bD').style.background=BT.run?'#ffb703cc':''},null);
-bindBtn('bE',()=>{IN.wpn=true});
+bindBtn('bE',()=>{wwOpen(false)});
 bindBtn('bPause',()=>{togglePause()});bindBtn('bView',()=>{CAM.view=(CAM.view+1)%2});bindBtn('bRadio',()=>{radioToggle()});bindBtn('bPhone',()=>{openShop('phone')});
 // agrège clavier + tactile dans IN (une fois par image)
 function pollInput(dt){
@@ -5882,7 +5921,7 @@ function frame(now){
       if(game.state==='title'){IN.sx=IN.sy=0;IN.fire=IN.fireP=IN.use=IN.jump=false;P.invuln=9;updateGame(dt);titleCam(dt)}
       else{
         if(game.state!=='play'){IN.sx=IN.sy=0;IN.fire=IN.fireP=IN.use=IN.jump=IN.hb=false}
-        updateGame(game.state==='wasted'?dt*.45:dt);updateCamera(dt);mpUpdate(dt)}
+        updateGame(game.state==='wasted'?dt*.45:(WW.open&&!MP.on)?dt*.25:dt);updateCamera(dt);mpUpdate(dt)}
       IN.fireP=false;IN.use=false;IN.jump=false;IN.wpn=false;IN.sel=-1;
       audioUpdate(dt)}
     render();
