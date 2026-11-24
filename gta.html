@@ -2502,7 +2502,7 @@ function doorMesh(){if(DOORMESH)return DOORMESH;const B=new MB(),wh=[1,1,1],gl=[
   B.box(-.05,1.3,-.8,.02,1.36,-.18,wh,{ao:.9});
   return DOORMESH=new GMesh(B)}
 function drawCar(c){
-  if(!farOK(c.x,c.y+1,c.z,4,c.type==='jet'||c.type==='plane'?600:330)||!visSphere(c.x,c.y+1,c.z,4))return;
+  if(!farOK(c.x,c.y+1,c.z,4,c.type==='jet'||c.type==='plane'?600:330*LOD)||!visSphere(c.x,c.y+1,c.z,4))return;
   const g=carGeo(c.type);mtrs(_M,c.x,c.y,c.z,c.yaw,c.pitch,c.roll);
   drawMesh(g.paint,c.mode==='wreck'?wreckMat:c.mat,_M);drawMesh(g.detail,detailMat,_M);
   if(c.doorA>.02&&!c.s.bike&&!c.s.air){const hz=c.s.L*.14,hx=c.s.W/2;const wx=_M[0]*hx+_M[8]*hz+_M[12],wy=_M[1]*hx+_M[9]*hz+_M[13]+.0,wz=_M[2]*hx+_M[10]*hz+_M[14];mtrs(_L,wx,wy,wz,c.yaw-c.doorA,c.pitch,c.roll);drawMesh(doorMesh(),c.mat,_L)}
@@ -3265,7 +3265,7 @@ function cowShoot(p,px,pz,d){
 let gunSound=()=>{};
 function drawPeds(){
   DM.n=0;
-  for(const p of peds){if(!farOK(p.x,p.y+1,p.z,1.4,230)||!visSphere(p.x,p.y+1,p.z,1.4))continue;
+  for(const p of peds){if(!farOK(p.x,p.y+1,p.z,1.4,230*LOD)||!visSphere(p.x,p.y+1,p.z,1.4))continue;
     const sc=p.look.sc||1;addChar(p.x,p.y,p.z,p.yaw,{phone:p.calling?1:0,kneel:(p.crip&&p.state!=='dead'&&p.state!=='ko')?1:0,ph:p.ph,sp:p.sp,fall:p.fall,aim:p.aim,gun:p.gun?(p.gunK||1):0,flash:p.flash>0?p.flash*2:0,punch:p.pk>0?1-p.pk/.28:0},p.look);
     bShadow.flat(p.x,p.y+.05,p.z,.5,.5,0,[0,0,0,p.state==='dead'?.25:.4])}
   if(!P.car&&!P.hidden&&!CAM.fps){addChar(P.x,P.y,P.z,P.yaw,{acc:P.wpn>0?P.acc[P.wpn]:null,ph:P.ph,sp:P.sp,fall:P.fallT,aim:P.aim>.5?1:0,ap:P.aim>.5?clamp(CAM.aimP||0,-.8,.9):0,gun:(P.wpn>0&&!P.punchT)?P.wpn:0,punch:P.punchT>0?1-P.punchT/.28:0,jump:!P.ground&&P.vy!==0&&!P.ragdoll,flash:P.hitFlash>0?P.hitFlash*.8:0},P.look);
@@ -6040,8 +6040,15 @@ addEventListener('keydown',e=>{if(game.state==='title'&&$('title').style.display
 
 // ---------- boucle ----------
 let lastNow=0,dtEMA=1/60,aT=0;
+// qualité automatique : résolution, nombre de PNJ, distance d'affichage, puis graphismes rapides si ça rame encore
+let LOD=1,slowN=0;
 function adaptRes(raw){if(raw>.25)return;dtEMA=lerp(dtEMA,raw,.04);aT+=raw;
-  if(aT>2.5){aT=0;if(dtEMA>1/46&&PR>.55){PR=max(.55,PR*.88);resize()}else if(dtEMA>1/34&&PR<=.6){game.maxAI=max(10,(game.maxAI||24)-3);game.maxPed=max(26,(game.maxPed||80)-6)}else if(dtEMA<1/75&&PR<PRMAX-.01){PR=min(PRMAX,PR*1.07);resize()}}}
+  if(aT>2.5){aT=0;
+    if(dtEMA>1/46&&PR>.55){PR=max(.55,PR*.88);resize()}
+    else if(dtEMA>1/34&&PR<=.6){game.maxAI=max(10,(game.maxAI||24)-3);game.maxPed=max(26,(game.maxPed||80)-6);LOD=max(.55,LOD-.08);
+      if((game.maxPed||80)<=32&&++slowN>=3&&GFX.hi&&game.state==='play'){GFX.hi=false;gfxLabel();say('⚡ Ça ramait : graphismes rapides activés automatiquement (Pause → Graphismes pour revenir)',4)}}
+    else if(dtEMA<1/55){slowN=0;if(LOD<1)LOD=min(1,LOD+.05);else if((game.maxPed||80)<80){game.maxAI=min(24,(game.maxAI||24)+2);game.maxPed=min(80,(game.maxPed||80)+4)}
+      else if(dtEMA<1/75&&PR<PRMAX-.01){PR=min(PRMAX,PR*1.07);resize()}}}}
 function frame(now){
   requestAnimationFrame(frame);
   if(!lastNow){lastNow=now;return}
