@@ -267,6 +267,11 @@ body.mp.boss.play #pvpChip{display:block}
 #aimX{display:none;position:fixed;left:50%;transform:translateX(-50%);top:calc(104px + env(safe-area-inset-top));z-index:7;pointer-events:auto;background:#000c;color:#fff;border:2px solid #fff8;border-radius:20px;padding:7px 16px;font:600 15px Oswald,Impact,sans-serif;cursor:pointer}
 body.fps #aimX{display:block}
 #loot{display:none;position:fixed;left:50%;transform:translateX(-50%);top:calc(150px + env(safe-area-inset-top));z-index:5;background:#000b;color:#ffd84a;border:2px solid #ffd84a;border-radius:14px;padding:5px 12px;font:600 14px Oswald,Impact,sans-serif;text-align:center;pointer-events:none}
+#raceInv{display:none;position:fixed;left:50%;transform:translateX(-50%);top:calc(190px + env(safe-area-inset-top));z-index:8;background:#000d;color:#fff;border:2px solid #ffd84a;border-radius:14px;padding:10px 14px;font:600 14px sans-serif;text-align:center;pointer-events:auto}
+#raceInv button{margin-top:6px;background:#ffd84a;color:#111;border:0;border-radius:16px;padding:6px 14px;font:700 14px Oswald,Impact,sans-serif;cursor:pointer}
+#raceHud{display:none;position:fixed;left:50%;transform:translateX(-50%);top:calc(150px + env(safe-area-inset-top));z-index:5;background:#000b;color:#fff;border:2px solid #8f5;border-radius:14px;padding:5px 12px;font:600 15px Oswald,Impact,sans-serif;pointer-events:none}
+#lbP{display:none;position:fixed;inset:0;z-index:40;background:#000a;align-items:center;justify-content:center}#lbP .lbBox{background:#141826;color:#fff;border:2px solid #ffd84a;border-radius:16px;padding:16px;width:min(520px,92vw);max-height:80vh;overflow:auto;display:flex;flex-direction:column;gap:10px;font:14px sans-serif}
+#lbP table{width:100%;border-collapse:collapse}#lbP td,#lbP th{padding:5px 6px;text-align:left;border-bottom:1px solid #fff2}#lbP tr.me{background:#ffd84a33}
 #cross{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #000;display:none}
 #cross::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;background:#f33;border-radius:50%}
 #big{position:absolute;left:0;right:0;top:34%;text-align:center;font-size:min(11vw,86px);font-weight:700;letter-spacing:4px;text-transform:uppercase;display:none;text-shadow:0 6px 0 #000,0 0 30px #000}
@@ -399,7 +404,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir à pied / freiner en voiture · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>Entrée</kbd> en voiture : tirer par la fenêtre · <kbd>B</kbd> braquer un commerce / payer un racket · <kbd>K</kbd> échanger tes plaques avec une voiture garée · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Tab</kbd> roue des armes (ou clic sur le nom de l’arme) · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>9</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> chat (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
- <div><button class="btn g" id="profBtn">Compte / Profil</button> <button class="btn g" id="gfxBtn2">Graphismes</button></div>
+ <div><button class="btn g" id="profBtn">Compte / Profil</button> <button class="btn g" id="gfxBtn2">Graphismes</button> <button class="btn g" id="lbBtn">🏆 Classement</button></div>
  <div id="storyInfo"></div>
  <div><a class="lnk" href="index.html">← Tous les jeux</a> &nbsp;·&nbsp; <a class="lnk" href="gta2d.html">Version 2D légère</a></div>
 </div>
@@ -423,16 +428,16 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <div class="row"><button class="btn" id="profBack">Fermer</button></div></div></div>
 <div class="ov" id="mp"><div class="pbox mpbox"><h1>MULTIJOUEUR</h1>
  <p>Tous les joueurs en ligne sont dans la même ville ! Choisis ton pseudo. 💬 Chat avec Y (ou le bouton 💬) : ne donne jamais d’infos perso.</p>
- <div class="row"><input id="mpNick" maxlength="14" placeholder="Ton pseudo" autocomplete="off" spellcheck="false"><button class="btn g" id="mpDice">🎲 Au hasard</button></div>
+ <div class="row"><input id="mpNick" maxlength="14" placeholder="Ton pseudo" autocomplete="off" spellcheck="false"><button class="btn g" id="mpDice">🎲 Au hasard</button></div><div class="row"><input id="mpCrew" maxlength="5" placeholder="Crew (ex : ROI)" autocomplete="off" spellcheck="false" style="max-width:160px;text-transform:uppercase"><small style="opacity:.8">ton gang : 2 à 5 lettres, affiché devant ton pseudo</small></div>
  <div id="mpMsg"></div>
  <div class="row"><button class="btn" id="mpJoin">Jouer en ligne</button><button class="btn g" id="mpBack">Retour</button></div></div></div>
 <div id="cine"><div class="cbar t"></div><div class="cbar b"></div><div id="cfade"></div><div id="ctitle"></div><div id="ctap"></div><div id="csub"><b id="cwho"></b><span id="ctxt"></span></div><button id="cskip">Passer ⏭</button></div>
 <div id="dlg"><div class="dbox"><b id="dlgWho"></b><p id="dlgTxt"></p><button id="dlgNext">Suivant ▶</button></div></div>
 <div id="mpHud"></div><button id="aimX">✕ Quitter la visée</button><button id="pvpChip"></button><div id="mpTags"></div>
-<div id="qchat"></div><div id="chatlog"></div><div id="wwheel"><div id="wwRing"><div id="wwC"></div></div><div id="wwHelp">Choisis ton arme · relâche Tab ou clique</div></div><div id="scopeO"><i class="sv"></i><i class="sh"></i><b class="md"></b><div id="scopeZ"></div><button id="bZoom">🔍 Zoom</button></div>
+<div id="qchat"></div><div id="raceInv"></div><div id="raceHud"></div><div id="lbP"><div class="lbBox"><b>🏆 Classement Ville Folle</b><div id="lbL"></div><button class="btn" id="lbX">Fermer</button></div></div><div id="chatlog"></div><div id="wwheel"><div id="wwRing"><div id="wwC"></div></div><div id="wwHelp">Choisis ton arme · relâche Tab ou clique</div></div><div id="scopeO"><i class="sv"></i><i class="sh"></i><b class="md"></b><div id="scopeZ"></div><button id="bZoom">🔍 Zoom</button></div>
 <div class="ov" id="pause"><div class="pbox"><canvas id="bigmap" width="700" height="631"></canvas>
  <div class="pside"><h1>PAUSE</h1><div class="mzrow"><button class="btn g" id="mzIn">🔍＋</button><button class="btn g" id="mzOut">🔍－</button><button class="btn g" id="mzMe">⌖ Moi</button></div><div id="pinfo"></div><div id="pleg"></div>
- <button class="btn" id="resume">Reprendre</button><button class="btn g" id="rsp">Réapparaître à l'hôpital</button><button class="btn g" id="pvpBtn" style="display:none">PvP</button><button class="btn g" id="fpsBtn">Visée</button><button class="btn g" id="gfxBtn">Graphismes</button><a class="btn g" href="index.html">Quitter</a></div></div></div>
+ <button class="btn" id="resume">Reprendre</button><button class="btn g" id="rsp">Réapparaître à l'hôpital</button><button class="btn g" id="pvpBtn" style="display:none">PvP</button><button class="btn g" id="lbBtn2">🏆 Classement</button><button class="btn g" id="fpsBtn">Visée</button><button class="btn g" id="gfxBtn">Graphismes</button><a class="btn g" href="index.html">Quitter</a></div></div></div>
 <div class="ov" id="shop"><div class="shbox"><div class="shhead"><h2 id="shTitle"></h2><span id="shMoney"></span><button id="shClose">Fermer ✕</button></div><div id="shList"></div><div id="shMsg" class="ok"></div></div></div>
 <script>
 'use strict';
@@ -3668,7 +3673,9 @@ function robStep(dt){const R=game.rob,s=R.s,cl=s.cashier;R.t+=dt;const t=R.t;
   if(t>1.1&&t<3.2){R.next-=dt;if(R.next<=0){R.next=.07;const fx=P.x-cl.x,fz=P.z-cl.z,l=hyp(fx,fz)||1;
       PT.add(cl.x+fx/l*.6,1.25,cl.z+fz/l*.6,fx/l*rnd(2,3.4)+rnd(-.5,.5),rnd(1,2.6),fz/l*rnd(2,3.4)+rnd(-.5,.5),.35,.85,.35,1,.09,.02,rnd(.5,.9),9,.3)}
     if(((t*3)|0)!==((t*3-dt*3)|0))sfx('cash')}
-  if(t>3.2&&!R.paid){R.paid=true;cl.pose='give';const loot=s.cash+rint(50,250);addHotLoot(loot);s.robT=game.t;if(s.kind==='bank'){s.guards=null;s.cleared=false}
+  if(t>3.2&&!R.paid){R.paid=true;cl.pose='give';let loot=s.cash+rint(50,250);game.robs=(game.robs|0)+1;
+    {const mates=MP.on?[...MP.players.values()].filter(p=>p.x>-1000&&hyp(p.x-P.x,p.z-P.z)<45):[];if(mates.length){const sh=Math.floor(loot/(mates.length+1));loot=sh;mpSend('share',{i:MP.id,v:sh,to:mates.map(p=>p.id)});setTimeout(()=>say('🤝 Butin partagé avec '+mates.map(pN).join(', '),3),3500)}}
+    addHotLoot(loot);s.robT=game.t;if(s.kind==='bank'){s.guards=null;s.cleared=false}
     const wit=crimeWitness(cl.x,cl.z);
     const st=['jewel','bank','gun'].includes(s.kind)?3:2;
     if(wit==='cop'){setWanted(st);bigMsg('Braquage réussi','<small>+'+loot+' $ — un policier t’a vu : sème-le pour garder le butin !</small>',3.4,'#fb5')}
@@ -5067,11 +5074,12 @@ const MP={pvp:'boss',pvpT:0,ride:null,on:false,ws:null,room:'',id:'',a:0,b:0,ref
 function mpNameOf(a,b){return MP_ANI[b%MP_ANI.length]+' '+MP_ADJ[a%MP_ADJ.length]}
 function mpRandomName(){MP.a=rint(0,MP_ADJ.length-1);MP.b=rint(0,MP_ANI.length-1);$('mpNick').value=mpNameOf(MP.a,MP.b)}
 function mpCleanName(v){return String(v||'').replace(/[^A-Za-zÀ-ÖØ-öø-ÿ0-9 _\-]/g,'').replace(/\s+/g,' ').trim().slice(0,14)}
-const pN=p=>p.n||mpNameOf(p.a|0,p.b|0);
+const pN=p=>(p.crew?'['+p.crew+'] ':'')+(p.n||mpNameOf(p.a|0,p.b|0));
+function crewClean(t){t=String(t||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5);if(t.length<2)return'';try{if(chatClean(t).indexOf('*')>=0)return''}catch(e){}return t}
 const MP_ROOM='MONDE';
 function mpCleanCode(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6)}
 function mpNewCode(){const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<5;i++)s+=A[rint(0,A.length-1)];return s}
-function mpSend(ev,payload){if(!MP.ws||MP.ws.readyState!==1)return;
+function mpSend(ev,payload){if(!MP.ws||MP.ws.readyState!==1)return;if(MP.crew&&payload&&typeof payload==='object')payload.cr=MP.crew;
   try{MP.ws.send(JSON.stringify({topic:'realtime:vf-'+MP.room,event:'broadcast',payload:{type:'broadcast',event:ev,payload},ref:String(MP.ref++)}))}catch(e){}}
 function mpConnect(code,cb){
   MP.room=code;MP.id=Math.random().toString(36).slice(2,8);MP.players.clear();MP.ready=false;
@@ -5093,7 +5101,10 @@ function mpRecv(ev,d){
   if(ev==='bye'){MP.players.delete(d.i);return}
   let p=MP.players.get(d.i);
   if(!p){if(MP.players.size>=15)return;p={id:d.i,x:0,z:0,y:0,yaw:0,tx:0,tz:0,ty:0,tyaw:0,sp:0,ph:0,car:null,col:'#cc2222',wp:0,say:'',sayT:0,look:mpLook(d.i),a:0,b:0,rx:0,fresh:true,ghost:null};MP.players.set(d.i,p);mpSend('hi',{i:MP.id,a:MP.a,b:MP.b,n:MP.nick})}
-  p.rx=performance.now();if(typeof d.n==='string'){const n=mpCleanName(d.n);if(n.length>=2)p.n=n}if(d.bo!==undefined)p.boss=!!d.bo&&String(p.n||'').toLowerCase()==='bigboss';
+  p.rx=performance.now();if(typeof d.cr==='string')p.crew=crewClean(d.cr)||null;if(typeof d.n==='string'){const n=mpCleanName(d.n);if(n.length>=2)p.n=n}if(d.bo!==undefined)p.boss=!!d.bo&&String(p.n||'').toLowerCase()==='bigboss';
+  if(ev==='share'){if(Array.isArray(d.to)&&d.to.includes(MP.id)){const v=clamp(d.v|0,0,20000);if(v>0){addHotLoot(v);sfx('cash');bigMsg('🤝 Butin partagé','<small>+'+v.toLocaleString('fr-FR')+' $ de '+pN(p)+' · sème la police pour le garder</small>',3,'#ffd84a')}}return}
+  if(ev==='race'){raceInvite(p,d);return}
+  if(ev==='rfin'){raceFinishOther(p,d);return}
   if(ev==='hi'){p.a=(d.a|0)%MP_ADJ.length;p.b=(d.b|0)%MP_ANI.length;return}
   if(ev==='pvp'){if(p.boss&&PVP_TXT[d.m]&&(d.ts||0)>=MP.pvpT){const ch=MP.pvp!==d.m;MP.pvp=d.m;MP.pvpT=d.ts||Date.now();if(ch)say(PVP_TXT[d.m]+' (réglé par BIGBOSS)',3);pvpLabel()}return}
   if(ev==='hit'){if(d.t===MP.id)mpOnHit(p,d);return}
@@ -5185,6 +5196,33 @@ function chatSend(raw){const txt=chatClean(raw);if(!txt||!MP.on)return false;
   if(CHAT.bossMuted.has(MP.id)){say('🔇 BIGBOSS t’a coupé le chat',2);return false}
   const now=Date.now();CHAT.sent=CHAT.sent.filter(t=>now-t<10000);if(CHAT.sent.length>=5||(CHAT.sent.length&&now-CHAT.sent[CHAT.sent.length-1]<1200)){say('Doucement avec le chat 😅',1.5);return false}
   CHAT.sent.push(now);mpSend('chat',{i:MP.id,t:txt});chatShow('Toi',txt,true);return true}
+// ---------- courses entre joueurs ----------
+function raceDest(){const L=STORES.map(s=>({x:s.door.x,z:s.door.z,n:s.name})).concat(BANKS.map(b=>({x:b.door.x,z:b.door.z,n:b.name}))).filter(q=>{const d=hyp(q.x-P.x,q.z-P.z);return d>450&&d<1100});return L.length?pick(L):null}
+function raceStart(){if(!MP.on||game.race)return;const q=raceDest();if(!q){say('Pas de destination trouvée, bouge un peu.',2);return}
+  const r={id:MP.id+'-'+Date.now(),x:q.x,z:q.z,n:q.n,t0:Date.now()+15000,host:MP.id,hostN:MP.nick||'Toi',res:[],joined:true};game.race=r;
+  mpSend('race',{i:MP.id,id:r.id,x:r.x,z:r.z,n:r.n,t0:r.t0});game.wp={x:r.x,z:r.z};$('qchat').style.display='none';
+  bigMsg('🏁 Course lancée !','<small>Vers '+r.n+' · départ dans 15 s · tes potes à moins de 150 m peuvent rejoindre</small>',3,'#ffd84a')}
+function raceInvite(p,d){if(game.race||!isFinite(d.x)||!isFinite(d.z)||typeof d.id!=='string')return;if(hyp(p.x-P.x,p.z-P.z)>150)return;
+  const r={id:d.id,x:+d.x,z:+d.z,n:String(d.n||'?').slice(0,40),t0:Math.min(+d.t0||0,Date.now()+20000),host:p.id,hostN:pN(p),res:[],joined:false};game.raceInv=r;
+  const e=$('raceInv');e.innerHTML='🏁 <b>'+r.hostN+'</b> lance une course vers <b>'+r.n+'</b> ('+Math.round(hyp(r.x-P.x,r.z-P.z))+' m)<br><button id="raceJoin">Je participe !</button>';e.style.display='block';
+  $('raceJoin').onclick=()=>{if(game.raceInv&&Date.now()<game.raceInv.t0){game.race=game.raceInv;game.race.joined=true;game.wp={x:game.race.x,z:game.race.z};say('🏁 Inscrit ! Le GPS montre l’arrivée',2.5)}game.raceInv=null;e.style.display='none'};
+  setTimeout(()=>{if(game.raceInv===r){game.raceInv=null;e.style.display='none'}},Math.max(1000,r.t0-Date.now()))}
+function raceFinishOther(p,d){const r=game.race;if(!r||d.id!==r.id||r.res.some(q=>q.id===p.id))return;r.res.push({id:p.id,n:pN(p),ms:clamp(+d.ms||0,0,9e6)});say('🏁 '+pN(p)+' a fini '+r.res.length+(r.res.length===1?'er':'e')+' !',2.5)}
+function raceUpdate(){const r=game.race,e=$('raceHud');if(!r){e.style.display='none';return}const now=Date.now();
+  if(now-r.t0>360000){game.race=null;say('🏁 Course terminée (temps écoulé)',2);return}
+  e.style.display='block';
+  if(now<r.t0){const s=Math.ceil((r.t0-now)/1000);e.textContent='🏁 Départ dans '+s+' s — vers '+r.n;if(s<=3&&r.cd!==s){r.cd=s;sfx('pick');bigMsg(String(s),'',.8,'#ffd84a')}return}
+  if(!r.go){r.go=true;sfx('win');bigMsg('GO !','<small>Fonce vers '+r.n+' !</small>',1.5,'#8f5')}
+  const d=hyp(r.x-P.x,r.z-P.z);e.textContent='🏁 '+r.n+' · '+Math.round(d)+' m · '+((now-r.t0)/1000).toFixed(1)+' s';
+  if(d<14&&!r.done){r.done=true;const ms=now-r.t0,rank=r.res.length+1;mpSend('rfin',{i:MP.id,id:r.id,ms});
+    const prize=rank===1?1500:rank===2?600:200;game.money+=prize;sfx('win');
+    bigMsg(rank===1?'🏆 Victoire !':'🏁 '+rank+(rank===1?'er':'e'),'<small>'+(ms/1000).toFixed(1)+' s · +'+prize+' $</small>',3.5,rank===1?'#ffd84a':'#8f5');game.wp=null;setTimeout(()=>{if(game.race===r)game.race=null},8000)}}
+setInterval(()=>{if(game.state==='play')raceUpdate();else $('raceHud').style.display='none'},250);
+// ---------- classement en ligne ----------
+async function lbOpen(){const e=$('lbP');e.style.display='flex';$('lbL').innerHTML='<small>Chargement…</small>';
+  try{const r=await CB.rpc('vf_top',{});const L=Array.isArray(r)?r:[];const me=ACC()&&ACC().p.toLowerCase();
+    $('lbL').innerHTML=L.length?'<table><tr><th>#</th><th>Joueur</th><th>💵</th><th>☠️</th><th>💰</th></tr>'+L.map((q,i)=>'<tr'+(String(q.p).toLowerCase()===me?' class="me"':'')+'><td>'+(i<3?['🥇','🥈','🥉'][i]:i+1)+'</td><td>'+String(q.p).replace(/[<>&"]/g,'')+'</td><td>'+(+q.m).toLocaleString('fr-FR')+' $</td><td>'+(q.k|0)+'</td><td>'+(q.rb|0)+'</td></tr>').join('')+'</table><small>💵 argent · ☠️ éliminations · 💰 braquages · seulement les comptes en ligne</small>':'<small>Personne pour l’instant.</small>'}
+  catch(err){$('lbL').innerHTML='<small>Impossible de charger le classement (réseau ?).</small>'}}
 function qchatToggle(){const q=$('qchat');if(!MP.on)return;if(q.style.display==='flex'){q.style.display='none';return}
   q.innerHTML='';
   const row=document.createElement('div');row.className='chrow';const inp=document.createElement('input');inp.id='chatIn';inp.maxLength=90;inp.placeholder='Écris un message…';inp.autocomplete='off';
@@ -5192,6 +5230,7 @@ function qchatToggle(){const q=$('qchat');if(!MP.on)return;if(q.style.display===
   inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();send()}else if(e.key==='Escape'){q.style.display='none';inp.blur()}});
   row.appendChild(inp);row.appendChild(go);q.appendChild(row);
   const tip=document.createElement('small');tip.textContent='⚠️ Ne donne jamais ton nom, ton adresse, ton numéro ou tes réseaux. Liens, numéros et insultes sont masqués.';q.appendChild(tip);
+  {const rb=document.createElement('div');rb.className='chq';const b=document.createElement('button');b.textContent=game.race?'🏁 Course en cours…':'🏁 Lancer une course';b.disabled=!!game.race;b.onclick=raceStart;rb.appendChild(b);const b2=document.createElement('button');b2.textContent='🏆 Classement';b2.onclick=()=>{q.style.display='none';lbOpen()};rb.appendChild(b2);q.appendChild(rb)}
   const qm=document.createElement('div');qm.className='chq';MP_MSGS.forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{mpSend('say',{i:MP.id,k});chatShow('Toi',t,true);q.style.display='none'};qm.appendChild(b)});q.appendChild(qm);
   // joueurs : bloquer (pour soi) / couper pour tous (BIGBOSS)
   if(MP.players.size){const h=document.createElement('small');h.textContent='Joueurs :';q.appendChild(h);
@@ -5208,12 +5247,13 @@ setInterval(()=>{document.body.classList.toggle('fps',!!CAM.fps);document.body.c
 bindBtn('bRob',()=>startRob(),null);bindBtn('bBomb',()=>{IN.bomb=true},null);bindBtn('bMis',()=>{IN.missile=true},null);bindBtn('bG',()=>{BT.G=true},()=>{BT.G=false});bindBtn('bPlate',()=>startSwap(),null);bindBtn('bPay',()=>payRacket(),null);bindBtn('bVig',()=>startVigilante(),null);
 addEventListener('pagehide',()=>{if(MP.on)mpSend('bye',{i:MP.id})});
 // ---------- panneau du titre ----------
-$('mpDice').onclick=mpRandomName;
+$('mpDice').onclick=mpRandomName;try{$('mpCrew').value=localStorage.getItem('vf-crew')||''}catch(e){}
 $('mpBack').onclick=()=>{$('mp').style.display='none';$('title').style.display='flex'};
 $('mpJoin').onclick=()=>{const code=MP_ROOM,nick=mpCleanName($('mpNick').value);
   if(nick.toLowerCase()==='bigboss'&&!isBoss()){$('mpMsg').textContent='Ce pseudo est réservé : connecte-toi avec le compte BIGBOSS.';return}
   if(nick.length<2){$('mpMsg').textContent='Choisis un pseudo de 2 à 14 caractères (lettres, chiffres, espace, - ou _).';return}
   $('mpNick').value=nick;MP.nick=nick;try{localStorage.setItem('vf-nick',nick)}catch(e){}
+  MP.crew=crewClean($('mpCrew').value)||null;$('mpCrew').value=MP.crew||'';try{localStorage.setItem('vf-crew',MP.crew||'')}catch(e){}
   $('mpMsg').textContent='Connexion à la ville en ligne…';$('mpJoin').disabled=true;
   mpConnect(code,ok=>{$('mpJoin').disabled=false;
     if(!ok){$('mpMsg').textContent='Connexion impossible pour le moment (réseau ?). Tu peux jouer en solo.';try{MP.ws&&MP.ws.close()}catch(e){}MP.ws=null;return}
@@ -5851,6 +5891,7 @@ addEventListener('keydown',e=>{if(e.code==='Escape'&&CAM.fps&&!WW.open){e.preven
 $('bZoom').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();snZoom((P.snz|0)>=snMax()?-99:1)});
 addEventListener('wheel',e=>{if(CAM.fps&&WEAPONS[P.wpn]&&WEAPONS[P.wpn].sniper&&game.state==='play'){e.preventDefault();snZoom(e.deltaY>0?-1:1)}},{passive:false});
 addEventListener('keydown',e=>{if(!CAM.fps||!WEAPONS[P.wpn]||!WEAPONS[P.wpn].sniper)return;if(e.code==='Equal'||e.code==='NumpadAdd'||e.code==='BracketRight')snZoom(1);else if(e.code==='Minus'||e.code==='NumpadSubtract'||e.code==='BracketLeft')snZoom(-1)});
+$('lbBtn').addEventListener('click',lbOpen);$('lbBtn2').addEventListener('click',lbOpen);$('lbX').addEventListener('click',()=>{$('lbP').style.display='none'});
 $('gfxBtn').addEventListener('click',gfxToggle);$('pvpBtn').addEventListener('click',()=>{const o=['boss','all','off'];mpSetPvp(o[(o.indexOf(MP.pvp)+1)%3])});$('pvpChip').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const o=['boss','all','off'];mpSetPvp(o[(o.indexOf(MP.pvp)+1)%3])});setInterval(pvpLabel,1500);$('gfxBtn2').addEventListener('click',gfxToggle);gfxLabel();
 $('mis').addEventListener('click',()=>{if(!game.mission)openShop('missions')});
 // lieux sur lesquels le point de la carte « s'aimante »
@@ -6197,7 +6238,7 @@ function savePos(){if(game.state!=='play'&&game.state!=='paused')return game.res
 function saveGame(np){if(!game.loaded||game.noSave)return; // jamais de sauvegarde avant d'avoir chargé la progression
   const now=Date.now(),hot=[];for(const p of HOT){const u=HOT_UNTIL.get(p)||now+86400000;if(u>now)hot.push([p,u])}
   const wan=wantedLevel()>0?{w:game.wanted,ck:game.copKills|0,until:now+86400000,ls:game.lastSeen||{x:P.x,z:P.z}}:null;
-  try{localStorage.setItem(curKey(),JSON.stringify({pos:savePos(),wan,bolo:game.bolo||null,hot,ts:Date.now(),m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,hm:P.homes,ho:P.home,ac:P.acc,hl:game.hotLoot|0,cv:game.cv,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}if(!np)vfQueuePush()}
+  try{localStorage.setItem(curKey(),JSON.stringify({pos:savePos(),wan,bolo:game.bolo||null,hot,ts:Date.now(),m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,rb:game.robs|0,mk:game.mpKills|0,hm:P.homes,ho:P.home,ac:P.acc,hl:game.hotLoot|0,cv:game.cv,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}if(!np)vfQueuePush()}
 function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null');if(!s)return;
   game.storyIdx=Math.max(0,Math.min(STORY.length,s.s|0));game.storyRep=Math.max(0,s.r|0);
   const fin=v=>typeof v==='number'&&isFinite(v),now=Date.now();
@@ -6206,7 +6247,7 @@ function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null
   if(s.bolo&&typeof s.bolo==='object'&&(s.bolo.until||0)>now)game.bolo=Object.assign({},s.bolo,{d:String(s.bolo.d||'').slice(0,120)});
   if(Array.isArray(s.hot))for(const h of s.hot){if(Array.isArray(h)&&typeof h[0]==='string'&&h[1]>now){HOT.add(h[0].slice(0,12));HOT_UNTIL.set(h[0].slice(0,12),h[1])}}
   const L3=v=>Math.max(0,Math.min(3,v|0));if(Array.isArray(s.u))for(let i=1;i<NW;i++){const o=s.u[i]||{};P.up[i]={rate:L3(o.rate),mag:L3(o.mag),dmg:L3(o.dmg)}}
-  game.hotLoot=Math.max(0,Math.min(1e6,s.hl|0));
+  game.hotLoot=Math.max(0,Math.min(1e6,s.hl|0));game.robs=Math.max(0,s.rb|0);game.mpKills=Math.max(0,s.mk|0);
   if(Array.isArray(s.hm))P.homes=s.hm.filter(v=>Number.isInteger(v)&&APTS.some(a=>a.id===v));P.home=P.homes.includes(s.ho)?s.ho:P.homes[P.homes.length-1];
   if(!game.resume){const a=homeApt();if(a)game.resume={x:a.x+sin(a.yaw)*1.5,z:a.z+cos(a.yaw)*1.5,yaw:a.yaw+PI,car:null}}
   if(Array.isArray(s.ac))for(let i=1;i<NW;i++){const o=s.ac[i];P.acc[i]={};if(o&&typeof o==='object')for(const k in ACCS)if(o[k]&&accOK(i,k))P.acc[i][k]=1}
