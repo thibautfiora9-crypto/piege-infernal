@@ -1095,9 +1095,13 @@ function buildingDoor(x0,z0,x1,z1,h,kind,FL){
   const ux=abs(n[1]),uz=abs(n[0]),e=.12;
   FL.box(dx-ux*.85-(n[0]<0?e:0),0,dz-uz*.85-(n[1]<0?e:0),dx+ux*.85+(n[0]>0?e:0),2.35,dz+uz*.85+(n[1]>0?e:0),[.32,.2,.12],{ao:1});
   FL.box(dx-ux*1.0-(n[0]<0?e*1.4:0),2.35,dz-uz*1.0-(n[1]<0?e*1.4:0),dx+ux*1.0+(n[0]>0?e*1.4:0),2.55,dz+uz*1.0+(n[1]>0?e*1.4:0),[.85,.82,.75],{ao:1});
-  POIS.push({id:'door',bld:b,x:b.door.x,z:b.door.z,r:1.9,prompt:INT_LABEL[type][1],act:()=>enterBuilding(b),y:0,l:-1})}
+  POIS.push({id:'door',bld:b,x:b.door.x,z:b.door.z,r:1.9,prompt:INT_LABEL[type][1],act:()=>enterBuilding(b),y:0,l:-1});return b}
 const INT_LABEL={appart:['Appartement','Entrer dans l’immeuble'],bureau:['Bureaux','Entrer dans les bureaux'],entrepot:['Entrepôt','Entrer dans l’entrepôt'],luxe:['Penthouse de luxe','Entrer dans la tour']};
-function building(x0,z0,x1,z1,h,o){o=o||{};const cx=(x0+x1)/2,cz=(z0+z1)/2;addAABB(x0,z0,x1,z1,h);if(!o.noDoor)buildingDoor(x0,z0,x1,z1,h,o.kind||'apart',S.flat.mb(cx,cz));
+function building(x0,z0,x1,z1,h,o){o=o||{};const cx=(x0+x1)/2,cz=(z0+z1)/2;addAABB(x0,z0,x1,z1,h);const bd=o.noDoor?null:buildingDoor(x0,z0,x1,z1,h,o.kind||'apart',S.flat.mb(cx,cz));
+  if(bd&&!o.gable&&h>=7&&x1-x0>=8&&z1-z0>=8){ // toit accessible : cabane d'escalier dans un coin
+    const FLr=S.flat.mb(cx,cz),ax=x0+.8,az=z0+.8,bx2=x0+3,bz2=z0+3;FLr.box(ax,h,az,bx2,h+2.6,bz2,[.58,.57,.55],{ao:.85});FLr.box(ax-.1,h+2.6,az-.1,bx2+.1,h+2.8,bz2+.1,[.35,.35,.37],{ao:1});
+    FLr.box(bx2,h,az+.5,bx2+.06,h+2.2,bz2-.5,[.25,.22,.2],{ao:1});FLr.box(bx2+.02,h+2.25,az+.7,bx2+.08,h+2.45,bz2-.7,[.2,.75,.3],{ao:1});addAABB(ax,az,bx2,bz2,h+2.6);
+    bd.roof={x0,z0,x1,z1,h,b:bd,hx:bx2+.9,hz:(az+bz2)/2,hyaw:PI/2}}
   const kind=o.kind||'apart',tint=o.tint||[1,1,1],sh=o.shop?4.4:0,F=S[kind].mb(cx,cz),FL=S.flat.mb(cx,cz),sp=FSPEC[kind];
   let y0=0;
   if(sh){S.shop.mb(cx,cz).sides(x0,0,z0,x1,sh,z1,o.shopTint||[1,1,1],{nF:1,ao:.85,aoH:1.2,tile:FSPEC.shop.tw,uo:wint(0,400),vo:wint(0,400)});FL.box(x0-.25,sh,z0-.25,x1+.25,sh+.3,z1+.25,mulc(tint,.88),{ao:1});y0=sh+.3}
@@ -1769,6 +1773,9 @@ function buildInteriors(){
     shell(R,{out:[.3,.3,.32],trim:[.2,.2,.22],roof:[.25,.25,.27],inCb:o.cb,inCt:o.ct,tile:o.tile,floor:o.floor,du:1.3,dh:2.6,wins:[]});
     for(const u of[-4,4])for(let v=4;v<R.D-2;v+=6)lightPanel(R,u,v,2.4,1.2,[1,.98,.9]);
     R.type=type;R.label=INT_LABEL[type][0];INTS[type]=R;o.fill(R);
+    {const v=8,p=R.pt(o.hw-.9,v);R.box(R.I,o.hw-.14,v-.95,o.hw-.02,v+.95,.15,2.55,[.66,.68,.72]);R.box(R.I,o.hw-.16,v-.03,o.hw-.01,v+.03,.15,2.55,[.3,.3,.33]);
+     R.box(R.I,o.hw-.16,v-1.15,o.hw-.01,v-1.0,1.15,1.45,[.95,.78,.2]);R.box(R.I,o.hw-.17,v-.5,o.hw-.01,v+.5,2.6,2.85,[.1,.1,.12]);
+     POIS.push({id:'lift',x:p.x,z:p.z,r:1.7,prompt:'Ascenseur : monter sur le toit 🏙️',act:()=>goRoof(),y:1.2,l:-1})}
     const lp=R.pt(o.loot[0],o.loot[1]);POIS.push({id:'loot',x:lp.x,z:lp.z,r:1.8,prompt:'Fouiller (un peu d’argent ?)',act:()=>lootHere(),y:1.2,l:-1});
     return R};
   const W=[.45,.3,.18],Wd=[.3,.2,.12],B=[.12,.12,.14];
@@ -1798,8 +1805,14 @@ function lootHere(){const b=game.inside&&game.inside.b;if(!b){say('Rien à fouil
   const last=LOOTT.get(b.id);if(last!==undefined&&game.t-last<600){say('Déjà fouillé… reviens plus tard.',2);return}
   LOOTT.set(b.id,game.t);const R={appart:[20,120],bureau:[50,220],entrepot:[30,160],luxe:[150,500]}[b.type],m=rint(R[0],R[1]);
   game.money+=m;say('Tu trouves '+m+' $ !',2.2);sfx('cash')}
-function tpTo(x,z,yaw){P.x=x;P.z=z;P.y=groundH(x,z);P.vx=P.vz=P.vy=0;P.yaw=yaw;P.ground=true;CAM.yaw=yaw;CAM.free=0;CAM.curD=1}
-function enterBuilding(b){const R=INTS[b.type];if(!R||P.car)return;game.inside={b};const p=R.pt(0,2.2);tpTo(p.x,p.z,atan2(R.vx,R.vz));say(R.label,2)}
+function goRoof(){const b=game.inside&&game.inside.b,r=b&&b.roof;if(!r){say('Pas d’accès au toit dans ce bâtiment.',2);return}
+  game.inside=null;tpTo(r.hx,r.hz,r.hyaw);P.roof=r;P.y=r.h;sfx('door');say('🏙️ Sur le toit ! Idéal pour sniper · reviens à la petite porte verte pour redescendre',4)}
+function roofDown(){const r=P.roof;if(!r)return;const d=r.b.door;tpTo(d.x,d.z,d.yaw);sfx('door');say('De retour dans la rue',1.5)}
+const ROOF_POI={id:'roof',r:1.8,prompt:'Redescendre dans la rue',act:()=>roofDown(),y:0,l:-1};
+// sol du joueur : sur un toit, on reste sur le toit (barrière invisible au bord)
+function pGround(){let r=P.roof;if(r&&(P.x<r.x0-3||P.x>r.x1+3||P.z<r.z0-3||P.z>r.z1+3)){P.roof=null;r=null}if(r){P.x=clamp(P.x,r.x0+.45,r.x1-.45);P.z=clamp(P.z,r.z0+.45,r.z1-.45);return r.h}return groundH(P.x,P.z,P.y+.6)}
+function tpTo(x,z,yaw){P.roof=null;P.x=x;P.z=z;P.y=groundH(x,z);P.vx=P.vz=P.vy=0;P.yaw=yaw;P.ground=true;CAM.yaw=yaw;CAM.free=0;CAM.curD=1}
+function enterBuilding(b){const R=INTS[b.type];if(!R||P.car)return;game.inside={b};const p=R.pt(0,2.2);tpTo(p.x,p.z,atan2(R.vx,R.vz));say(R.label+(b.roof?' · un ascenseur mène au toit (porte grise)':''),2.6)}
 function indoorUpdate(){if(!game.inside)return;const R=INTS[game.inside.b.type];
   if(!R||P.car||P.dead){game.inside=null;return}
   if(!(P.x>INTZ.x0&&P.x<INTZ.x1&&P.z>INTZ.z0&&P.z<INTZ.z1)){game.inside=null;return} // réapparition ailleurs
@@ -3622,7 +3635,7 @@ function playerUpdate(dt){
   if(game.swap){swapStep(dt);return}
   P.busted=max(0,P.busted-dt*.5);
   if(P.ragdoll>0){P.ragdoll-=dt;P.fallT=min(1,P.fallT+dt*7);P.vx*=Math.exp(-2.5*dt);P.vz*=Math.exp(-2.5*dt);
-    P.vy-=15*dt;P.y+=P.vy*dt;const g=groundH(P.x,P.z,P.y+.6);if(P.y<=g){P.y=g;P.vy=0;P.ground=true}moveCollide(P,.38,dt);P.sp=0;return}
+    P.vy-=15*dt;P.y+=P.vy*dt;const g=pGround();if(P.y<=g){P.y=g;P.vy=0;P.ground=true}moveCollide(P,.38,dt);P.sp=0;return}
   P.fallT=max(0,P.fallT-dt*6);
   const sy=sin(CAM.yaw),cy=cos(CAM.yaw),mx=IN.sx,my=IN.sy,mag=min(1,hyp(mx,my));
   const wx=sy*my-cy*mx,wz=cy*my+sy*mx,wl=hyp(wx,wz)||1;
@@ -3637,7 +3650,7 @@ function playerUpdate(dt){
   if(aiming&&P.wpn>0)P.yaw+=angd(P.yaw,CAM.yaw)*min(1,dt*14);
   else if(mag>.05)P.yaw+=angd(P.yaw,atan2(wx,wz))*min(1,dt*13);
   if(IN.jump){IN.jump=false;if(P.ground&&!P.car){P.vy=5.6;P.ground=false;sfx('jump')}}
-  P.vy-=15*dt;P.y+=P.vy*dt;const g=groundH(P.x,P.z,P.y+.6);if(P.y<=g){P.y=g;P.vy=0;P.ground=true}else if(P.y>g+.05)P.ground=false;
+  P.vy-=15*dt;P.y+=P.vy*dt;const g=pGround();if(P.y<=g){P.y=g;P.vy=0;P.ground=true}else if(P.y>g+.05)P.ground=false;
   moveCollide(P,.38,dt);
   // pousse les piétons
   for(const p of peds){const dx=p.x-P.x,dz=p.z-P.z,d2=dx*dx+dz*dz;if(d2<.64&&p.state!=='dead'){const d=sqrt(d2)||.01;p.x+=dx/d*.04;p.z+=dz/d*.04;P.x-=dx/d*.02;P.z-=dz/d*.02}}
@@ -3697,7 +3710,7 @@ function playerDrive(dt){
   if(c.hp<=0||c.mode==='wreck'){exitCar(true)}}
 
 // ---------- mort / arrestation ----------
-function respawnAt(pos,fee,keep){
+function respawnAt(pos,fee,keep){P.roof=null;
   if(P.car){const c=P.car;P.car=null;c.mode='idle';c.keep=!!c.owned}
   P.x=pos.x;P.z=pos.z;P.y=groundH(pos.x,pos.z);P.vx=P.vz=P.vy=0;P.yaw=pos.yaw||0;P.hp=100;P.armor=0;P.dead=false;P.busted=0;P.fallT=0;P.ragdoll=0;P.invuln=3;P.ground=true;P.aim=0;P.punchT=0;
   game.bolo=null;game.money=max(0,game.money-fee);game.wanted=0;game.copKills=0;game.seenT=99;CAM.yaw=(pos.yaw||0)+PI;CAM.free=0;
@@ -3876,6 +3889,7 @@ function drawRockets(){
 function nearPOI(){
   if(P.car||P.dead||game.state!=='play')return null;
   let best=null,bd=1e9;
+  if(P.roof){const r=P.roof;ROOF_POI.x=r.hx;ROOF_POI.z=r.hz;return hyp(r.hx-P.x,r.hz-P.z)<1.8?ROOF_POI:null}
   for(const p of POIS){const d=hyp(p.x-P.x,p.z-P.z);if(d<p.r&&d<bd){bd=d;best=p}}
   return best}
 function poiPrompt(p){return typeof p.prompt==='function'?p.prompt():p.prompt}
@@ -5931,6 +5945,7 @@ const CLOUD_TXT={newer:'☁️ Une sauvegarde plus récente est en ligne : recha
 
 function savePos(){if(game.state!=='play'&&game.state!=='paused')return game.resumeSave||null;if(P.dead)return null;
   if(game.inside){const d=game.inside.b.door;return{x:d.x,z:d.z,yaw:d.yaw}}
+  if(P.roof){const d=P.roof.b.door;return{x:d.x,z:d.z,yaw:d.yaw}}
   if(P.x<-1000)return null;const c=P.car;
   if(c&&!c.s.air&&!c.s.boat)return{x:c.x,z:c.z,yaw:c.yaw,car:{t:c.type,col:c.col,plate:c.plate,flat:!!c.flat,own:!!c.owned}};
   if(c)return null;return{x:P.x,z:P.z,yaw:P.yaw}}
