@@ -326,7 +326,13 @@ a.lnk{color:#ffb703;text-decoration:none;font-size:16px}
 #mpTags{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
 #mpTags div{position:absolute;transform:translate(-50%,-100%);font:700 13px system-ui,sans-serif;color:#fff;text-shadow:0 1px 3px #000,0 0 6px #000;white-space:nowrap;text-align:center}
 #mpTags i{display:block;font-style:normal;background:#fff;color:#111;border-radius:10px;padding:2px 9px;margin-bottom:2px;text-shadow:none;font-weight:700}
-#qchat{position:fixed;right:70px;top:calc(60px + env(safe-area-inset-top));z-index:9;display:none;flex-direction:column;gap:6px}
+#qchat{position:fixed;right:70px;top:calc(60px + env(safe-area-inset-top));z-index:9;display:none;flex-direction:column;gap:6px;background:#0b0a1ef0;border:2px solid #ffb703;border-radius:10px;padding:10px;width:min(420px,80vw);box-sizing:border-box;max-height:70vh;overflow-y:auto;pointer-events:auto}
+input,textarea{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default}
+#qchat small{color:#c8c8e0;font:500 12px system-ui,sans-serif}.chrow{display:flex;gap:6px;align-items:center}.chrow span{flex:1;color:#fff;font:600 14px system-ui,sans-serif}
+#chatIn{flex:1;min-width:120px;width:100%;font:600 16px system-ui,sans-serif;padding:8px;border-radius:6px;border:2px solid #fff6;background:#0007;color:#fff}
+.chq{display:flex;flex-wrap:wrap;gap:6px}#qchat .chq button,#qchat .chrow button{padding:6px 10px;font-size:13px}
+#chatlog{position:fixed;left:12px;bottom:calc(46% + env(safe-area-inset-bottom));max-width:min(420px,60vw);z-index:4;pointer-events:none;font:600 14px/1.35 system-ui,sans-serif;color:#fff;text-shadow:0 1px 3px #000,0 0 6px #000;display:none}
+body.mp #chatlog{display:block}
 #qchat button{background:#0b0a1ee8;color:#fff;border:2px solid #ffb703;border-radius:8px;padding:8px 14px;font:600 15px system-ui,sans-serif;text-align:left;cursor:pointer}
 body.mp #bChat{display:flex}#bLock{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(276px + env(safe-area-inset-top))}body.mp.incar #bLock{display:flex}#bRob{display:none;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));width:96px;height:96px;font-size:34px;background:#2a7a2acc;border-color:#fff}body.canrob #bRob{display:flex}#bPlate{display:none;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom));width:90px;height:90px;font-size:30px;background:#3a4a6acc}body.canplate #bPlate{display:flex}#bPay{display:none;left:50%;transform:translateX(-50%);bottom:calc(250px + env(safe-area-inset-bottom));width:90px;height:90px;font-size:30px;background:#2a7a2acc}body.canpay #bPay{display:flex}
 #bG{display:none;right:calc(130px + env(safe-area-inset-right));bottom:calc(122px + env(safe-area-inset-bottom));width:70px;height:70px;font-size:26px}body.incar #bG{display:flex}body.inair #bG{display:none!important}#bVig{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(330px + env(safe-area-inset-top))}body.incop #bVig{display:flex}#bChat{display:none;right:calc(12px + env(safe-area-inset-right));top:calc(222px + env(safe-area-inset-top))}
@@ -360,7 +366,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <h1>VILLE<br><span>FOLLE</span></h1>
  <p>Une ville ouverte en 3D : vole des voitures, fais des missions, évite la police… ou affronte-la !</p>
  <p class="help"><b>Tablette</b> : joystick à gauche · glisse à droite pour tourner la caméra · boutons à droite<br>
- <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir à pied / freiner en voiture · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>Entrée</kbd> en voiture : tirer par la fenêtre · <kbd>B</kbd> braquer un commerce / payer un racket · <kbd>K</kbd> échanger tes plaques avec une voiture garée · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> messages rapides (multijoueur)</p>
+ <b>Clavier</b> : <kbd>WASD</kbd> bouger / conduire · <kbd>←↑↓→</kbd> caméra · <kbd>Maj gauche</kbd> courir à pied / freiner en voiture · <kbd>Espace</kbd> saut / frein à main (drift) · <kbd>Clic droit</kbd> ou <kbd>V</kbd> viser · <kbd>Entrée</kbd> ou <kbd>Maj droit</kbd> tirer · <kbd>X</kbd> recharger · <kbd>Entrée</kbd> en voiture : tirer par la fenêtre · <kbd>B</kbd> braquer un commerce / payer un racket · <kbd>K</kbd> échanger tes plaques avec une voiture garée · <kbd>J</kbd> mode justicier (en voiture de police) · bateaux amarrés à la plage et aux quais · <kbd>F</kbd> monter/descendre · <kbd>H</kbd> klaxon · <kbd>C</kbd> caméra · <kbd>R</kbd> radio · <kbd>Q</kbd> ou <kbd>1</kbd>–<kbd>5</kbd> armes · <kbd>F</kbd> acheter / entrer dans les boutiques · <kbd>M</kbd> grande carte (ou touche le radar) · <kbd>T</kbd> téléphone (faire apparaître tes voitures) · <kbd>Y</kbd> chat (multijoueur)</p>
  <div id="gen">Génération de la ville… 0 %</div>
  <div id="modes"><button class="btn" id="goStory" disabled>Histoire</button><button class="btn" id="go" disabled>Monde libre</button><button class="btn" id="goMulti" disabled>Multijoueur</button></div>
  <div><button class="btn g" id="profBtn">Compte / Profil</button> <button class="btn g" id="gfxBtn2">Graphismes</button></div>
@@ -386,14 +392,14 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <div id="profMsg"></div>
  <div class="row"><button class="btn" id="profBack">Fermer</button></div></div></div>
 <div class="ov" id="mp"><div class="pbox mpbox"><h1>MULTIJOUEUR</h1>
- <p>Tous les joueurs en ligne sont dans la même ville ! Choisis ton pseudo. ⚔️ Les joueurs peuvent se tirer dessus. Messages rapides uniquement (pas de chat libre).</p>
+ <p>Tous les joueurs en ligne sont dans la même ville ! Choisis ton pseudo. 💬 Chat avec Y (ou le bouton 💬) : ne donne jamais d’infos perso.</p>
  <div class="row"><input id="mpNick" maxlength="14" placeholder="Ton pseudo" autocomplete="off" spellcheck="false"><button class="btn g" id="mpDice">🎲 Au hasard</button></div>
  <div id="mpMsg"></div>
  <div class="row"><button class="btn" id="mpJoin">Jouer en ligne</button><button class="btn g" id="mpBack">Retour</button></div></div></div>
 <div id="cine"><div class="cbar t"></div><div class="cbar b"></div><div id="cfade"></div><div id="ctitle"></div><div id="ctap"></div><div id="csub"><b id="cwho"></b><span id="ctxt"></span></div><button id="cskip">Passer ⏭</button></div>
 <div id="dlg"><div class="dbox"><b id="dlgWho"></b><p id="dlgTxt"></p><button id="dlgNext">Suivant ▶</button></div></div>
 <div id="mpHud"></div><div id="mpTags"></div>
-<div id="qchat"></div>
+<div id="qchat"></div><div id="chatlog"></div>
 <div class="ov" id="pause"><div class="pbox"><canvas id="bigmap" width="700" height="631"></canvas>
  <div class="pside"><h1>PAUSE</h1><div class="mzrow"><button class="btn g" id="mzIn">🔍＋</button><button class="btn g" id="mzOut">🔍－</button><button class="btn g" id="mzMe">⌖ Moi</button></div><div id="pinfo"></div><div id="pleg"></div>
  <button class="btn" id="resume">Reprendre</button><button class="btn g" id="rsp">Réapparaître à l'hôpital</button><button class="btn g" id="pvpBtn" style="display:none">PvP</button><button class="btn g" id="gfxBtn">Graphismes</button><a class="btn g" href="index.html">Quitter</a></div></div></div>
@@ -4758,7 +4764,9 @@ function mpRecv(ev,d){
   if(ev==='kill'){if(typeof d.k==='string')mpOnKill(p,d);return}
   if(ev==='ride'){if(d.t===MP.id&&P.car)say('👤 '+pN(p)+' est monté dans ta voiture',2.5);p.ride=d.t===MP.id||MP.players.has(d.t)?d.t:null;return}
   if(ev==='unride'){if(p.ride===MP.id)say('👤 '+pN(p)+' est descendu',2);p.ride=null;return}
-  if(ev==='say'){const k=d.k|0;if(k>=0&&k<MP_MSGS.length){p.say=MP_MSGS[k];p.sayT=4.5}return}
+  if(ev==='say'){const k=d.k|0;if(k>=0&&k<MP_MSGS.length&&!CHAT.muted.has(p.id)&&!CHAT.bossMuted.has(p.id)){p.say=MP_MSGS[k];p.sayT=4.5;chatShow(pN(p),MP_MSGS[k])}return}
+  if(ev==='chat'){if(CHAT.muted.has(p.id)||CHAT.bossMuted.has(p.id))return;const t=chatClean(d.t);if(!t)return;p.say=t;p.sayT=5;chatShow((p.boss?'👑 ':'')+pN(p),t);return}
+  if(ev==='cmute'){if(!p.boss||typeof d.t!=='string')return;if(d.on)CHAT.bossMuted.add(d.t);else CHAT.bossMuted.delete(d.t);if(d.t===MP.id)say(d.on?'🔇 BIGBOSS t’a coupé le chat':'🔊 BIGBOSS t’a rendu la parole',3);return}
   if(ev==='pos'){const f=v=>(typeof v==='number'&&isFinite(v))?v:0;
     p.tx=clamp(f(d.x),-2000,SIZE+2100);p.tz=clamp(f(d.z),-2000,SIZE+2100);p.lock=!!d.l;p.ride=(typeof d.r==='string'&&d.r.length<=12)?d.r:null;p.ty=clamp(f(d.y),-5,60);p.tyaw=f(d.w);p.sp=clamp(f(d.s),0,1.2);p.wp=clamp(d.p|0,0,8);
     p.car=(typeof d.c==='string'&&VT[d.c])?d.c:null;p.col=(typeof d.k==='string'&&/^#[0-9a-fA-F]{6}$/.test(d.k))?d.k:'#cc2222';p.a=(d.a|0)%MP_ADJ.length;p.b=(d.b|0)%MP_ANI.length;
@@ -4824,9 +4832,39 @@ let _hudT=0;
 function mpHud(){if((_hudT++%20)!==0)return;const names=[(MP.nick||mpNameOf(MP.a,MP.b))+' (toi)'];for(const p of MP.players.values())names.push(pN(p));
   $('mpHud').innerHTML='<b>Ville en ligne</b> · '+PVP_TXT[MP.pvp]+' · '+names.length+' joueur'+(names.length>1?'s':'')+'<br>'+names.join('<br>')}
 // ---------- messages rapides ----------
+// ---------- chat écrit (filtré) ----------
+const CHAT={log:[],sent:[],muted:new Set(),bossMuted:new Set()};
+const BADW=['putain','pute','salope','salop','encul','connard','connasse','\\bcon\\b','\\bconne\\b','merde','\\bfdp\\b','\\bntm\\b','nique','batard','bâtard','\\bpd\\b','pédé','pede','tapette','\\btg\\b','ta gueule','fuck','shit','bitch','nigg','n[eé]gro','enfoir','\\bbite','couille','chatte','nazi','hitler','suicide','tue[ -]?toi','\\bsexe?\\b','porn','nude','\\bnue?s?\\b'];
+const BADRE=new RegExp('('+BADW.join('|')+')','gi');
+function chatClean(t){t=String(t||'').replace(/[\u200b-\u200f\u2060\ufeff<>]/g,'').replace(/\s+/g,' ').trim().slice(0,90);
+  t=t.replace(/\b(https?:\/\/|www\.)\S+/gi,'***').replace(/\S+\.(com|fr|net|org|io|gg|be|ch|ca|me|tv|xyz|ly|co|app)\b\S*/gi,'***')
+   .replace(/\S+@\S+/g,'***').replace(/@\w+/g,'***').replace(/(\d[\s.\-]?){5,}/g,'***')
+   .replace(/\b(snap(chat)?|insta(gram)?|tiktok|tik tok|discord|whats ?app|telegram|facebook|messenger|twitch|youtube)\b/gi,'***')
+   .replace(BADRE,'***');return t}
+function chatShow(who,text,mine){CHAT.log.push({who,text,t:performance.now(),mine});if(CHAT.log.length>40)CHAT.log.shift();chatRender()}
+function chatRender(){const el=$('chatlog');if(!el)return;const now=performance.now(),L=CHAT.log.filter(m=>now-m.t<20000).slice(-6);
+  el.innerHTML='';for(const m of L){const d=document.createElement('div');const b=document.createElement('b');b.textContent=m.who+' : ';b.style.color=m.mine?'#8fd45c':'#ffd166';d.appendChild(b);d.appendChild(document.createTextNode(m.text));el.appendChild(d)}}
+setInterval(chatRender,1000);
+function chatSend(raw){const txt=chatClean(raw);if(!txt||!MP.on)return false;
+  if(CHAT.bossMuted.has(MP.id)){say('🔇 BIGBOSS t’a coupé le chat',2);return false}
+  const now=Date.now();CHAT.sent=CHAT.sent.filter(t=>now-t<10000);if(CHAT.sent.length>=5||(CHAT.sent.length&&now-CHAT.sent[CHAT.sent.length-1]<1200)){say('Doucement avec le chat 😅',1.5);return false}
+  CHAT.sent.push(now);mpSend('chat',{i:MP.id,t:txt});chatShow('Toi',txt,true);return true}
 function qchatToggle(){const q=$('qchat');if(!MP.on)return;if(q.style.display==='flex'){q.style.display='none';return}
-  q.innerHTML='';MP_MSGS.forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{mpSend('say',{i:MP.id,k});q.style.display='none';say('Toi : '+t,1.8)};q.appendChild(b)});q.style.display='flex'}
-addEventListener('keydown',e=>{if(e.code==='KeyY'&&game.state==='play'&&MP.on&&!game.paused&&!game.shopOpen)qchatToggle()});
+  q.innerHTML='';
+  const row=document.createElement('div');row.className='chrow';const inp=document.createElement('input');inp.id='chatIn';inp.maxLength=90;inp.placeholder='Écris un message…';inp.autocomplete='off';
+  const go=document.createElement('button');go.textContent='Envoyer';const send=()=>{if(chatSend(inp.value)){inp.value='';q.style.display='none';inp.blur()}};go.onclick=send;
+  inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();send()}else if(e.key==='Escape'){q.style.display='none';inp.blur()}});
+  row.appendChild(inp);row.appendChild(go);q.appendChild(row);
+  const tip=document.createElement('small');tip.textContent='⚠️ Ne donne jamais ton nom, ton adresse, ton numéro ou tes réseaux. Liens, numéros et insultes sont masqués.';q.appendChild(tip);
+  const qm=document.createElement('div');qm.className='chq';MP_MSGS.forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>{mpSend('say',{i:MP.id,k});chatShow('Toi',t,true);q.style.display='none'};qm.appendChild(b)});q.appendChild(qm);
+  // joueurs : bloquer (pour soi) / couper pour tous (BIGBOSS)
+  if(MP.players.size){const h=document.createElement('small');h.textContent='Joueurs :';q.appendChild(h);
+    for(const p of MP.players.values()){const r=document.createElement('div');r.className='chrow';const n=document.createElement('span');n.textContent=(p.boss?'👑 ':'')+pN(p);r.appendChild(n);
+      const m=document.createElement('button');m.textContent=CHAT.muted.has(p.id)?'🔊 Débloquer':'🔇 Bloquer';m.onclick=()=>{if(CHAT.muted.has(p.id))CHAT.muted.delete(p.id);else CHAT.muted.add(p.id);q.style.display='none';qchatToggle()};r.appendChild(m);
+      if(isBoss()){const k=document.createElement('button');const on=CHAT.bossMuted.has(p.id);k.textContent=on?'👑 Rendre la parole':'👑 Couper pour tous';k.onclick=()=>{if(on)CHAT.bossMuted.delete(p.id);else CHAT.bossMuted.add(p.id);mpSend('cmute',{i:MP.id,t:p.id,on:!on});q.style.display='none';qchatToggle()};r.appendChild(k)}
+      q.appendChild(r)}}
+  q.style.display='flex';setTimeout(()=>{try{inp.focus()}catch(e){}},30)}
+addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT'&&e.target.offsetParent!==null)return;if((e.code==='KeyY'||e.code==='KeyU')&&game.state==='play'&&MP.on&&!game.paused&&!game.shopOpen){e.preventDefault();qchatToggle()}});
 $('bChat').addEventListener('pointerdown',e=>{e.preventDefault();qchatToggle()});
 $('bLock').addEventListener('pointerdown',e=>{e.preventDefault();mpToggleLock()});
 addEventListener('keydown',e=>{if(e.code==='KeyL'&&game.state==='play'&&MP.on&&P.car&&!game.paused&&!game.shopOpen)mpToggleLock()});
@@ -5292,6 +5330,7 @@ const KB={};const BT={};
 let uiTouchActive=false;
 function setTouchUI(){if(!uiTouchActive){uiTouchActive=true;document.body.classList.add('touchui');IN.touch=true}}
 addEventListener('keydown',e=>{
+  if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')&&e.target.offsetParent!==null)return;
   if(e.repeat&&!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.code))return;
   auInit();KB[e.code]=true;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Tab'].includes(e.code))e.preventDefault();
@@ -5635,7 +5674,7 @@ addEventListener('error',e=>{reportErr(e.error||e.message)});
 
 // ---------- titre / démarrage ----------
 function titleCam(dt){const a=game.t*.07,r=70;CAM.x=SPAWN.x+cos(a)*r;CAM.z=SPAWN.z+sin(a)*r;CAM.y=30;CAM.tx=SPAWN.x;CAM.ty=7;CAM.tz=SPAWN.z;CAM.fov=1.0}
-function startGame(mode){
+function startGame(mode){try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur()}catch(e){}
   if(game.state!=='title'||$('go').disabled)return;
   game.mode=(typeof mode==='string')?mode:'free';setupStory();
   auInit();game.state='play';$('title').style.display='none';document.body.classList.add('play');
