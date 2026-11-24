@@ -258,6 +258,8 @@ body.play #hud{display:block}
 #wwC b{font:700 min(4.4vmin,26px) Oswald,Impact,sans-serif;letter-spacing:1px}#wwC small{font:600 min(2.8vmin,15px) sans-serif;opacity:.85}#wwC em{font-style:normal;font-size:min(3vmin,16px)}
 #wwC button{margin-top:4px;background:#ffb703;color:#111;border:0;border-radius:20px;padding:6px 12px;font:600 min(2.6vmin,13px) Oswald,Impact,sans-serif;cursor:pointer}
 #wwHelp{color:#fff;opacity:.7;font:600 13px sans-serif;margin-top:8px;text-shadow:0 1px 2px #000}
+#pvpChip{display:none;position:fixed;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top));z-index:6;pointer-events:auto;background:#000b;color:#fff;border:2px solid #ffb703;border-radius:20px;padding:6px 14px;font:600 14px Oswald,Impact,sans-serif;cursor:pointer}
+body.mp.boss.play #pvpChip{display:block}
 #cross{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #000;display:none}
 #cross::after{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;background:#f33;border-radius:50%}
 #big{position:absolute;left:0;right:0;top:34%;text-align:center;font-size:min(11vw,86px);font-weight:700;letter-spacing:4px;text-transform:uppercase;display:none;text-shadow:0 6px 0 #000,0 0 30px #000}
@@ -418,7 +420,7 @@ body.cine #hud,body.cine #touch,body.cine #hitf,body.cine #dlg,body.cine #mpHud,
  <div class="row"><button class="btn" id="mpJoin">Jouer en ligne</button><button class="btn g" id="mpBack">Retour</button></div></div></div>
 <div id="cine"><div class="cbar t"></div><div class="cbar b"></div><div id="cfade"></div><div id="ctitle"></div><div id="ctap"></div><div id="csub"><b id="cwho"></b><span id="ctxt"></span></div><button id="cskip">Passer ⏭</button></div>
 <div id="dlg"><div class="dbox"><b id="dlgWho"></b><p id="dlgTxt"></p><button id="dlgNext">Suivant ▶</button></div></div>
-<div id="mpHud"></div><div id="mpTags"></div>
+<div id="mpHud"></div><button id="pvpChip"></button><div id="mpTags"></div>
 <div id="qchat"></div><div id="chatlog"></div><div id="wwheel"><div id="wwRing"><div id="wwC"></div></div><div id="wwHelp">Choisis ton arme · relâche Tab ou clique</div></div><div id="scopeO"><i class="sv"></i><i class="sh"></i><b class="md"></b><div id="scopeZ"></div><button id="bZoom">🔍 Zoom</button></div>
 <div class="ov" id="pause"><div class="pbox"><canvas id="bigmap" width="700" height="631"></canvas>
  <div class="pside"><h1>PAUSE</h1><div class="mzrow"><button class="btn g" id="mzIn">🔍＋</button><button class="btn g" id="mzOut">🔍－</button><button class="btn g" id="mzMe">⌖ Moi</button></div><div id="pinfo"></div><div id="pleg"></div>
@@ -3571,11 +3573,11 @@ const ROB_COOL=60,ROBX=[];
 function setupRobbables(){ROBX.length=0;const near=(x,z,r)=>{let b=null,bd=r;for(const a of actors){const d=hyp(a.x-x,a.z-z);if(d<bd){bd=d;b=a}}return b};
   const DEF={gun:['Armurerie Ammu-Folle',1200,'gun'],garage:['Concessionnaire Auto Folle',1500,'garage'],bar:['Bar du Néon',450,'bar'],salon:['Coiffeur',350,'style'],mode:['Mode Folle',650,'style'],tune:['Garage Turbo',800,'tune']};
   for(const q of POIS){const d=DEF[q.id];if(!d)continue;const a=near(q.x,q.z,9);if(!a)continue;ROBX.push({name:d[0],cash:d[1],kind:d[2],R:placeAt(a.x,a.z),cashier:a})}
-  for(const b of BANKS)ROBX.push({name:b.name,cash:2500,kind:'bank',R:b.R,cashier:b.tellers[1]});
+  for(const b of BANKS)ROBX.push({name:b.name,cash:7500,kind:'bank',R:b.R,cashier:b.tellers[1]});
   for(const g of GAS_CASH)ROBX.push({name:'Station-service',cash:450,kind:'gas',R:null,cashier:g.a})}
 const robList=()=>STORES.concat(ROBX);
-function robStore(){if(P.car||P.dead||game.mission||game.rob||game.steal||game.state!=='play')return null;
-  for(const s of robList()){if(s.R&&!s.R.inside(P.x,P.z,0))continue;const cl=s.cashier;if(cl&&hyp(cl.x-P.x,cl.z-P.z)<(s.R?7.5:5))return s}return null}
+function robStore(){if(P.car||P.dead||game.rob||game.steal||game.state!=='play')return null;
+  for(const s of robList()){const cl=s.cashier;if(!cl)continue;if(s.R){if(s.R.inside(P.x,P.z,0))return s;continue}if(hyp(cl.x-P.x,cl.z-P.z)<5)return s}return null}
 function robWait(s){return s.robT===undefined?0:Math.max(0,Math.ceil(ROB_COOL-(game.t-s.robT)))}
 function startRob(){const s=robStore();if(!s)return;
   if(P.biz.includes(STORES.indexOf(s))){say('C’est ton propre commerce ! 😅',2);return}
@@ -4938,7 +4940,7 @@ const PVP_TXT={all:'⚔️ PvP : tout le monde',boss:'👑 PvP : BIGBOSS seuleme
 function isBoss(){const a=ACC();return!!(a&&a.p.toLowerCase()==='bigboss'&&CLOUD.pulled&&CLOUD.st!=='badlogin')}
 function mpCanHurt(){return MP.pvp==='all'||(MP.pvp==='boss'&&isBoss())}
 function mpSetPvp(m){if(!isBoss())return;MP.pvp=m;MP.pvpT=Date.now();mpSend('pvp',{i:MP.id,m,ts:MP.pvpT});say(PVP_TXT[m],2.5);pvpLabel()}
-function pvpLabel(){const b=document.getElementById('pvpBtn');if(b){b.style.display=MP.on&&isBoss()?'':'none';b.textContent=PVP_TXT[MP.pvp]}}
+function pvpLabel(){const bo=MP.on&&isBoss(),b=document.getElementById('pvpBtn');document.body.classList.toggle('boss',bo);if(b){b.style.display=bo?'':'none';b.textContent=PVP_TXT[MP.pvp]}const c=document.getElementById('pvpChip');if(c)c.textContent=PVP_TXT[MP.pvp]+' · changer'}
 function mpHit(p,d,zone){if(!MP.on||!p||d<=0)return;if(!mpCanHurt()){if(!game.pvpMsgT||game.t-game.pvpMsgT>5){game.pvpMsgT=game.t;say(MP.pvp==='off'?'🕊️ Le PvP est désactivé par BIGBOSS':'👑 Seul BIGBOSS peut blesser les joueurs',2)}return}d=Math.min(300,Math.round(d));p.flash=.3;mpSend('hit',{i:MP.id,t:p.id,d,z:zone||'torso'});
   if(!game.hmT||game.t-game.hmT>.15){game.hmT=game.t;sfx('hit')}}
 function mpOnHit(p,d){if(!(MP.pvp==='all'||(MP.pvp==='boss'&&p.boss)))return;const dmg=clamp(d.d|0,0,300);if(P.dead||game.state!=='play'||P.x<-1000)return;const was=P.dead;
@@ -5034,7 +5036,7 @@ $('mpJoin').onclick=()=>{const code=MP_ROOM,nick=mpCleanName($('mpNick').value);
   $('mpMsg').textContent='Connexion à la ville en ligne…';$('mpJoin').disabled=true;
   mpConnect(code,ok=>{$('mpJoin').disabled=false;
     if(!ok){$('mpMsg').textContent='Connexion impossible pour le moment (réseau ?). Tu peux jouer en solo.';try{MP.ws&&MP.ws.close()}catch(e){}MP.ws=null;return}
-    MP.on=true;MP.onClose=()=>{if(MP.on){MP.on=false;say('Connexion multijoueur perdue — tu continues en solo.',4);document.body.classList.remove('mp');MP.players.clear()}};
+    MP.on=true;if(ACC()&&!CLOUD.pulled)vfCloudPull().then(pvpLabel);MP.onClose=()=>{if(MP.on){MP.on=false;say('Connexion multijoueur perdue — tu continues en solo.',4);document.body.classList.remove('mp');MP.players.clear()}};
     $('mp').style.display='none';document.body.classList.add('mp');startGame('multi');mpSend('hi',{i:MP.id,a:MP.a,b:MP.b,n:MP.nick})})};
 $('goMulti').onclick=()=>{if($('goMulti').disabled)return;$('title').style.display='none';$('mp').style.display='flex';let n='';try{n=localStorage.getItem('vf-nick')||''}catch(e){}{const a=ACC();if(a)n=a.p}if(n)$('mpNick').value=mpCleanName(n);else mpRandomName()};
 
@@ -5460,6 +5462,7 @@ function drawRadar(){
   const rgb=c=>'rgb('+(c[0]*255|0)+','+(c[1]*255|0)+','+(c[2]*255|0)+')';
   {let nm=null,nd=1e9;for(const m of markers){if(m.cool>0||game.mission)continue;blip(m.x,m.z,rgb(m.c),7,false);const d=hyp(m.x-P.x,m.z-P.z);if(d<nd){nd=d;nm=m}}if(nm)blip(nm.x,nm.z,rgb(nm.c),7,true)}
   for(const g of GUIDES)blip(g.x,g.z,rgb(g.c),5.5,true);
+  for(const b of BANKS)blip(b.door.x,b.door.z,'#16a34a',6,false);
   for(const s of GASST)blip(s.x,s.z,'#f2a33a',5,false);
   for(const s of STYLEST)blip(s.x,s.z,'#d26ad1',5,false);
   if(wantedLevel()>0&&game.lastSeen&&game.seenT>1.5){const L=wantedLevel(),fl=(performance.now()/400|0)%2;g.save();g.beginPath();g.arc((game.lastSeen.x-P.x)*k,(game.lastSeen.z-P.z)*k,searchR(L)*k,0,TAU);g.fillStyle=fl?'#ff333333':'#3366ff33';g.fill();g.strokeStyle=fl?'#ff4444aa':'#4477ffaa';g.lineWidth=2;g.stroke();g.restore()}
@@ -5622,6 +5625,8 @@ function drawBigMap(){
   if(wantedLevel()>0&&game.lastSeen){const fl=(performance.now()/400|0)%2,R=searchR(wantedLevel());g.save();g.beginPath();g.arc(game.lastSeen.x*k,game.lastSeen.z*k,R*k,0,TAU);g.fillStyle=game.seenT>1.5?(fl?'#ff333340':'#3366ff40'):'#ff333355';g.fill();g.lineWidth=3;g.strokeStyle=fl?'#ff4444':'#4477ff';g.stroke();
     g.font='bold 13px Oswald,Impact,sans-serif';g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000';g.fillStyle='#fff';const ty=(game.lastSeen.z-R)*k-6;const tt=game.seenT>1.5?'ZONE DE RECHERCHE':'LA POLICE TE VOIT';g.strokeText(tt,game.lastSeen.x*k,ty);g.fillText(tt,game.lastSeen.x*k,ty);g.restore()}
   for(const r of RESTOS)dot(r.door.x,r.door.z,'#ff7a3d',10,'R',false);
+  for(const b of BANKS){const s=ROBX.find(r=>r.kind==='bank'&&r.R===b.R),w=s&&s.robT!==undefined&&game.t-s.robT<ROB_COOL;dot(b.door.x,b.door.z,w?'#777':'#16a34a',14,'$$',w);
+    g.save();g.font='bold 12px Oswald,Impact,sans-serif';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#000';g.fillStyle='#b7ffc9';g.strokeText('🏦 '+b.name,b.door.x*k,b.door.z*k+26);g.fillText('🏦 '+b.name,b.door.x*k,b.door.z*k+26);g.restore()}
   for(const t of TURFS){g.save();g.globalAlpha=.25;g.fillStyle=t.g.c;g.beginPath();g.arc(t.x*k,t.z*k,40*k,0,TAU);g.fill();g.restore();dot(t.x,t.z,t.g.c,8,'☠',false)}
   dot(HOSP.x,HOSP.z,'#e33',11,'+',false);dot(POLS.x,POLS.z,'#3a6ae0',11,'★',false);
   for(const t in P.garage){const c=OWN[t];if(c&&cars.includes(c)&&c!==P.car)dot(c.x,c.z,'#40e0ff',7,'',false)}
@@ -5654,7 +5659,7 @@ $('fpsBtn').addEventListener('click',()=>{FPS_ON=!FPS_ON;try{localStorage.setIte
 $('bZoom').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();snZoom((P.snz|0)>=snMax()?-99:1)});
 addEventListener('wheel',e=>{if(CAM.fps&&WEAPONS[P.wpn]&&WEAPONS[P.wpn].sniper&&game.state==='play'){e.preventDefault();snZoom(e.deltaY>0?-1:1)}},{passive:false});
 addEventListener('keydown',e=>{if(!CAM.fps||!WEAPONS[P.wpn]||!WEAPONS[P.wpn].sniper)return;if(e.code==='Equal'||e.code==='NumpadAdd'||e.code==='BracketRight')snZoom(1);else if(e.code==='Minus'||e.code==='NumpadSubtract'||e.code==='BracketLeft')snZoom(-1)});
-$('gfxBtn').addEventListener('click',gfxToggle);$('pvpBtn').addEventListener('click',()=>{const o=['boss','all','off'];mpSetPvp(o[(o.indexOf(MP.pvp)+1)%3])});$('gfxBtn2').addEventListener('click',gfxToggle);gfxLabel();
+$('gfxBtn').addEventListener('click',gfxToggle);$('pvpBtn').addEventListener('click',()=>{const o=['boss','all','off'];mpSetPvp(o[(o.indexOf(MP.pvp)+1)%3])});$('pvpChip').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const o=['boss','all','off'];mpSetPvp(o[(o.indexOf(MP.pvp)+1)%3])});setInterval(pvpLabel,1500);$('gfxBtn2').addEventListener('click',gfxToggle);gfxLabel();
 $('mis').addEventListener('click',()=>{if(!game.mission)openShop('missions')});
 // lieux sur lesquels le point de la carte « s'aimante »
 function mapSnapTargets(){const L=[],add=(x,z,name)=>{if(isFinite(x)&&isFinite(z))L.push({x,z,name})};
