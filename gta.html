@@ -1885,8 +1885,25 @@ function buildBumps(){const R=mulb(1717);
     const n=8,F=S.flat.mb(x,z);for(let j=0;j<n;j++){const t0=j/n,t1=(j+1)/n,col=(j%2)?[.95,.8,.1]:[.12,.12,.12];
       if(ax){const za=b.z0+(b.z1-b.z0)*t0,zb=b.z0+(b.z1-b.z0)*t1;for(let q=0;q<6;q++){const u0=-1.6+3.2*q/6,u1=-1.6+3.2*(q+1)/6;F.quad([x+u0,bumpH(x+u0,z)+.01,za],[x+u1,bumpH(x+u1,z)+.01,za],[x+u1,bumpH(x+u1,z)+.01,zb],[x+u0,bumpH(x+u0,z)+.01,zb],[0,1,0],col,col)}}
       else{const xa=b.x0+(b.x1-b.x0)*t0,xb=b.x0+(b.x1-b.x0)*t1;for(let q=0;q<6;q++){const u0=-1.6+3.2*q/6,u1=-1.6+3.2*(q+1)/6;F.quad([xa,bumpH(x,z+u1)+.01,z+u1],[xb,bumpH(x,z+u1)+.01,z+u1],[xb,bumpH(x,z+u0)+.01,z+u0],[xa,bumpH(x,z+u0)+.01,z+u0],[0,1,0],col,col)}}}}}
+// ---------- appartements à acheter ----------
+const APTS=[];
+function aptsInit(){const C=BLDS.filter(b=>(b.type==='appart'||b.type==='luxe')&&b.door.x>20&&b.door.z>20&&b.door.x<SIZE-20&&b.door.z<SIZE-20);if(!C.length)return;
+  const T=[['Studio',25000],['Appartement',60000],['Loft',120000],['Penthouse',250000]],pick2=[];
+  let first=C.reduce((a,b)=>hyp(b.door.x-SPAWN.x,b.door.z-SPAWN.z)<hyp(a.door.x-SPAWN.x,a.door.z-SPAWN.z)?b:a);pick2.push(first);
+  while(pick2.length<4){let best=null,bd=-1;const pool=pick2.length===3?C.filter(b=>b.type==='luxe').concat(C):C;for(const b of pool){if(pick2.includes(b))continue;const d=min(...pick2.map(q=>hyp(q.door.x-b.door.x,q.door.z-b.door.z)));if(d>bd){bd=d;best=b}if(pick2.length===3&&b.type==='luxe'&&d>250){best=b;break}}if(!best)break;pick2.push(best)}
+  pick2.forEach((b,i)=>{const d=b.door,x=d.x+cos(d.yaw)*2.8,z=d.z-sin(d.yaw)*2.8,a={id:i,b,name:T[i][0],price:T[i][1],x,z,yaw:d.yaw};APTS.push(a);
+    POIS.push({id:'apt',x,z,r:1.7,y:0,l:-1,prompt:()=>P.homes.includes(a.id)?'Entrer chez toi 🏠 (dormir + sauvegarder)':'Acheter : '+a.name+' · '+fmt$(a.price),act:()=>aptAct(a)})})}
+function aptAct(a){if(wantedLevel()>0){refuseWanted();return}
+  if(P.homes.includes(a.id)){P.hp=100;P.home=a.id;const night=TIME>20||TIME<6;if(night)TIME=8;saveGame();if(ACC())vfPush();sfx('win');
+    bigMsg('🏠 Chez toi','<small>'+(night?'Tu as dormi jusqu’au matin · ':'')+'vie au max · partie sauvegardée</small>',3,'#ffd84a');return}
+  if(game.money<a.price){say(a.name+' : '+fmt$(a.price)+' (pas assez d’argent)',2.5);sfx('fail');return}
+  if(!confirm('Acheter '+a.name+' pour '+fmt$(a.price)+' ?'))return;
+  game.money-=a.price;P.homes.push(a.id);P.home=a.id;sfx('cash');sfx('win');bigMsg('🏠 Nouveau chez-toi !','<small>'+a.name+' · dors ici pour te soigner et sauvegarder · Téléphone : taxi pour rentrer</small>',3.6,'#ffd84a');saveGame()}
+function homeApt(){return APTS.find(a=>a.id===P.home)||APTS.find(a=>P.homes.includes(a.id))}
+function homeTaxi(){const a=homeApt();if(!a)return;if(wantedLevel()>0){refuseWanted();return}if(P.car){say('Descends de ta voiture pour prendre le taxi.',2);return}
+  if(game.money<100){say('Taxi : 100 $ (pas assez d’argent)',2);sfx('fail');return}game.money-=100;closeShop();game.inside=null;tpTo(a.x+sin(a.yaw)*1.5,a.z+cos(a.yaw)*1.5,a.yaw+PI);say('🚕 Le taxi te dépose chez toi (−100 $)',2.5)}
 function worldGenFinish(){
-  roadsGen();buildInteriors();buildDecks();buildBumps();setTimeout(setupRobbables,0);
+  roadsGen();buildInteriors();aptsInit();buildDecks();buildBumps();setTimeout(setupRobbables,0);
   {const EE=SIZE+2000,ES=SIZE+2000,EN=-1900; // bout du monde (loin) ; à l'ouest, la mer après la plage
     addAABB(-132,EN-60,-72,ES+60,50).water=true;addAABB(-132,EN-60,EE+60,EN,50);
     addAABB(EE,EN-60,EE+60,ES+60,50);addAABB(-132,ES,EE+60,ES+60,50)}
@@ -3002,7 +3019,7 @@ const WEAPONS=[{n:'Poings',dmg:0,rate:0,ammo:0},
   {n:'Minigun',mag:200,rl:3.2,dmg:11,rate:20,spread:.055,tr:1,price:25000,pack:200,packPrice:1500,max:1000,info:'Une pluie de balles'}];
 const NW=WEAPONS.length;
 P.clip=[0,0,0,0,0,0,0,0,0];P.reloadT=0;P.pkgs=[];P.biz=[];P.up=[null,{},{},{},{},{},{},{},{}];P.tune={eng:0,arm:0,brk:0};
-P.acc=[null,{},{},{},{},{},{},{},{}];P.snz=0;
+P.acc=[null,{},{},{},{},{},{},{},{}];P.snz=0;P.homes=[];
 const ACCS={sil:['🔇 Silencieux','tirs discrets : les passants et la police entendent beaucoup moins',1800],las:['🔴 Viseur laser','point rouge + tir 45 % plus précis',900],
   lamp:['🔦 Lampe torche','éclaire devant toi quand tu vises (la nuit)',400],grip:['✊ Poignée avant','moins de recul, tir 30 % plus précis',700],scope:['🔭 Lunette x4','zoom quand tu vises',2500]};
 const accOK=(i,k)=>{const A=ACCP[i];if(!A)return false;return k==='sil'?!!A.m:k==='las'||k==='lamp'?!!A.l:k==='grip'?!!A.g:k==='scope'?!!A.s:false};
@@ -3922,6 +3939,7 @@ function heliUpdate(dt){const L=wantedLevel(),want=game.state!=='play'||P.dead?0
     h.shootT-=dt;if(L>=4&&sees&&h.shootT<=0&&!P.dead){h.shootT=rnd(.8,1.5);const ox=h.x,oy=h.y+.8,oz=h.z,ex=tg.x+rnd(-1.6,1.6),ey=(tg.y||0)+1+rnd(-.6,.6),ez=tg.z+rnd(-1.6,1.6);
       tracers.push({a:[ox,oy,oz],b:[ex,ey,ez],t:0});gunSound(ox,oz,.8);if(Math.random()<.32){if(P.car)hurtCar(P.car,45);else hurtPlayer(9)}}}}
 function heliSeesAny(){for(const h of HELIS)if(heliSees(h))return true;return false}
+function drawApts(){const t=gtime.t;for(const a of APTS){if(abs(a.x-CAM.x)>90||abs(a.z-CAM.z)>90)continue;const own=P.homes.includes(a.id);bGlow.bill(a.x,2.4+sin(t*2)*.1,a.z,.85,own?[1,.85,.3,.9]:[.3,1,.45,.85])}}
 function drawHelis(){const night=ENV.night>.3,t=gtime.t;
   for(const h of HELIS){if(!farOK(h.x,h.y+1,h.z,8,700))continue;mtrs(_M,h.x,h.y,h.z,h.yaw,h.pitch,h.roll);drawMesh(HELIMESH,h.flash>0?wreckMat:detailMat,_M);
     const lp=(lx,ly,lz)=>[_M[0]*lx+_M[4]*ly+_M[8]*lz+_M[12],_M[1]*lx+_M[5]*ly+_M[9]*lz+_M[13],_M[2]*lx+_M[6]*ly+_M[10]*lz+_M[14]];
@@ -4108,6 +4126,7 @@ function shopRender(){
         '<div class="bt2"><button data-a="tune" data-t="'+k2+'"'+(l>=3||game.money<T[3][l]?' disabled':'')+'>'+(l>=3?'Niveau max ✓':'Installer niveau '+(l+1)+' · '+fmt$(T[3][l]))+'</button></div></div>'}h+=custRender()}
   else if(k==='missions')h=missionRender();
   else if(k==='phone'){
+    if(homeApt())h+='<div class="it"><div class="tx"><b>🏠 Rentrer chez toi</b><small>'+homeApt().name+' · un taxi te dépose devant ta porte</small></div><div class="bt2"><button data-a="hometaxi"'+(game.money<100?' disabled':'')+'>Taxi · 100 $</button></div></div>';
     h+='<div class="it"><div class="tx"><b>🏢 Immobilier</b><small>Rachète des commerces qui te rapportent de l’argent.</small></div><div class="bt2"><button data-a="biz">Voir les commerces</button></div></div>';
     const owned=SHOPCARS.filter(t=>P.garage[t]);
     if(!owned.length)h+='<div class="it"><div class="tx"><b>Aucune voiture</b><small>Achète une voiture chez AUTO FOLLE (le $ sur la carte) : ensuite tu pourras la faire venir près de toi, où que tu sois, contre un petit prix.</small></div></div>';
@@ -4132,6 +4151,7 @@ $('shop').addEventListener('click',e=>{
   if(t.id==='shClose'){closeShop();return}
   const a=t.dataset.a,i=+t.dataset.i,ty=t.dataset.t;
   if(t.disabled)return;
+  if(a==='hometaxi'){homeTaxi();return}
   if(a==='biz'){game.shopOpen='biz';shopRender();return}
   if(a==='buybiz'){const s2=STORES[i],pr=bizPrice(s2);if(!s2||P.biz.includes(i)||game.money<pr){sfx('fail');return}game.money-=pr;P.biz.push(i);shopMsg(s2.name+' est à toi ! +'+fmt$(bizIncome(s2))+' toutes les 3 minutes');sfx('cash');saveGame();shopRender();return}
   if(a==='acc'){if(!accOK(i,ty))return;const pr=accPrice(i,ty);if(hasAcc(i,ty)||game.money<pr){sfx('fail');return}game.money-=pr;(P.acc[i]=P.acc[i]||{})[ty]=1;shopMsg(WEAPONS[i].n+' : '+accName(i,ty)+' installé !');sfx('cash');shopRender();saveGame();return}
@@ -5599,6 +5619,7 @@ function drawRadar(){
   {let nm=null,nd=1e9;for(const m of markers){if(m.cool>0||game.mission)continue;blip(m.x,m.z,rgb(m.c),7,false);const d=hyp(m.x-P.x,m.z-P.z);if(d<nd){nd=d;nm=m}}if(nm)blip(nm.x,nm.z,rgb(nm.c),7,true)}
   for(const g of GUIDES)blip(g.x,g.z,rgb(g.c),5.5,true);
   for(const b of BANKS)blip(b.door.x,b.door.z,'#16a34a',6,false);
+  for(const a of APTS)if(P.homes.includes(a.id))blip(a.x,a.z,'#ffd84a',6,true);
   for(const h of HELIS)if(!h.down)blip(h.x,h.z,(floor(gtime.t*4)%2)?'#ff3b30':'#3b82ff',6,true);
   if(MP.on)for(const p of MP.players.values())if(p.x>-1000)blip(p.x,p.z,p.boss?'#ffd000':'#ff4fd8',5.5,true);
   for(const s of GASST)blip(s.x,s.z,'#f2a33a',5,false);
@@ -5764,6 +5785,7 @@ function drawBigMap(){
   if(wantedLevel()>0&&game.lastSeen){const fl=(performance.now()/400|0)%2,R=searchR(wantedLevel());g.save();g.beginPath();g.arc(game.lastSeen.x*k,game.lastSeen.z*k,R*k,0,TAU);g.fillStyle=game.seenT>1.5?(fl?'#ff333340':'#3366ff40'):'#ff333355';g.fill();g.lineWidth=3;g.strokeStyle=fl?'#ff4444':'#4477ff';g.stroke();
     g.font='bold 13px Oswald,Impact,sans-serif';g.textAlign='center';g.lineWidth=4;g.strokeStyle='#000';g.fillStyle='#fff';const ty=(game.lastSeen.z-R)*k-6;const tt=game.seenT>1.5?'ZONE DE RECHERCHE':'LA POLICE TE VOIT';g.strokeText(tt,game.lastSeen.x*k,ty);g.fillText(tt,game.lastSeen.x*k,ty);g.restore()}
   for(const r of RESTOS)dot(r.door.x,r.door.z,'#ff7a3d',10,'R',false);
+  for(const a of APTS){const own=P.homes.includes(a.id);dot(a.x,a.z,own?'#ffd84a':'#5f6b5f',own?13:9,own?'🏠':'H',false);if(!own&&MAPV.z>=1.6){g.save();g.font='bold 11px Oswald,Impact,sans-serif';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#000';g.fillStyle='#ddd';const t=a.name+' '+fmt$(a.price);g.strokeText(t,a.x*k,a.z*k+20);g.fillText(t,a.x*k,a.z*k+20);g.restore()}}
   for(const b of BANKS){const s=ROBX.find(r=>r.kind==='bank'&&r.R===b.R),w=s&&s.robT!==undefined&&game.t-s.robT<ROB_COOL;dot(b.door.x,b.door.z,w?'#777':'#16a34a',14,'$$',w);
     g.save();g.font='bold 12px Oswald,Impact,sans-serif';g.textAlign='center';g.lineWidth=3;g.strokeStyle='#000';g.fillStyle='#b7ffc9';g.strokeText('🏦 '+b.name,b.door.x*k,b.door.z*k+26);g.fillText('🏦 '+b.name,b.door.x*k,b.door.z*k+26);g.restore()}
   for(const t of TURFS){g.save();g.globalAlpha=.25;g.fillStyle=t.g.c;g.beginPath();g.arc(t.x*k,t.z*k,40*k,0,TAU);g.fill();g.restore();dot(t.x,t.z,t.g.c,8,'☠',false)}
@@ -6026,7 +6048,7 @@ function render(){
   const pp=gfxOn();if(pp)shadowPass();else SHD.on=false;shadowBind();if(pp)gl.bindFramebuffer(gl.FRAMEBUFFER,PP.drawF);
   beginFrame(CAM.x+shx*(CAM.fps?.4:1),CAM.y+shy*(CAM.fps?.4:1),CAM.z+shz*(CAM.fps?.4:1),CAM.tx,CAM.ty,CAM.tz,CAM.fov,cvs.width/cvs.height,CAM.fps?.12:.25);
   drawSky(gtime.t);drawWorld();
-  for(const c of cars)drawCar(c);drawHelis();
+  for(const c of cars)drawCar(c);drawHelis();drawApts();
   if(MP.on)mpDrawCars();
   drawPickups();drawPeds();drawPlaces();drawMarkers();drawLights();drawTracers();drawRockets();drawBombs();drawLaser();
   bShadow.flush();bPlain.flush();drawWorldTransparent();bGlow.flush();bLet.flush();
@@ -6136,7 +6158,7 @@ addEventListener('visibilitychange',()=>{if(document.hidden&&game.state!=='title
 addEventListener('pagehide',()=>{if(game.state!=='title')saveGame()});
 // « valeur » d'une sauvegarde (pour ne pas écraser une partie riche par une vide)
 function saveScore(o){if(!o||typeof o!=='object')return 0;let v=(+o.m||0)+(o.d|0)*500+(o.s|0)*3000;const own=Array.isArray(o.o)?o.o:[];const PR=[0,0,2200,3200,5500,12000,1500,8000,25000];for(let i=2;i<NW;i++)if(own[i])v+=PR[i]||0;
-  if(o.g&&typeof o.g==='object')for(const t in o.g)v+=(VT[t]&&VT[t].price)||0;if(Array.isArray(o.bz))v+=o.bz.length*5000;if(Array.isArray(o.ac))for(const a of o.ac)if(a&&typeof a==='object')v+=Object.keys(a).length*800;return v}
+  if(o.g&&typeof o.g==='object')for(const t in o.g)v+=(VT[t]&&VT[t].price)||0;if(Array.isArray(o.bz))v+=o.bz.length*5000;if(Array.isArray(o.hm))for(const i of o.hm)v+=[25000,60000,120000,250000][i]||0;if(Array.isArray(o.ac))for(const a of o.ac)if(a&&typeof a==='object')v+=Object.keys(a).length*800;return v}
 function backupSave(k){try{const d=localStorage.getItem(k);if(!d)return;const L=JSON.parse(localStorage.getItem('villefolle3d_backups')||'[]');L.unshift({k,t:Date.now(),d});localStorage.setItem('villefolle3d_backups',JSON.stringify(L.slice(0,6)))}catch(e){}}
 const CLOUD_TXT={newer:'☁️ Une sauvegarde plus récente est en ligne : recharge la page pour la récupérer',guard:'☁️ Sauvegarde en ligne protégée : ta partie en ligne est plus avancée (va dans Compte pour choisir)',loaded:'☁️ Progression chargée depuis ton compte',ok:'☁️ Sauvegarde en ligne active',net:'☁️ Hors ligne : sauvegarde sur l’appareil (réessaie plus tard)',missing:'☁️ Sauvegarde en ligne pas encore activée (lance supabase5.sql dans Supabase)',badlogin:'☁️ Pseudo ou PIN refusé : reconnecte-toi (bouton Compte)',off:''};
 
@@ -6149,7 +6171,7 @@ function savePos(){if(game.state!=='play'&&game.state!=='paused')return game.res
 function saveGame(np){if(!game.loaded||game.noSave)return; // jamais de sauvegarde avant d'avoir chargé la progression
   const now=Date.now(),hot=[];for(const p of HOT){const u=HOT_UNTIL.get(p)||now+86400000;if(u>now)hot.push([p,u])}
   const wan=wantedLevel()>0?{w:game.wanted,ck:game.copKills|0,until:now+86400000,ls:game.lastSeen||{x:P.x,z:P.z}}:null;
-  try{localStorage.setItem(curKey(),JSON.stringify({pos:savePos(),wan,bolo:game.bolo||null,hot,ts:Date.now(),m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,ac:P.acc,hl:game.hotLoot|0,cv:game.cv,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}if(!np)vfQueuePush()}
+  try{localStorage.setItem(curKey(),JSON.stringify({pos:savePos(),wan,bolo:game.bolo||null,hot,ts:Date.now(),m:game.money,d:game.done,k:game.kills,a:P.ammo,w:P.wpn,t:TIME,o:P.own,g:P.garage,s:game.storyIdx|0,r:game.storyRep|0,u:P.up,tu:P.tune,pk:P.pkgs,bz:P.biz,hm:P.homes,ho:P.home,ac:P.acc,hl:game.hotLoot|0,cv:game.cv,l:{st:P.look.style,hl:!!P.look.hairLong,h:P.look.hair,sh:P.look.shirt,pa:P.look.pants,cp:P.look.cap||null}}))}catch(e){}if(!np)vfQueuePush()}
 function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null');if(!s)return;
   game.storyIdx=Math.max(0,Math.min(STORY.length,s.s|0));game.storyRep=Math.max(0,s.r|0);
   const fin=v=>typeof v==='number'&&isFinite(v),now=Date.now();
@@ -6159,6 +6181,8 @@ function loadGame(){try{const s=JSON.parse(localStorage.getItem(curKey())||'null
   if(Array.isArray(s.hot))for(const h of s.hot){if(Array.isArray(h)&&typeof h[0]==='string'&&h[1]>now){HOT.add(h[0].slice(0,12));HOT_UNTIL.set(h[0].slice(0,12),h[1])}}
   const L3=v=>Math.max(0,Math.min(3,v|0));if(Array.isArray(s.u))for(let i=1;i<NW;i++){const o=s.u[i]||{};P.up[i]={rate:L3(o.rate),mag:L3(o.mag),dmg:L3(o.dmg)}}
   game.hotLoot=Math.max(0,Math.min(1e6,s.hl|0));
+  if(Array.isArray(s.hm))P.homes=s.hm.filter(v=>Number.isInteger(v)&&APTS.some(a=>a.id===v));P.home=P.homes.includes(s.ho)?s.ho:P.homes[P.homes.length-1];
+  if(!game.resume){const a=homeApt();if(a)game.resume={x:a.x+sin(a.yaw)*1.5,z:a.z+cos(a.yaw)*1.5,yaw:a.yaw+PI,car:null}}
   if(Array.isArray(s.ac))for(let i=1;i<NW;i++){const o=s.ac[i];P.acc[i]={};if(o&&typeof o==='object')for(const k in ACCS)if(o[k]&&accOK(i,k))P.acc[i][k]=1}
   if(Array.isArray(s.pk))P.pkgs=s.pk.filter(v=>Number.isInteger(v)&&v>=0&&v<PKG_N).slice(0,PKG_N);
   if(Array.isArray(s.bz))P.biz=s.bz.filter(v=>Number.isInteger(v)&&v>=0&&v<STORES.length).slice(0,20);
