@@ -2324,9 +2324,11 @@ const VT={
   limo:{L:6.9,W:1.95,vmax:33,acc:7.5,brake:20,steer:.46,wb:4.4,cols:['#101014','#f1f1f4','#2a2a35'],name:'Limousine',price:18000},
   boat:{L:5.4,W:2.1,vmax:30,acc:8,brake:9,steer:.5,wb:3.2,boat:1,cols:['#f1f1f4','#1d4ed8','#e63946','#111827','#ffd166'],name:'Bateau'},
   boatS:{L:6.2,W:2.2,vmax:40,acc:11,brake:10,steer:.48,wb:3.6,boat:1,cols:['#ff006e','#f8f9fa','#00b4d8','#1b1b1e'],name:'Hors-bord'},
-  boatcop:{L:6,W:2.2,vmax:36,acc:10,brake:10,steer:.5,wb:3.4,boat:1,cols:['#f4f4f6'],name:'Police maritime'}
+  boatcop:{L:6,W:2.2,vmax:36,acc:10,brake:10,steer:.5,wb:3.4,boat:1,cols:['#f4f4f6'],name:'Police maritime'},
+  helip:{L:9,W:2.6,span:2.6,air:true,heli:true,vmax:45,acc:10,brake:10,steer:.5,wb:4,price:180000,cols:['#f1f1f4','#111216','#c1121f','#ffd000','#1d3fbf'],name:'Hélicoptère'},
+  yacht:{L:13,W:4,vmax:24,acc:5,brake:6,steer:.36,wb:7,boat:1,price:300000,cols:['#f8f9fa','#111827','#1d3fbf'],name:'Yacht'}
 };
-const SHOPCARS=['moto','mini','sedan','pickup','suv','van','muscle','sport','motoS','limo','super'];
+const SHOPCARS=['moto','mini','sedan','pickup','suv','van','muscle','sport','motoS','limo','super','helip','yacht'];
 const paintMats={};function paintMat(hex,fin){const k=hex+(fin||'');if(!paintMats[k]){const t=hexc(parseInt(hex.slice(1),16));paintMats[k]=fin==='mat'?mkMat({tint:t,spec:.08,shin:8}):fin==='chrome'?mkMat({tint:t.map(v=>min(1,v*.75+.25)),spec:2.2,shin:160}):mkMat({tint:t,spec:.95,shin:90})}return paintMats[k]}
 const wreckMat=mkMat({tint:[.1,.1,.1],spec:.02}),detailMat=mkMat({spec:.45,shin:60});
 const copRedMat=mkMat({lit:false,tint:[1,.1,.1],fog:true}),copBlueMat=mkMat({lit:false,tint:[.1,.3,1],fog:true});
@@ -2417,13 +2419,21 @@ function boatGeo(type){
   D.box(-.55,.82,.2,.55,1.35,.85,cop?[.85,.86,.9]:wh,{ao:.85});D.box(-.18,1.35,.25,.18,1.42,.45,dark,{ao:1});
   loftZ(D,[[.82,.62,1.3,1.32,.02,.02],[.98,.6,1.3,1.72,.1,.02],[1.02,.6,1.3,1.72,.1,.02]],glass,{k:2});
   if(cop){D.box(-.7,.82,-.6,.7,1.95,.15,[.9,.91,.94],{ao:.85});D.box(-.72,1.4,-.62,.72,1.75,.17,glass,{ao:1});D.box(-.75,1.95,-.65,.75,2.02,.2,[.2,.22,.6],{ao:1})}
+  if(type==='yacht'){D.box(-hw*.72,.82,-hl+2.2,hw*.72,2.3,hl-3.6,cream,{ao:.85});D.box(-hw*.74,1.45,-hl+2.4,hw*.74,1.95,hl-3.8,glass,{ao:1});D.box(-hw*.5,2.3,-1.6,hw*.5,3.25,hl-4.6,wh,{ao:.85});D.box(-hw*.52,2.6,-1.4,hw*.52,3.0,hl-4.8,glass,{ao:1});
+    D.box(-hw*.6,3.25,-2.2,hw*.6,3.32,hl-4.4,[.25,.25,.28],{ao:1});D.box(-.08,3.3,.2,.08,4.8,.36,[.85,.85,.88],{ao:1});D.box(-hw*.85,.82,-hl+.3,hw*.85,.86,-hl+2.2,wood,{ao:1})}
   // moteur hors-bord
-  D.box(-.28,.25,-hl-.42,.28,1.15,-hl+.02,[.12,.12,.14],{ao:.9});D.box(-.24,1.15,-hl-.38,.24,1.3,-hl-.02,cop?[.2,.3,.8]:sp?[.9,.1,.3]:[.85,.85,.88],{ao:1});D.box(-.06,-.45,-hl-.3,.06,.25,-hl-.2,dark,{ao:1});
+  if(type!=='yacht')D.box(-.28,.25,-hl-.42,.28,1.15,-hl+.02,[.12,.12,.14],{ao:.9});D.box(-.24,1.15,-hl-.38,.24,1.3,-hl-.02,cop?[.2,.3,.8]:sp?[.9,.1,.3]:[.85,.85,.88],{ao:1});D.box(-.06,-.45,-hl-.3,.06,.25,-hl-.2,dark,{ao:1});
   // feux de navigation
   D.box(-hw*.4-.06,.95,hl-.9,-hw*.4+.06,1.02,hl-.8,[.9,.1,.1],{ao:1});D.box(hw*.4-.06,.95,hl-.9,hw*.4+.06,1.02,hl-.8,[.1,.9,.2],{ao:1});
   return carGeos[type]={paint:new GMesh(Pm),detail:new GMesh(D)}}
+function heliGeo(type){const Pm=new MB(),D=new MB(),wh=[1,1,1],dk=[.08,.08,.1],gl=[.12,.2,.3],gy=[.45,.46,.5];
+  Pm.box(-.85,.55,-1.1,.85,2.15,1.5,wh,{ao:.9});Pm.box(-.75,.7,1.5,.75,1.95,2.3,wh,{ao:.95});Pm.box(-.25,1.25,-5.3,.25,1.75,-1.1,wh,{ao:.9});Pm.box(-.09,1.4,-5.6,.09,2.8,-4.9,wh,{ao:.9});Pm.box(-1.0,1.45,-4.7,1.0,1.55,-4.3,wh,{ao:.9});Pm.box(-.5,2.1,-.6,.5,2.3,.9,wh,{ao:.9});
+  D.box(-.7,.85,2.3,.7,1.75,2.55,gl,{ao:1});D.box(-.87,1.35,.3,.87,1.95,1.45,gl,{ao:1});D.box(-.6,1.45,1.5,.6,1.95,2.35,gl,{ao:1});D.box(-.86,.95,-1.0,.86,1.05,1.4,dk,{ao:1});
+  D.box(-.15,2.15,-.1,.15,2.6,.45,gy,{ao:.9});for(const sx of[-1,1]){D.box(sx*.85-.06,0,-1.3,sx*.85+.06,.1,1.8,dk,{ao:1});for(const z of[-.6,1.0])D.box(sx*.7-.04,.05,z-.04,sx*.7+.04,.6,z+.04,dk,{ao:1})}
+  return carGeos[type]={paint:new GMesh(Pm),detail:new GMesh(D)}}
 function carGeo(type){
   if(carGeos[type])return carGeos[type];
+  if(VT[type].heli)return heliGeo(type);
   if(VT[type].bike)return motoGeo(type);
   if(VT[type].air)return planeGeo(type);
   if(VT[type].boat)return boatGeo(type);
@@ -2526,6 +2536,8 @@ function drawCar(c){
   if(c.s.bike&&(c.mode==='player'||c.mode==='ai'||c.mode==='cop'))drawMesh(riderMesh(c.type),detailMat,_M);
   if(c.neon&&c.mode!=='wreck'){const n=hexc(parseInt(c.neon.slice(1),16)),k=.35+ENV.night*.55,L2=c.s.L*.36,W2=c.s.W*.36,fx=sin(c.yaw),fz=cos(c.yaw);
     for(const[a,b2]of[[1,1],[1,-1],[-1,1],[-1,-1],[0,1],[0,-1]]){const x=c.x+fx*L2*a+fz*W2*b2,z=c.z+fz*L2*a-fx*W2*b2;bGlow.bill(x,c.y+.12,z,1.6,[n[0],n[1],n[2],k])}}
+  if(c.s.heli&&c.mode!=='wreck'){const lp=(lx,ly,lz)=>[_M[0]*lx+_M[4]*ly+_M[8]*lz+_M[12],_M[1]*lx+_M[5]*ly+_M[9]*lz+_M[13],_M[2]*lx+_M[6]*ly+_M[10]*lz+_M[14]],r=lp(0,2.62,.15),t=lp(.14,2.1,-5.3);
+    mtrs(_L,r[0],r[1],r[2],c.yaw+(c.rot||0),c.pitch,c.roll);drawMesh(ROTORMESH,detailMat,_L);mtrs(_L,t[0],t[1],t[2],c.yaw,c.pitch,c.roll+(c.rot||0)*1.7);drawMesh(TROTMESH,detailMat,_L)}
   if(c.type==='plane'&&c.mode!=='wreck'){const sp=(c.mode==='player'?(c.th||0):0),ang=gtime.t*(sp>.05?90:2)%TAU,lx=0,ly=1.25,lz=3.12;
     const wx=_M[0]*lx+_M[4]*ly+_M[8]*lz+_M[12],wy=_M[1]*lx+_M[5]*ly+_M[9]*lz+_M[13],wz=_M[2]*lx+_M[6]*ly+_M[10]*lz+_M[14];mtrs(_L,wx,wy,wz,c.yaw,c.pitch,c.roll+ang);drawMesh(PROPMESH,detailMat,_L)}
   if(c.cop&&c.mode!=='wreck'&&c.mode!=='parked'){const f=floor(gtime.t*7)%2;
@@ -2584,6 +2596,16 @@ function stepCar(c,inp,dt){
   {const ox=sin(c.yaw)*s.L*.42,oz=cos(c.yaw)*s.L*.42,hf=groundH(c.x+ox,c.z+oz,c.y+.6),hb=groundH(c.x-ox,c.z-oz,c.y+.6);c.slope=Math.atan2(hf-hb,s.L*.84)}
   c.roll=lerp(c.roll,s.bike?clamp(c.yawRate*vf*.022,-.5,.5):clamp(c.yawRate*vf*.012,-.09,.09),min(1,dt*6));c.pitch=lerp(c.pitch,clamp(-a*.004,-.05,.05)-(c.slope||0),min(1,dt*8));
   if(abs(vf)>6&&c.slip>(inp.hb?2.2:3.4)&&s.bike){fxDust(c.x-fx*1.0,.2,c.z-fz*1.0,1,[.85,.85,.88])}else if(abs(vf)>6&&c.slip>(inp.hb?2.2:3.4)){fxDust(c.x-fx*1.3-rx*.8,.2,c.z-fz*1.3-rz*.8,1,[.85,.85,.88]);fxDust(c.x-fx*1.3+rx*.8,.2,c.z-fz*1.3+rz*.8,1,[.85,.85,.88])}}
+function heliGround(c){let g=groundH(c.x,c.z);for(const it of queryNear(c.x,c.z,.6)){if(it.circ||it.water)continue;if(c.x>it.x0&&c.x<it.x1&&c.z>it.z0&&c.z<it.z1&&it.h<=c.y+.7&&it.h>g)g=it.h}return g}
+function stepHeli(c,inp,dt){const pl=c.mode==='player',g=heliGround(c),alt=c.y-g;c.alt=alt;
+  c.th=pl?min(1,(c.th||0)+dt*.45):max(0,(c.th||0)-dt*.3);c.rot=(c.rot||0)+dt*32*c.th;const ok=c.th>.75&&c.hp>200;
+  const up=pl?(inp.up?1:0)-(inp.down?1:0):0;let vy=c.vy||0;vy=lerp(vy,ok?up*9-(up===0&&alt<.4?2:0):-7,1-Math.exp(-2.4*dt));
+  const fwd=pl&&ok&&alt>.8?(inp.thr||0)-(inp.brk||0):0;c.vf=lerp(c.vf||0,fwd*c.s.vmax,1-Math.exp(-(fwd?1.1:.8)*dt));
+  if(alt>.3||ok)c.yaw-=(inp.steer||0)*1.5*dt;const fx=sin(c.yaw),fz=cos(c.yaw);
+  c.vx=fx*c.vf;c.vz=fz*c.vf;c.x+=c.vx*dt;c.z+=c.vz*dt;c.y+=vy*dt;
+  const g2=heliGround(c);if(c.y<=g2){if(vy<-10&&c.mode!=='wreck')hurtCar(c,(-vy-10)*90);c.y=g2;if(vy<0)vy=0;c.vf*=.9}
+  c.vy=vy;c.yawRate=(inp.steer||0)*1.5;c.pitch=lerp(c.pitch||0,clamp(c.vf/c.s.vmax,-1,1)*.2,min(1,dt*3));c.roll=lerp(c.roll||0,-(inp.steer||0)*.18*clamp(abs(c.vf)/10,0,1),min(1,dt*3));
+  collideStatic(c,dt)}
 function stepPlane(c,inp,dt){
   const s=c.s,fx=sin(c.yaw),fz=cos(c.yaw),pl=c.mode==='player';let vf=c.vf||0,vy=c.vy||0;
   const gh0=groundH(c.x,c.z),alt=c.y-gh0,onG=alt<=.15&&vy<=.6,dmg=c.hp<250?.6:1;
@@ -2625,7 +2647,7 @@ function deckRail(o,r){for(const D of DECKS){const X=D.ax==='x',u=X?o.x:o.z,v=X?
 function collideStatic(c,dt){if(!c.s.air&&!c.s.boat)deckRail(c,c.s.W*.5);
   const r=c.s.W*.52;circlesOf(c,_cc);
   for(let k=0;k<3;k++){let px=_cc[k*2],pz=_cc[k*2+1];const items=queryNear(px,pz,r+1);
-    for(let i=0;i<items.length;i++){const it=items[i];if(c.s.air&&c.y-groundH(px,pz)>(it.h||0)+1.5)continue;if(!c.s.air&&c.y>(it.h||0)+.4)continue;if(!circHit(it,px,pz,r))continue;
+    for(let i=0;i<items.length;i++){const it=items[i];if(c.s.air&&(c.s.heli?c.y>(it.h||0)-.8:c.y-groundH(px,pz)>(it.h||0)+1.5))continue;if(!c.s.air&&c.y>(it.h||0)+.4)continue;if(!circHit(it,px,pz,r))continue;
       const nx=HIT.nx,nz=HIT.nz,pen=HIT.pen;c.x+=nx*pen;c.z+=nz*pen;px+=nx*pen;pz+=nz*pen;_cc[k*2]=px;_cc[k*2+1]=pz;
       const vn=c.vx*nx+c.vz*nz;
       if(vn<0){const imp=-vn;c.vx+=nx*imp*1.25;c.vz+=nz*imp*1.25;
@@ -3789,7 +3811,7 @@ function updateBombs(dt){for(let i=BOMBS.length-1;i>=0;i--){const b=BOMBS[i];b.t
 function drawBombs(){for(const b of BOMBS){const l=hyp(b.vx,b.vy,b.vz)||1,dx=b.vx/l,dy=b.vy/l,dz=b.vz/l;bPlain.beam(b.x-dx*.7,b.y-dy*.7,b.z-dz*.7,b.x+dx*.5,b.y+dy*.5,b.z+dz*.5,.28,[.16,.18,.14,1]);bPlain.beam(b.x-dx*.95,b.y-dy*.95,b.z-dz*.95,b.x-dx*.7,b.y-dy*.7,b.z-dz*.7,.4,[.3,.32,.26,1])}}
 function playerDrive(dt){
   const c=P.car;P.enterT=max(0,P.enterT-dt);carShoot(dt);jetWeapons(dt);
-  if(IN.use&&P.enterT<=0){IN.use=false;if(c.s.air&&((c.alt||0)>1.5||abs(c.vf||0)>9)){say('Pose l’avion et arrête-toi avant de descendre !',2.2)}else{exitCar(false);return}}IN.use=false;
+  if(IN.use&&P.enterT<=0){IN.use=false;if(c.s.air&&((c.alt||0)>1.5||abs(c.vf||0)>9)){say('Pose l’avion et arrête-toi avant de descendre !',2.2)}else{const rf=c.s.heli&&c.y>3?BLDS.find(b=>b.roof&&c.x>b.roof.x0&&c.x<b.roof.x1&&c.z>b.roof.z0&&c.z<b.roof.z1&&abs(c.y-b.roof.h)<1.2):null;exitCar(false);if(rf){P.roof=rf.roof;P.y=rf.roof.h;pGround();say('🏙️ Sur le toit · reprends l’hélico pour repartir',2.5)}return}}IN.use=false;
   const air=!!c.s.air,sb=!air&&!!KB.ShiftLeft,inp={thr:sb?0:max(0,IN.sy),brk:max(max(0,-IN.sy),sb?1:0),steer:IN.sx,hb:air||sb?false:IN.hb,sb}; // Maj gauche = frein en voiture
   if(!air&&!c.s.boat){if(c.fuel===undefined)c.fuel=.45+Math.random()*.55;const sp=hyp(c.vx,c.vz),gs=atGas(c.x,c.z);
     if(gs&&sp<3&&c.fuel<1){if(wantedLevel()>0)refuseWanted();else if(game.money>=1){const add=min(1-c.fuel,dt*.14),cost=add*100*.5;c.fuel+=add;game.fcost=(game.fcost||0)+cost;if(game.fcost>=1){const pay=floor(game.fcost);game.money=max(0,game.money-pay);game.fcost-=pay}if(c.fuel>=.999){c.fuel=1;say('Plein fait !',1.8)}}else say('Pas assez d’argent pour l’essence',1.5)}
@@ -3834,7 +3856,7 @@ function updateGame(dt){
     else if(c.mode==='wreck'){inp={thr:0,brk:.2,steer:0,hb:false}}
     if(c.hitT>0)c.hitT-=dt;if(c.hornT>0)c.hornT-=dt;
     if(c.mode==='parked'&&hyp(c.vx,c.vz)<.12&&abs(c.yawRate)<.02){c.sleep=true;c.vx=c.vz=0;c.yawRate=0}
-    if(c.s.air)stepPlane(c,inp,dt);else if(c.s.boat)stepBoat(c,inp,dt);else{stepCar(c,inp,dt);collideStatic(c,dt)}
+    if(c.s.heli)stepHeli(c,inp,dt);else if(c.s.air)stepPlane(c,inp,dt);else if(c.s.boat)stepBoat(c,inp,dt);else{stepCar(c,inp,dt);collideStatic(c,dt)}
     // fumée / feu
     if(c.mode!=='wreck'){
       if(c.hp<420&&c.mode!=='burning'){c.smokeT-=dt;if(c.smokeT<=0){c.smokeT=c.hp<200?.06:.14;const fx=sin(c.yaw),fz=cos(c.yaw);fxSmoke(c.x+fx*1.8,c.y+1,c.z+fz*1.8,1);if(c.hp<200)fxBlack(c.x+fx*1.8,c.y+1,c.z+fz*1.8)}}
@@ -4053,7 +4075,9 @@ WSVG.push('<svg viewBox="0 0 120 50"><rect x="30" y="14" width="56" height="9" r
  '<svg viewBox="0 0 120 50"><rect x="6" y="20" width="108" height="6" rx="2" fill="#2f3326"/><rect x="40" y="10" width="34" height="7" rx="3" fill="#111"/><polygon points="6,22 30,18 30,32 10,36" fill="#5a3a1e"/><rect x="58" y="26" width="6" height="14" fill="#222"/></svg>',
  '<svg viewBox="0 0 120 50"><rect x="20" y="14" width="80" height="18" rx="9" fill="#3a3d44"/><rect x="96" y="16" width="20" height="14" rx="3" fill="#22252b"/><circle cx="108" cy="19" r="2" fill="#888"/><circle cx="108" cy="27" r="2" fill="#888"/><rect x="40" y="32" width="10" height="12" fill="#22252b"/><rect x="10" y="18" width="12" height="10" fill="#22252b"/></svg>');
 const CARSHAPE={mini:[100,22,22,78,20],sedan:[130,22,36,100,20],pickup:[140,26,18,62,22,1],suv:[134,28,22,118,22],van:[134,40,10,124,18],muscle:[138,22,46,100,17],sport:[136,19,50,104,15],limo:[154,22,36,124,18],super:[140,16,56,104,13]};
-function carSVG(type,col){const s=CARSHAPE[type]||CARSHAPE.sedan,bl=s[0],bh=s[1],c0=s[2],c1=s[3],ch=s[4],x0=(176-bl)/2,gy=58,by=gy-9-bh;
+function carSVG(type,col){if(type==='helip')return'<svg viewBox="0 0 176 70"><rect x="20" y="10" width="136" height="4" rx="2" fill="#222"/><rect x="84" y="13" width="8" height="9" fill="#555"/><ellipse cx="98" cy="36" rx="34" ry="15" fill="'+col+'"/><path d="M112 30q16 2 18 12h-22z" fill="#24384d"/><rect x="20" y="32" width="50" height="6" rx="3" fill="'+col+'"/><rect x="16" y="22" width="6" height="18" rx="2" fill="'+col+'"/><rect x="70" y="58" width="60" height="3" fill="#222"/><rect x="82" y="50" width="3" height="9" fill="#222"/><rect x="114" y="50" width="3" height="9" fill="#222"/></svg>';
+  if(type==='yacht')return'<svg viewBox="0 0 176 70"><path d="M8 40h160l-18 20H26z" fill="'+col+'"/><rect x="40" y="26" width="86" height="14" rx="3" fill="#f1ede4"/><rect x="46" y="30" width="74" height="5" fill="#24384d"/><rect x="60" y="16" width="48" height="10" rx="3" fill="#fff"/><rect x="64" y="19" width="40" height="4" fill="#24384d"/><rect x="82" y="4" width="3" height="12" fill="#ccc"/><path d="M0 62q22-6 44 0t44 0 44 0 44 0v8H0z" fill="#2a7fc0"/></svg>';
+  const s=CARSHAPE[type]||CARSHAPE.sedan,bl=s[0],bh=s[1],c0=s[2],c1=s[3],ch=s[4],x0=(176-bl)/2,gy=58,by=gy-9-bh;
   let h='<svg viewBox="0 0 176 70"><ellipse cx="88" cy="63" rx="'+(bl/2+6)+'" ry="4" fill="#0006"/>';
   h+='<rect x="'+x0+'" y="'+by+'" width="'+bl+'" height="'+bh+'" rx="7" fill="'+col+'"/>';
   if(s[5]){h+='<polygon points="'+(x0+c0)+','+by+' '+(x0+c0+8)+','+(by-ch)+' '+(x0+c1-4)+','+(by-ch)+' '+(x0+c1+4)+','+by+'" fill="'+col+'"/>';
@@ -4186,9 +4210,11 @@ function garageSpot(L){
   // plus de place : on libère la première
   for(let i=cars.length-1;i>=0;i--){const c=cars[i];if(c!==P.car&&c.mode==='parked'&&!c.keep&&abs(c.x-first.x)<3.4&&abs(c.z-first.z)<((c.s.L+L)/2+1))cars.splice(i,1)}
   return first}
+function spotFor(type,sp){return VT[type].boat?{x:-84,z:clamp(P.z,200,1160),yaw:-PI/2}:sp}
+function ownFix(c){if(c&&c.s.boat){c.y=waterY(c.x,c.z)-.22}return c}
 function spawnOwned(type){
-  const g=P.garage[type];if(!g)return null;const s=VT[type],sp=garageSpot(s.L);
-  const c=mkCar(type,sp.x,sp.z,sp.yaw,'idle',g.col||s.cols[0]);c.mat=paintMat(c.col,g.fin);c.neon=g.neon||null;c.owned=true;c.keep=true;c.hasDriver=false;c.label=s.name+' (à toi)';OWN[type]=c;g.lost=false;return c}
+  const g=P.garage[type];if(!g)return null;const s=VT[type],sp=spotFor(type,garageSpot(s.L));
+  const c=mkCar(type,sp.x,sp.z,sp.yaw,'idle',g.col||s.cols[0]);c.mat=paintMat(c.col,g.fin);c.neon=g.neon||null;c.owned=true;c.keep=true;c.hasDriver=false;c.label=s.name+' (à toi)';OWN[type]=c;g.lost=false;return ownFix(c)}
 function buyCar(type){const s=VT[type];if(P.garage[type]){shopMsg('Tu as déjà cette voiture',1);return}
   if(game.money<s.price){shopMsg('Pas assez d’argent ('+fmt$(s.price)+')',1);sfx('fail');return}
   game.money-=s.price;P.garage[type]={col:s.cols[SHOP_COL[type]|0]||s.cols[0]};spawnOwned(type);
@@ -4197,7 +4223,7 @@ function carLost(c){return!c||!cars.includes(c)||c.mode==='wreck'||c.mode==='bur
 function callCar(type){const c=OWN[type],g=P.garage[type];if(!g)return;
   if(c===P.car){shopMsg('Tu es déjà dedans !',1);return}
   if(carLost(c)){g.lost=true;shopRender();return}
-  const sp=garageSpot(c.s.L);c.x=sp.x;c.z=sp.z;c.y=groundH(sp.x,sp.z);c.yaw=sp.yaw;c.vx=c.vz=c.yawRate=0;c.vf=0;c.hp=1000;c.mode='idle';c.sleep=false;c.burn=0;
+  const sp=spotFor(type,garageSpot(c.s.L));c.x=sp.x;c.z=sp.z;c.y=groundH(sp.x,sp.z);c.yaw=sp.yaw;c.vx=c.vz=c.yawRate=0;c.vf=0;c.hp=1000;c.mode='idle';c.sleep=false;c.burn=0;ownFix(c);
   shopMsg('Ta '+c.s.name.toLowerCase()+' (réparée) t’attend devant le magasin.');sfx('door');shopRender()}
 function insureCar(type){const g=P.garage[type],s=VT[type],ins=Math.round(s.price*.2);if(!g)return;
   if(game.money<ins){shopMsg('Pas assez d’argent ('+fmt$(ins)+')',1);sfx('fail');return}
@@ -4226,9 +4252,9 @@ function deliverCar(type){const g=P.garage[type],s=VT[type];if(!g)return;
   let c=OWN[type];const lost=g.lost||carLost(c),fee=lost?Math.round(s.price*.2):deliverFee(type);
   if(!lost&&c===P.car){shopMsg('Tu es déjà dedans !',1);return}
   if(game.money<fee){shopMsg('Pas assez d’argent ('+fmt$(fee)+')',1);sfx('fail');return}
-  const sp=nearSpot(s.L);game.money-=fee;
+  const sp=spotFor(type,nearSpot(s.L));game.money-=fee;
   if(lost){g.lost=false;OWN[type]=null;c=mkCar(type,sp.x,sp.z,sp.yaw,'idle',g.col||s.cols[0]);c.owned=true;c.keep=true;c.hasDriver=false;c.label=s.name+' (à toi)';OWN[type]=c}
-  else{c.x=sp.x;c.z=sp.z;c.y=groundH(sp.x,sp.z);c.yaw=sp.yaw;c.vx=c.vz=c.yawRate=0;c.vf=0;c.hp=1000;c.mode='idle';c.sleep=false;c.burn=0;c.dead=0;c.keep=true}
+  else{c.x=sp.x;c.z=sp.z;c.y=groundH(sp.x,sp.z);c.yaw=sp.yaw;c.vx=c.vz=c.yawRate=0;c.vf=0;c.hp=1000;c.mode='idle';c.sleep=false;c.burn=0;c.dead=0;c.keep=true}ownFix(c);
   for(let i=0;i<14;i++)PT.add(sp.x+rnd(-1.5,1.5),rnd(.2,1.4),sp.z+rnd(-1.5,1.5),rnd(-.4,.4),rnd(.5,2),rnd(-.4,.4),.6,.85,1,.9,.5,.1,rnd(.6,1.1),-1,.3);
   sfx('cash');sfx('door');
   closeShop();say('Ta '+s.name.toLowerCase()+' est arrivée (−'+fmt$(fee)+').',3)}
