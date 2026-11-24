@@ -2009,19 +2009,21 @@ GEN.pol=c=>{const{bx,bz,X0,Z0,X1,Z1,cx,cz}=c;
 //  routes de sortie de la ville, murs invisibles
 // =====================================================================
 const MT={cx:SIZE+450,cz:8*CELL+HALF,R0:330,Rp:55,sS:-.2,sE:9.1};
-MT.c=(MT.R0-MT.Rp)/MT.sE;
+MT.c=(MT.R0-MT.Rp)/MT.sE;MT.A=34;MT.f=4;
+// rayon de la route : spirale + ondulations (virages en S), sans ondulation à l'entrée et près du sommet
+function mtR(s){const b=MT.R0-MT.c*max(s,0);return b+MT.A*clamp((b-70)/140,0,1)*sstep(0,.9,s)*sin(MT.f*s)}
 // profil de la route : hauteur en fonction de l'abscisse spirale s (pente constante)
-const MT_TAB=(()=>{const n=Math.ceil(MT.sE/.02)+1,t=new Float32Array(n);let L=0;for(let i=0;i<n;i++){const s=i*.02,r=MT.R0-MT.c*s;t[i]=L;L+=hyp(r,MT.c)*.02}
+const MT_TAB=(()=>{const n=Math.ceil(MT.sE/.02)+1,t=new Float32Array(n);let L=0;for(let i=0;i<n;i++){const s=i*.02,r=mtR(s),dr=(mtR(s+.001)-mtR(s-.001))/.002;t[i]=L;L+=hyp(r,dr)*.02}
   const k=150/t[n-1];for(let i=0;i<n;i++)t[i]*=k;return t})();
 function mtHofS(s){s=clamp(s,0,MT.sE);const f=s/.02,i=min(MT_TAB.length-2,floor(f)),u=f-i;return MT_TAB[i]*(1-u)+MT_TAB[i+1]*u}
 function mtSofR(r){return clamp((MT.R0-r)/MT.c,0,MT.sE)}
-function mtPos(s){const r=MT.R0-MT.c*max(s,0),ph=PI+s;return{x:MT.cx+cos(ph)*r,z:MT.cz+sin(ph)*r,r,ph,h:mtHofS(s)}}
+function mtPos(s){const r=mtR(s),ph=PI+s;return{x:MT.cx+cos(ph)*r,z:MT.cz+sin(ph)*r,r,ph,h:mtHofS(s)}}
 // renvoie {h, d} : hauteur du terrain de la montagne et distance radiale à la route
 const _mt={h:0,d:99};
 function mtnH(x,z){
   const dx=x-MT.cx,dz=z-MT.cz,r=hyp(dx,dz);
   const ph=atan2(dz,dx),s0=(((ph-PI)%TAU)+TAU)%TAU;let best=1e9,bs=0;
-  for(let k=-1;k<=2;k++){const s=s0+k*TAU;if(s<MT.sS-.001||s>MT.sE+.001)continue;const rr=MT.R0-MT.c*max(s,0),d=abs(r-rr);if(d<best){best=d;bs=s}}
+  for(let k=-1;k<=2;k++){const s=s0+k*TAU;if(s<MT.sS-.001||s>MT.sE+.001)continue;const rr=mtR(s),d=abs(r-rr);if(d<best){best=d;bs=s}}
   const hc=mtHofS(mtSofR(r));let h=hc;
   if(best<1e8){const hr=mtHofS(max(bs,0));h=lerp(hr,hc,sstep(14,38,best));if(best<12)h-=.06}
   _mt.h=h;_mt.d=best;return h}
@@ -2086,7 +2088,7 @@ function mountainGen(col){
   const mb=S.ground.mb(MT.cx-MT.R0,MT.cz),mk=S.marks.mb(MT.cx-MT.R0,MT.cz),post=S.flat.mb(MT.cx,MT.cz);
   const W=5;let prev=null,seg=0,vAcc=0;
   for(let s=MT.sS;s<=MT.sE+.001;){
-    const p=mtPos(s),cx=cos(p.ph),cz=sin(p.ph),y=p.h+.02;
+    const p=mtPos(s),q=mtPos(s+.004);let cx=q.z-p.z,cz=-(q.x-p.x);{const l=hyp(cx,cz)||1;cx/=l;cz/=l;if(cx*cos(p.ph)+cz*sin(p.ph)<0){cx=-cx;cz=-cz}}const y=p.h+.02;
     const cur={l:[p.x-cx*W,y,p.z-cz*W],r:[p.x+cx*W,y,p.z+cz*W],c:[p.x,y+.012,p.z],cx,cz,y};
     if(prev){const dl=hyp(cur.c[0]-prev.c[0],cur.c[2]-prev.c[2]),v0=vAcc/14,v1=(vAcc+dl)/14;
       const A=prev.l,B=prev.r,C=cur.r,D=cur.l;
@@ -3281,10 +3283,13 @@ function updateActors(dt){const bt=gtime.t;
 
 // ---------- caméra ----------
 const CAM={yaw:PI,pitch:.3,dist:5,x:0,y:2,z:0,fov:1.02,free:0,view:0,curD:5,ty:0};
+function camInCar(x,y,z){for(const c of cars){if(c===P.car||c.gone)continue;const ex=x-c.x,ez=z-c.z;if(abs(ex)>9||abs(ez)>9)continue;const fx=sin(c.yaw),fz=cos(c.yaw),lf=ex*fx+ez*fz,ll=ex*fz-ez*fx;
+    if(abs(lf)<c.s.L/2+.35&&abs(ll)<(c.s.span?c.s.span*.3:c.s.W/2)+.35&&y>c.y-.3&&y<c.y+(c.s.air?3.2:c.s.bike?1.4:1.9))return true}
+  for(const h of HELIS){if(abs(x-h.x)<4&&abs(z-h.z)<4&&y>h.y&&y<h.y+3)return true}return false}
 function camCollide(tx,ty,tz,dx,dy,dz,dist){ // dir unitaire depuis la cible, renvoie la distance libre
   let free=dist;for(let t=.6;t<=dist;t+=.5){const x=tx+dx*t,y=ty+dy*t,z=tz+dz*t;
     if(y<groundH(x,z,ty)+.35){free=max(.6,t-.5);break}
-    if(solidPoint(x,y,z)||solidPoint(x+.35,y,z)||solidPoint(x-.35,y,z)||solidPoint(x,y,z+.35)||solidPoint(x,y,z-.35)){free=max(.6,t-.55);break}}
+    if(solidPoint(x,y,z)||solidPoint(x+.35,y,z)||solidPoint(x-.35,y,z)||solidPoint(x,y,z+.35)||solidPoint(x,y,z-.35)||camInCar(x,y,z)){free=max(.6,t-.55);break}}
   return free}
 // ---------- vue à la première personne quand on vise ----------
 let FPS_ON=true;try{FPS_ON=localStorage.getItem('vf_fps')!=='0'}catch(e){}
@@ -5999,7 +6004,7 @@ function render(){
   applyTime(TIME);tlColors(gtime.t);gatherLights();
   let shx=0,shy=0,shz=0;if(shake>0){const k=min(shake,1.6)*.09;shx=rnd(-k,k);shy=rnd(-k,k);shz=rnd(-k,k)}
   const pp=gfxOn();if(pp)shadowPass();else SHD.on=false;shadowBind();if(pp)gl.bindFramebuffer(gl.FRAMEBUFFER,PP.drawF);
-  beginFrame(CAM.x+shx*(CAM.fps?.4:1),CAM.y+shy*(CAM.fps?.4:1),CAM.z+shz*(CAM.fps?.4:1),CAM.tx,CAM.ty,CAM.tz,CAM.fov,cvs.width/cvs.height,CAM.fps?.12:.65);
+  beginFrame(CAM.x+shx*(CAM.fps?.4:1),CAM.y+shy*(CAM.fps?.4:1),CAM.z+shz*(CAM.fps?.4:1),CAM.tx,CAM.ty,CAM.tz,CAM.fov,cvs.width/cvs.height,CAM.fps?.12:.25);
   drawSky(gtime.t);drawWorld();
   for(const c of cars)drawCar(c);drawHelis();
   if(MP.on)mpDrawCars();
