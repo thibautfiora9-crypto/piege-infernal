@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://thibautfiora9-crypto.github.io/piege-infernal/sitemap.xml
