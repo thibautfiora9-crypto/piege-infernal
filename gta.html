@@ -484,7 +484,7 @@ const mixc=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
 const cvs=$('gl');
 const GLO={antialias:true,alpha:false,powerPreference:'high-performance',stencil:false,depth:true};
 const gl=cvs.getContext('webgl2',GLO)||cvs.getContext('webgl',GLO);
-if(!gl){document.getElementById('title').innerHTML='<h1>VILLE<br><span>FOLLE</span></h1><p>La 3D n’est pas disponible sur cet appareil.</p><a href="gta2d.html" style="color:#ffb703;font-size:20px">Jouer à la version 2D</a>';throw new Error('no webgl')}
+if(!gl){document.getElementById('title').innerHTML='<h1>VILLE<br><span>FOLLE</span></h1><p>La 3D n’est pas disponible sur cet appareil.</p><a href="index.html" style="color:#ffb703;font-size:20px">Retour aux jeux</a>';throw new Error('no webgl')}
 let PR=Math.min(window.devicePixelRatio||1,1.25),PRMAX=PR,VW=innerWidth,VH=innerHeight;
 function resize(){VW=innerWidth;VH=innerHeight;cvs.width=Math.max(2,Math.round(VW*PR));cvs.height=Math.max(2,Math.round(VH*PR));gl.viewport(0,0,cvs.width,cvs.height)}
 resize();addEventListener('resize',()=>{resize()});
