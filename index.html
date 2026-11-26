@@ -1,4 +1,4 @@
-<!doctype html><html lang="fr"><head><!--I18N--><script>window.__DICT=Object.assign(window.__DICT||{},{"🆕 NOUVEAU": "🆕 NEU", "Zone Rouge": "Rote Zone", "Survis aux hordes dans le noir · armes, drones, boss": "Überlebe die Horden im Dunkeln · Waffen, Drohnen, Bosse", "Autoroute de nuit à 300 km/h · nitro et combos": "Nachtautobahn mit 300 km/h · Nitro und Combos", "Survie contre des hordes, boss et armes": "Überleben gegen Horden, Bosse und Waffen", "Course de nuit, nitro et frôlements": "Nachtrennen, Nitro und knappe Manöver", "Serpent.io": "Schlange.io", "Arène : deviens le plus long serpent": "Arena: Werde die längste Schlange"})</script><script>window.LANG_BTN=1;Object.assign(window.__DICT=window.__DICT||{},{
+<!doctype html><html lang="fr"><head><!--I18N--><script>window.__DICT=Object.assign(window.__DICT||{},{"Néon Dash": "Neon Dash", "Saute au rythme, évite les pics": "Spring im Rhythmus, weich den Stacheln aus", "Brick Breaker": "Brick Breaker", "Casse-briques néon avec pouvoirs": "Neon-Ziegelbrecher mit Power-ups"})</script><script>window.__DICT=Object.assign(window.__DICT||{},{"🆕 NOUVEAU": "🆕 NEU", "Zone Rouge": "Rote Zone", "Survis aux hordes dans le noir · armes, drones, boss": "Überlebe die Horden im Dunkeln · Waffen, Drohnen, Bosse", "Autoroute de nuit à 300 km/h · nitro et combos": "Nachtautobahn mit 300 km/h · Nitro und Combos", "Survie contre des hordes, boss et armes": "Überleben gegen Horden, Bosse und Waffen", "Course de nuit, nitro et frôlements": "Nachtrennen, Nitro und knappe Manöver", "Serpent.io": "Schlange.io", "Arène : deviens le plus long serpent": "Arena: Werde die längste Schlange"})</script><script>window.LANG_BTN=1;Object.assign(window.__DICT=window.__DICT||{},{
 // --- commun ---
 "Génération du monde…":"Welt wird erzeugt …","Rejouer":"Nochmal","Retour":"Zurück","Quitter":"Beenden","Annuler":"Abbrechen","Fermer":"Schließen","Jouer":"Spielen","Reprendre":"Fortsetzen","Espace":"Leertaste","Échap":"Esc","Entrée":"Eingabe","Terminé":"Fertig",
 // --- index ---
@@ -147,8 +147,8 @@ const J=[
 ["Zone Rouge","g-zone.html","🧟","arcade","Survie contre des hordes, boss et armes","#a1001b"],
 ["Nitro Rush","g-nitro.html","🏎️","arcade","Course de nuit, nitro et frôlements","#7a00ff"],
 ["Serpent.io","g-snake-io.html","🐍","arcade","Arène : deviens le plus long serpent","#00a37a"],
-["Oiseau","g-flappy.html","🐤","arcade","Passe entre les tuyaux","#4895ef"],
-["Casse-briques","g-briques.html","🧱","arcade","Détruis tous les blocs","#e76f51"],
+["Néon Dash","g-dash.html","🟦","arcade","Saute au rythme, évite les pics","#0077ff"],
+["Brick Breaker","g-brick.html","🧱","arcade","Casse-briques néon avec pouvoirs","#d6246e"],
 ["2048","g-2048.html","🔢","reflexion","Fusionne les tuiles","#f4a261"],];
 let cat='',txt='';const gr=document.getElementById('gr');
 function draw(){gr.innerHTML='';let n=0;J.forEach(j=>{if(cat&&j[3]!=cat)return;if(txt&&!(j[0]+' '+j[4]).toLowerCase().includes(txt))return;n++;const a=document.createElement('a');a.className='g';a.href=j[1];a.innerHTML='<div class="th" style="background:'+j[5]+'">'+j[2]+'</div><div class="nm"></div><div class="ds"></div>';a.children[1].textContent=j[0];a.children[2].textContent=j[4];gr.appendChild(a)});document.getElementById('no').style.display=n?'none':'block'}
