@@ -226,4 +226,4 @@ function draw(t){g.fillStyle='#02010a';g.fillRect(0,0,W,H);const sp=S?1:.4;
   g.textAlign='left';g.fillStyle='#fff';g.font='18px sans-serif';g.fillText('❤️'.repeat(S.lives)+'  💣'+S.bombs,14,H-18);
   if(S.msgT>0){g.globalAlpha=Math.min(1,S.msgT);g.textAlign='center';g.font='900 italic 40px Impact,Oswald,sans-serif';g.fillStyle='#4dd2ff';g.fillText(S.msg,W/2,H*.4);g.globalAlpha=1}}
 let last=performance.now();function frame(now){requestAnimationFrame(frame);const dt=Math.min(.033,(now-last)/1000);last=now;if(S&&S.state==='play')update(dt);draw(now/1000)}requestAnimationFrame(frame);
-</script></body></html>
+</script><script src="site-sync.js"></script></body></html>

@@ -162,4 +162,4 @@ let t0=null;addEventListener('touchstart',e=>{t0=[e.touches[0].clientX,e.touches
 addEventListener('touchend',e=>{if(!t0)return;const dx=e.changedTouches[0].clientX-t0[0],dy=e.changedTouches[0].clientY-t0[1];t0=null;if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;if(Math.abs(dx)>Math.abs(dy))move(Math.sign(dx),0);else move(0,Math.sign(dy))});
 addEventListener('touchmove',e=>{if(e.target.closest('#bd'))e.preventDefault()},{passive:false});
 reset();
-</script></body></html>
+</script><script src="site-sync.js"></script></body></html>

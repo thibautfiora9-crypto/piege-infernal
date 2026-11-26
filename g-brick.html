@@ -198,4 +198,4 @@ function draw(t){g.fillStyle='#05010f';g.fillRect(0,0,W,H);if(!S)return;const sh
   if(S.combo>4){g.fillStyle='#ff3d81';g.font='900 22px Impact,sans-serif';g.textAlign='center';g.fillText('COMBO ×'+S.combo,GW/2,GH*.62)}
   g.restore()}
 let last=performance.now();function frame(now){requestAnimationFrame(frame);const dt=Math.min(.033,(now-last)/1000);last=now;if(S&&S.state==='play')update(dt);draw(now/1000)}requestAnimationFrame(frame);
-</script></body></html>
+</script><script src="site-sync.js"></script></body></html>

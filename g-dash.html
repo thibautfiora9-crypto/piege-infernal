@@ -214,4 +214,4 @@ function draw(t){const hue=S?S.hue:(t*20)%360,pul=S?S.pulse:0,sh=S?S.shake:0;g.s
   g.restore()}
 let last=performance.now();function frame(now){requestAnimationFrame(frame);const dt=Math.min(.033,(now-last)/1000);last=now;if(S){update(dt);music()}draw(now/1000)}
 requestAnimationFrame(frame);
-</script></body></html>
+</script><script src="site-sync.js"></script></body></html>

@@ -236,4 +236,4 @@ function draw(t){const G=geo();g.fillStyle='#0b1d0f';g.fillRect(0,0,W,H);if(!S){
 function drawBall(x,y,r,t){g.fillStyle='#0006';g.beginPath();g.ellipse(x,y+r*.9,r*.9,r*.25,0,0,TAU);g.fill();g.fillStyle='#fff';g.beginPath();g.arc(x,y,r,0,TAU);g.fill();g.strokeStyle='#222';g.lineWidth=Math.max(1,r*.06);g.stroke();
   g.fillStyle='#222';const rot=S&&S.ball?S.ball.t*12:0;for(let k=0;k<5;k++){const a=rot+k*TAU/5;g.beginPath();g.arc(x+Math.cos(a)*r*.55,y+Math.sin(a)*r*.55,r*.2,0,TAU);g.fill()}g.beginPath();g.arc(x,y,r*.22,0,TAU);g.fill()}
 let last=performance.now();function frame(now){requestAnimationFrame(frame);const dt=Math.min(.033,(now-last)/1000);last=now;if(S&&S.state!=='over')update(dt);draw(now/1000)}resize();requestAnimationFrame(frame);
-</script></body></html>
+</script><script src="site-sync.js"></script></body></html>

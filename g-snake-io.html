@@ -247,4 +247,4 @@ function draw(t){g.setTransform(DPR,0,0,DPR,0,0);g.fillStyle='#0b0f1a';g.fillRec
   const mr=Math.min(60,W*.12),mx=W-mr-14,my=H-mr-(TOUCH?130:20);g.fillStyle='#0009';g.beginPath();g.arc(mx,my,mr,0,TAU);g.fill();g.strokeStyle='#ff2d5588';g.lineWidth=2;g.stroke();
   for(const s of L){const p=s.pts[0];g.fillStyle=s===S.me?'#fff':s.col[0];const sz=s===S.me?4:Math.min(4,1.5+s.len/400);g.fillRect(mx+p.x/RAD*mr-sz/2,my+p.y/RAD*mr-sz/2,sz,sz)}}
 requestAnimationFrame(frame);
-</script></body></html>
+</script><script src="site-sync.js"></script></body></html>
