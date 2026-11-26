@@ -116,7 +116,7 @@ header b{font-size:18px}#sc{font-variant-numeric:tabular-nums;background:#2d2a5a
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%;padding:0 10px 16px}
 canvas{background:#1d1b3d;border-radius:14px;max-width:100%;touch-action:none}
 button.r{background:#ffb703;color:#222;border:0;border-radius:20px;padding:10px 22px;font-weight:700;font-size:16px}
-p.h{margin:0;color:#aab;font-size:14px;text-align:center}</style></head><body>
+p.h{margin:0;color:#aab;font-size:14px;text-align:center}</style><script src="guard.js" defer></script></head><body>
 <header><a href="index.html">← Accueil</a><b>Oiseau</b><span id="sc">0</span></header>
 <main><canvas id="c" width="320" height="480"></canvas><button class="r" onclick="location.reload()">Rejouer</button><p class="h">Touche l'écran (ou Espace) pour battre des ailes</p></main>
 <script>const GK="g-flappy",best=()=>+(localStorage.getItem(GK)||0),setBest=s=>{try{if(s>best())localStorage.setItem(GK,s)}catch(e){}},sc=v=>document.getElementById('sc').textContent=v+' · record '+Math.max(v,best());sc(0);

@@ -149,8 +149,8 @@ footer{text-align:center;color:var(--mu);font-size:13px;padding:20px}</style><st
 .mbox ul{margin:0;padding-left:18px;color:#c8c4e6;font-size:14px;line-height:1.6}.mbox small{min-height:18px;font-size:14px}.mbox small.ok{color:#3cff9a}.mbox small.bad{color:#ff6b7a}
 </style>
 <script src="cbcloud.js"></script><script src="site-sync.js"></script>
-</head><body>
-<header><div class="lg">PIÈGE <span>INFERNAL</span> GAMES</div><input id="q" type="search" placeholder="Chercher un jeu…" autocomplete="off"><a id="me" href="#" role="button">👤 Se connecter</a></header>
+<script src="guard.js" defer></script></head><body>
+<header><div class="lg">PIÈGE <span>INFERNAL</span> GAMES</div><input id="q" type="search" placeholder="Chercher un jeu…" autocomplete="off"><a id="adm" href="admin.html" style="display:none;margin-right:8px;background:#ff3d5a;color:#fff;padding:8px 12px;border-radius:12px;font-weight:800;text-decoration:none;font-size:14px;white-space:nowrap">🛡️ Admin</a><a id="me" href="#" role="button">👤 Se connecter</a></header>
 <div class="tabs" id="tabs"><button class="on" data-c="">Tous</button><button data-c="aventure">Aventure</button><button data-c="arcade">Arcade</button><button data-c="reflexion">Réflexion</button></div>
 <main>
 <div class="hero"><a class="big im" href="gta.html" style="background-image:url(img/gta.webp)"><span class="tag">🔥 POPULAIRE</span><span class="em">🚓</span><h2>Ville Folle 3D</h2><p>Ville ouverte : voitures, police, braquages, casino, multijoueur</p></a>
@@ -192,7 +192,7 @@ function draw(){gr.innerHTML='';let n=0;J.forEach(j=>{if(cat&&j[3]!=cat)return;i
 document.getElementById('q').oninput=e=>{txt=e.target.value.trim().toLowerCase();draw()};
 document.getElementById('tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;cat=b.dataset.c;[...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));draw()};
 accInit();
-function accInit(){const a=SITE.acct(),me=document.getElementById('me');me.textContent=a?'👤 '+a.p:'👤 Se connecter';me.classList.toggle('on',!!a)}
+function accInit(){const a=SITE.acct(),me=document.getElementById('me');me.textContent=a?'👤 '+a.p:'👤 Se connecter';me.classList.toggle('on',!!a);document.getElementById('adm').style.display=a&&String(a.p).toLowerCase()==='bigboss'?'inline-block':'none'}
 function accShow(){const a=SITE.acct(),$=id=>document.getElementById(id);$('accOut').style.display=a?'none':'flex';$('accIn').style.display=a?'flex':'none';if(a)$('accName').textContent=a.p;$('accMsg').textContent='';$('accMsg2').textContent='';$('acc').classList.add('on')}
 function amsg(id,t,ok){const e=document.getElementById(id);e.textContent=t;e.className=ok?'ok':'bad'}
 document.getElementById('me').onclick=e=>{e.preventDefault();accShow()};
