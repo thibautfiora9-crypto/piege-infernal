@@ -202,7 +202,7 @@ function musTick(){if(!AC||muted||!S||S.state!=='play')return;const t=AC.current
     if(S.t>4){const arp=[0,3,7,12,15,12,7,3];tone(mtof(root+24+arp[n%8]),0,.09,'square',.012,musNext)}
     musNext+=sp}}
 // ---------- route ----------
-const SEG=200,RW=2000,LANES=3,CAMH=1000,DRAW=220,FOV=100,CAMD=1/Math.tan(FOV/2*Math.PI/180),PLZ=CAMH*CAMD;
+const SEG=200,RW=2000,LANES=3,CAMH=2100,DRAW=220,FOV=100,CAMD=1/Math.tan(FOV/2*Math.PI/180),PLZ=CAMH*CAMD;
 let segs=[],TRACK=0;
 function addSeg(curve,y){const n=segs.length,ly=n?segs[n-1].p2.y:0;segs.push({i:n,p1:{y:ly,z:n*SEG},p2:{y,z:(n+1)*SEG},curve,deco:n%9===0?(Math.random()<.5?'lamp':'palm'):null,side:Math.random()<.5?-1:1})}
 function ease(a,b,t){return a+(b-a)*((-Math.cos(t*Math.PI)/2)+.5)}
@@ -264,7 +264,7 @@ function update(dt){S.t+=dt;const seg=segAt(S.pos+PLZ),spdR=S.spd/S.max,alive=S.
   if(S.spd>maxS)S.spd=Math.max(maxS,S.spd-S.max*dt);S.spd=clamp(S.spd,0,S.max*1.45);
   if(S.nOn)S.nitro=Math.max(0,S.nitro-dt*.28/CAR.nit);
   if(S.air>0){S.air-=dt;if(S.air<=0){S.shake=Math.max(S.shake,6);const pts=Math.round(400*S.airT)*(S.x2>0?2:1);S.score+=pts;comboShow('🛫 SAUT ! +'+pts,'#7df9ff');boom(.15)}}
-  const dx=dt*2.2*CAR.hand*Math.min(1,spdR+.2)*(S.air>0?.5:1);if(left)S.x-=dx;if(right)S.x+=dx;if(S.air<=0)S.x-=dx*spdR*seg.curve*.32/CAR.hand;
+  const dx=dt*1.7*CAR.hand*Math.min(1,spdR+.2)*(S.air>0?.5:1);if(left)S.x-=dx;if(right)S.x+=dx;S.steer=(right?1:0)-(left?1:0);if(S.air<=0)S.x-=dx*spdR*seg.curve*.32/CAR.hand;
   if(Math.abs(S.x)>1.05&&S.air<=0){S.spd=Math.min(S.spd,S.max*.45);S.shake=Math.max(S.shake,2)}S.x=clamp(S.x,-2.2,2.2);
   const mul=(1+S.combo*.25)*(S.x2>0?2:1);
   S.pos=(S.pos+S.spd*dt)%TRACK;S.dist+=S.spd*dt/SEG*5;S.score+=Math.round(S.spd*dt/SEG*mul);
@@ -301,7 +301,7 @@ function update(dt){S.t+=dt;const seg=segAt(S.pos+PLZ),spdR=S.spd/S.max,alive=S.
   if(engG){eng.frequency.value=50+spdR*220*(S.nOn?1.25:1);engG.gain.value=alive?.03+spdR*.035:0}
   $('spd').innerHTML=Math.round(S.spd/SEG*5.2)+'<small>KM/H</small>';$('sco').textContent=S.score.toLocaleString('fr-FR')+(S.x2>0?' ✖️2':'');$('lives').textContent='❤️'.repeat(Math.max(0,S.lives))+'🖤'.repeat(Math.max(0,S.maxL-S.lives));$('nitro').firstChild.style.width=(S.nitro*100)+'%';$('coins').textContent='🪙 '+S.coins;
   let pw='';for(const[k,ic,d]of[['shield','🛡️',8],['mag','🧲',10],['x2','✖️2',10]])if(S[k]>0)pw+='<div>'+ic+'<i><b style="width:'+(S[k]/d*100)+'%"></b></i></div>';if($('pw').innerHTML!==pw)$('pw').innerHTML=pw}
-function burst(c){const cols=[c.col,'#ffd84a','#ff3df2','#fff'];for(let k=0;k<26;k++)S.parts.push({x:W/2+(c.x-S.x)*W*.35,y:H*.62,vx:R(-500,500),vy:R(-700,-150),t:R(.5,1),c:pick(cols),s:R(3,7)})}
+function burst(c){const cols=[c.col,'#ffd84a','#ff3df2','#fff'];for(let k=0;k<26;k++)S.parts.push({x:W/2+(c.x-(S.camX||0))*PSW(),y:H*.62,vx:R(-500,500),vy:R(-700,-150),t:R(.5,1),c:pick(cols),s:R(3,7)})}
 function crash(c){S.lives--;S.crashT=1.3;S.spd*=.25;S.shake=16;S.combo=0;boom(.5);flash('#ff2850',.7);c.z=(c.z+SEG*6)%TRACK;comboShow(S.lives>0?'💥 CRASH !':'💥 GAME OVER','#ff4d6d');if(S.lives<=0){S.state='dying';setTimeout(gameOver,1200)}}
 // ---------- rendu ----------
 function proj(p,cx,cy,cz,curveX){const tz=p.z-cz;const sc=CAMD/tz;p.sx=Math.round(W/2+sc*(p.x-cx-curveX)*W/2);p.sy=Math.round(H/2-sc*(p.y-cy)*H/2);p.sw=Math.round(sc*RW*W/2);p.sc=sc}
@@ -314,10 +314,11 @@ let skyC=null;function sky(t){const z=Z();
     skyC={c,w:W,h:H}}
   g.drawImage(skyC.c,0,0)}
 function skyline(off,col,hmin,hmax,seed,base,win){g.fillStyle=col;let x=-((off%400)+400)%400-400,k=seed;while(x<W+60){k=(k*9301+49297)%233280;const r=k/233280,w=40+r*70,h=hmin+r*(hmax-hmin);g.fillRect(x,base-h,w-6,h+H);if(win){g.fillStyle=win;for(let wy=base-h+8;wy<base-6;wy+=12)for(let wx=x+6;wx<x+w-12;wx+=10)if(((wx*7+wy*13+k)%5)<1)g.fillRect(wx,wy,3,4);g.fillStyle=col}x+=w}}
-function render(t){const z=Z(),cx=S?S.x*RW:0,pos=S?S.pos:(t*1500)%Math.max(1,TRACK||1);if(!segs.length)buildTrack();
+const PSW=()=>RW*W/(2*CAMH); // demi-largeur de route (px) au niveau de la voiture
+function render(t){const z=Z();if(S){const tgt=Math.sign(S.x)*Math.max(0,Math.abs(S.x)-.95);S.camX=(S.camX||0)+(tgt-(S.camX||0))*.25;S.tilt=(S.tilt||0)+((S.steer||0)-(S.tilt||0))*.2}const camX=S?S.camX:0,cx=camX*RW,pos=S?S.pos:(t*1500)%Math.max(1,TRACK||1);if(!segs.length)buildTrack();
   const sh=S?S.shake:0;g.save();g.translate(R(-sh,sh),R(-sh,sh));sky(t);
   const base=segAt(pos),bi=base.i,pp=(pos%SEG)/SEG,camY=CAMH+ease(base.p1.y,base.p2.y,pp);
-  const hor=H*.5;skyline((S?S.pos*.002:t*20)+(S?S.x*20:0),z.s1,40,120,7,hor,z.win);skyline((S?S.pos*.004:t*40)+(S?S.x*40:0),z.s2,20,80,3,hor+2,null);
+  const hor=H*.5;skyline((S?S.pos*.002:t*20)+camX*20,z.s1,40,120,7,hor,z.win);skyline((S?S.pos*.004:t*40)+camX*40,z.s2,20,80,3,hor+2,null);
   let maxy=H,x=0,dx=-(base.curve*pp);const draw=[],buck=new Map();
   for(let n=0;n<DRAW;n++){const s=segs[(bi+n)%segs.length],loop=s.i<bi?TRACK:0;
     const p1={x:0,y:s.p1.y,z:s.p1.z+loop},p2={x:0,y:s.p2.y,z:s.p2.z+loop};proj(p1,cx,camY,pos,x);proj(p2,cx,camY,pos,x+dx);x+=dx;dx+=s.curve;s.clip=maxy;s.s1=p1;s.s2=p2;
@@ -335,13 +336,13 @@ function render(t){const z=Z(),cx=S?S.x*RW:0,pos=S?S.pos:(t*1500)%Math.max(1,TRA
     const L=buck.get(s.i);if(!L)continue;
     for(const[k,o]of L){const f=(o.z%SEG)/SEG,sx=p.sx+(s.s2.sx-p.sx)*f+o.x*p.sw*(1-f)+o.x*s.s2.sw*f,sy=p.sy+(s.s2.sy-p.sy)*f,sc=(p.sw+(s.s2.sw-p.sw)*f)/RW;if(sy>s.clip)continue;
       if(k===0)drawCar(sx,sy,sc*RW*.42*o.w*(o.truck?1.2:1),o.col,o.truck,false,o.cop,t);else drawItem(sx,sy,sc*RW,o,t)}}
-  if(S){const cw=Math.min(W*.36,300),bounce=S.spd>0&&S.air<=0?Math.sin(t*30)*S.spd/S.max*1.5:0,lift=S.air>0?Math.sin((1-S.air/S.airT)*Math.PI)*H*.16:0;
-    if(lift>0){g.fillStyle='#0006';g.beginPath();g.ellipse(W/2,H-18,cw*.5,cw*.06,0,0,7);g.fill()}
+  if(S){const cw=PSW()*.5,CX=W/2+(S.x-camX)*PSW(),bounce=S.spd>0&&S.air<=0?Math.sin(t*30)*S.spd/S.max*1.5:0,lift=S.air>0?Math.sin((1-S.air/S.airT)*Math.PI)*H*.16:0;
+    if(lift>0){g.fillStyle='#0006';g.beginPath();g.ellipse(CX,H-18,cw*.5,cw*.06,0,0,7);g.fill()}
     // lignes de vitesse
     const spdR=S.spd/S.max;if(spdR>.75||S.nOn){g.strokeStyle='rgba(255,255,255,'+(S.nOn?.35:.15*(spdR-.75)*4)+')';g.lineWidth=2;for(let k=0;k<(S.nOn?18:8);k++){const a=R(0,6.28),r1=R(Math.min(W,H)*.35,Math.min(W,H)*.5);g.beginPath();g.moveTo(W/2+Math.cos(a)*r1,H*.5+Math.sin(a)*r1);g.lineTo(W/2+Math.cos(a)*r1*1.7,H*.5+Math.sin(a)*r1*1.7);g.stroke()}}
-    drawCar(W/2,H-20-bounce-lift,cw,CAR.col,false,true);
-    if(S.nOn){for(const s2 of[-1,1]){const fx=W/2+s2*cw*.28,fy=H-20-cw*.12-lift;g.fillStyle='rgba(0,229,255,.85)';g.beginPath();g.moveTo(fx-9,fy);g.lineTo(fx+9,fy);g.lineTo(fx,fy+R(30,70));g.fill();g.fillStyle='rgba(255,255,255,.9)';g.beginPath();g.moveTo(fx-4,fy);g.lineTo(fx+4,fy);g.lineTo(fx,fy+R(12,26));g.fill()}}
-    if(S.shield>0){const a=.25+.15*Math.sin(t*12)*(S.shield<2?2:1);g.strokeStyle='rgba(60,255,122,'+(a+.3)+')';g.lineWidth=4;g.fillStyle='rgba(60,255,122,'+a*.4+')';g.beginPath();g.ellipse(W/2,H-20-lift-cw*.25,cw*.62,cw*.36,0,0,7);g.fill();g.stroke()}
+    g.save();g.translate(CX,H-20-bounce-lift);g.rotate((S.tilt||0)*.07);drawCar(0,0,cw,CAR.col,false,true);g.restore();
+    if(S.nOn){for(const s2 of[-1,1]){const fx=CX+s2*cw*.28,fy=H-20-cw*.12-lift;g.fillStyle='rgba(0,229,255,.85)';g.beginPath();g.moveTo(fx-9,fy);g.lineTo(fx+9,fy);g.lineTo(fx,fy+R(30,70));g.fill();g.fillStyle='rgba(255,255,255,.9)';g.beginPath();g.moveTo(fx-4,fy);g.lineTo(fx+4,fy);g.lineTo(fx,fy+R(12,26));g.fill()}}
+    if(S.shield>0){const a=.25+.15*Math.sin(t*12)*(S.shield<2?2:1);g.strokeStyle='rgba(60,255,122,'+(a+.3)+')';g.lineWidth=4;g.fillStyle='rgba(60,255,122,'+a*.4+')';g.beginPath();g.ellipse(CX,H-20-lift-cw*.25,cw*.62,cw*.36,0,0,7);g.fill();g.stroke()}
     for(const p of S.parts){g.globalAlpha=Math.min(1,p.t*2);g.fillStyle=p.c;g.fillRect(p.x,p.y,p.s,p.s)}g.globalAlpha=1;
     if(S.flash>0){g.fillStyle=S.flashC;g.globalAlpha=S.flash*.35;g.fillRect(-20,-20,W+40,H+40);g.globalAlpha=1}
     if(S.crashT>0){g.fillStyle='rgba(255,40,80,'+(S.crashT*.2)+')';g.fillRect(-20,-20,W+40,H+40)}}
