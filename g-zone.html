@@ -253,7 +253,7 @@ function kill(e){const T=ETYPE[e.t];S.kills++;S.streak++;S.streakT=2.2;S.bestStr
   if(Math.random()<.05||T.boss)S.pk.push({x:e.x,y:e.y,k:'h',v:30,t:0});
   if(T.explode){explode(e.x,e.y,90,0);if(hyp(S.p.x-e.x,S.p.y-e.y)<95)hurtP(T.dmg*.7)}if(T.boss){big('BOSS VAINCU !');S.shake=20}}
 let streakTO=0;function streak(t){$('streak').textContent=t;$('streak').style.opacity=1;clearTimeout(streakTO);streakTO=setTimeout(()=>$('streak').style.opacity=0,1300)}
-function hurtP(d){const p=S.p;if(p.inv>0||p.hp<=0)return;p.hp-=d;p.inv=.5;p.flash=.25;S.shake=Math.max(S.shake,8);snd('hit',.2);if(p.hp<=0){p.hp=0;puff(p.x,p.y,'#7df9ff',60,400,1);setTimeout(gameOver,900);S.state='dying'}}
+function hurtP(d){const p=S.p;if(p.inv>0||p.hp<=0)return;p.hp-=d;p.inv=.9;p.flash=.25;S.shake=Math.max(S.shake,8);snd('hit',.2);if(p.hp<=0){p.hp=0;puff(p.x,p.y,'#7df9ff',60,400,1);setTimeout(gameOver,900);S.state='dying'}}
 // ---------- boucle ----------
 let last=performance.now();
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);last=now;if(bigT>0){bigT-=dt;if(bigT<=0)$('big').style.opacity=0}
@@ -286,12 +286,12 @@ function update(dt){const p=S.p;S.t+=dt;
     const dx=p.x-e.x,dy=p.y-e.y,d=hyp(dx,dy)||1;let sp=e.spd;
     if(T.ranged&&d<380)sp=d<240?-e.spd*.6:0;
     if(T.boss){e.chT-=dt;if(e.chT<=0&&e.ch<=0){e.ch=1.1;e.chT=R(3.5,5.5);big('⚠ CHARGE ⚠');for(let k=0;k<3;k++)S.queue.push(Math.random()<.5?'run':'walk')}if(e.ch>0){e.ch-=dt;sp=e.spd*4.2}}
-    e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt;
+    if(e.stun>0){e.stun-=dt;sp=0}e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt;
     // séparation
     for(let j=0;j<S.en.length;j+=1){const o=S.en[j];if(o===e)continue;const ex=e.x-o.x,ey=e.y-o.y,ed=hyp(ex,ey),m=e.r+o.r;if(ed<m&&ed>0.01){const f=(m-ed)*.5;e.x+=ex/ed*f;e.y+=ey/ed*f}}
     pushOut(e);
     if(T.ranged){e.shotT-=dt;if(e.shotT<=0&&d<520){e.shotT=R(1.6,2.6);const a=Math.atan2(dy,dx);S.eb.push({x:e.x,y:e.y,vx:Math.cos(a)*420,vy:Math.sin(a)*420,t:0})}}
-    if(d<e.r+p.r){if(T.explode){e.hp=0;kill(e);S.en.splice(i,1);continue}hurtP(T.dmg);p.vx-=dx/d*300;p.vy-=dy/d*300}}
+    if(d<e.r+p.r){if(T.explode){e.hp=0;kill(e);S.en.splice(i,1);continue}if(p.inv<=0){hurtP(T.dmg);p.vx+=dx/d*420;p.vy+=dy/d*420;e.stun=.6;e.x-=dx/d*(T.boss?10:28);e.y-=dy/d*(T.boss?10:28)}}}
   for(let i=S.eb.length-1;i>=0;i--){const b=S.eb[i];if(!b)continue;b.t+=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;if(hyp(b.x-p.x,b.y-p.y)<p.r+6){hurtP(10);S.eb.splice(i,1);continue}if(b.t>3||inObs(b.x,b.y))S.eb.splice(i,1)}
   // ramassage
   for(let i=S.pk.length-1;i>=0;i--){const k=S.pk[i];if(!k)continue;k.t+=dt;const d=hyp(k.x-p.x,k.y-p.y);if(d<170&&(k.k==='c'||k.k==='h')){k.x+=(p.x-k.x)*Math.min(1,dt*7);k.y+=(p.y-k.y)*Math.min(1,dt*7)}
