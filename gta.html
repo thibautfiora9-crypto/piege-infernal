@@ -3359,8 +3359,9 @@ function addChar(x,y,z,yaw,st,L){
   const hi=(x-CAM.x)*(x-CAM.x)+(z-CAM.z)*(z-CAM.z)<(GFX.ultra?4900:900),G=hi?CGEOH:CGEO;
   const f=st.fall||0,jg=L.jog?1.5:1;let sw=Math.sin(st.ph)*.62*st.sp*jg,bob=Math.abs(Math.cos(st.ph))*.045*st.sp*jg;const k=L.sc||1,dn=st.dance||0;
   if(dn){bob=Math.abs(Math.sin(st.ph*1.0))*.09*dn;yaw+=Math.sin(st.ph*.5)*.35*dn}
-  const kn=st.kneel?1:0,lean=(kn?0:clamp((st.sp||0)-.45,0,.8)*.16)+(st.lean||0);yaw+=st.twist||0;
-  mtrs(_B,x,y+bob*k+.13*f-kn*.4*k+(st.lift||0),z,yaw,-1.52*f-lean,st.roll||0);
+  const box=(st.guard||st.punch>0)&&!st.aim&&!st.jump&&!dn&&!st.pose&&!f&&!(st.stag>0),still=(st.sp||0)<.2,bnc=box?Math.abs(Math.sin(game.t*6.5+x*3))*(still?.035:.01):0;
+  const kn=st.kneel?1:0,lean=(kn?0:clamp((st.sp||0)-.45,0,.8)*.16)+(st.lean||0)+(box?.1:0);yaw+=(st.twist||0)+(box?.32:0);
+  mtrs(_B,x,y+bob*k+.13*f-kn*.4*k+(st.lift||0)+(box?(-.05+bnc)*k:0),z,yaw,-1.52*f-lean,st.roll||0);
   if(k!==1){for(const i of[0,1,2,4,5,6,8,9,10])_B[i]*=k}
   const fl=st.flash||0,tr=(c)=>fl>0?[c[0]+fl,c[1]*(1-fl*.5),c[2]*(1-fl*.5)]:c;
   const sk=tr(L.skin),sh=tr(L.shirt),pa=tr(L.pants);
@@ -3386,12 +3387,14 @@ function addChar(x,y,z,yaw,st,L){
   if(st.phone&&!st.aim){aR=-2.55}
   if(kn){lL=lR=-.08;if(!st.aim){aL=-.55+Math.sin(st.ph*3)*.05;aR=-.6}}
   if(st.aim){const ap=st.ap||0;aR=-1.5-ap;aL=(gw>=3?-1.45:-1.28)-ap}
-  if(st.punch>0){const e=Math.sin(st.punch*PI),t=st.ptype|0;
-    if(t===0){aR=-1.75*e;aL=-1.1+.2*e;lL=.25*e;lR=-.1*e}                 // direct du droit
-    else if(t===1){aL=-1.8*e;aR=-1.1+.25*e;lL=-.15*e;lR=.3*e}           // crochet du gauche
-    else if(t===2){aR=-2.9*e;aL=-.9;lL=.2*e;lR=-.25*e}                  // uppercut
-    else{lR=-1.75*e;lL=.35*e;aL=-.7-.5*e;aR=.5*e}}                        // coup de pied
-  else if(st.guard){aL=-1.15+Math.sin(st.ph*3)*.04;aR=-1.25-Math.sin(st.ph*3)*.04}
+  let bA=null,kick=0;
+  if(box){const w=Math.sin(game.t*6.5+x*3)*.05;aL=-.62+w;aR=-.42-w;bA=[-2.1,-2.3];if(still){lL=.3;lR=-.26}  // garde de boxe : poings au menton, pieds décalés
+    if(st.punch>0){const e=Math.sin(st.punch*PI),t=st.ptype|0;
+      if(t===0){aR=-.42-1.2*e;bA[1]=-2.3*(1-e)}                               // direct du droit : bras tendu
+      else if(t===1){aL=-.62-1.0*e;bA[0]=-2.1+.9*e}                           // crochet du gauche : coude plié
+      else if(t===2){aR=-.42-1.9*e;bA[1]=-2.3+1.4*e;if(still){lL=.2;lR=-.15}} // uppercut : ça part du bas
+      else{kick=e;lR=-1.75*e;lL=.3+.1*e;aL=-.75;aR=-.3}}}                     // coup de pied, garde haute
+  else if(st.punch>0){const e=Math.sin(st.punch*PI);aR=-1.75*e}
   if(st.stag>0){const e=st.stag;aL=.5*e-.2;aR=.6*e-.2}
   if(dn){const t=st.ph;aL=-2.5+Math.sin(t)*.8;aR=-2.5+Math.sin(t+PI)*.8;lL=Math.sin(t)*.28;lR=-Math.sin(t)*.28}
   if(st.pose==='dj'){aL=-1.0+Math.sin(st.ph*3)*.12;aR=-1.0+Math.sin(st.ph*2.3)*.12;lL=lR=0}
@@ -3404,11 +3407,11 @@ function addChar(x,y,z,yaw,st,L){
   else if(st.pose==='sit'){aL=-.95+Math.sin(st.ph*.8)*.05;aR=-.9;lL=lR=-1.5}
   // jambes + chaussures
   for(const s of[1,-1]){const a=s>0?lL:lR;mpart(_Pm,_B,.115*s,.92,0,a);
-    if(hi){const lp=st.ph+(s>0?0:PI),rs=clamp(st.sp||0,0,1.3),bend=kn?1.62:st.pose==='sit'?1.5:(st.pose||dn)?0:st.jump?.7:rs*(.12+.95*max(0,-Math.sin(lp+.65)))+clamp(-a,0,1.2)*.35,lc=L.shorts?sk:pa;dmAdd(G.thigh,_Pm,pa[0],pa[1],pa[2]);mpart(_Pm2,_Pm,0,-.42,0,bend);dmAdd(G.shin,_Pm2,lc[0],lc[1],lc[2]);dmAdd(G.shoeR,_Pm2,L.shoe[0],L.shoe[1],L.shoe[2]);continue}
+    if(hi){const lp=st.ph+(s>0?0:PI),rs=clamp(st.sp||0,0,1.3),bend=kn?1.62:st.pose==='sit'?1.5:(st.pose||dn)?0:st.jump?.7:(box&&s<0&&kick)?.5*(1-kick):(box&&still)?.32:rs*(.12+.95*max(0,-Math.sin(lp+.65)))+clamp(-a,0,1.2)*.35,lc=L.shorts?sk:pa;dmAdd(G.thigh,_Pm,pa[0],pa[1],pa[2]);mpart(_Pm2,_Pm,0,-.42,0,bend);dmAdd(G.shin,_Pm2,lc[0],lc[1],lc[2]);dmAdd(G.shoeR,_Pm2,L.shoe[0],L.shoe[1],L.shoe[2]);continue}
     dmAdd(G.leg,_Pm,pa[0],pa[1],pa[2]);dmAdd(G.shoe,_Pm,L.shoe[0],L.shoe[1],L.shoe[2])}
   // bras + mains (+ arme dans la main droite = x négatif)
   for(const s of[1,-1]){const a=s>0?aL:aR;mpart(_Pm,_B,(hi?.238:.295)*s,hi?1.41:1.44,0,a);
-    if(hi){const hold=(s<0&&gw)||st.aim||st.punch>0||st.pose||dn||st.jump,bend=(st.phone&&s<0)?-2.35:hold?0:-(.15+.75*clamp(st.sp||0,0,1.3)),fc=L.short?sk:sh;dmAdd(G.armU,_Pm,sh[0],sh[1],sh[2]);mpart(_Pm2,_Pm,0,-.3,0,bend);dmAdd(G.armF,_Pm2,fc[0],fc[1],fc[2]);dmAdd(G.handR,_Pm2,sk[0],sk[1],sk[2]);if(st.phone&&s<0)dmAdd(PHONEG,_Pm2,.05,.05,.07)}
+    if(hi){const hold=(s<0&&gw)||st.aim||st.punch>0||st.pose||dn||st.jump,bend=bA?bA[s>0?0:1]:(st.phone&&s<0)?-2.35:hold?0:-(.15+.75*clamp(st.sp||0,0,1.3)),fc=L.short?sk:sh;dmAdd(G.armU,_Pm,sh[0],sh[1],sh[2]);mpart(_Pm2,_Pm,0,-.3,0,bend);dmAdd(G.armF,_Pm2,fc[0],fc[1],fc[2]);dmAdd(G.handR,_Pm2,sk[0],sk[1],sk[2]);if(st.phone&&s<0)dmAdd(PHONEG,_Pm2,.05,.05,.07)}
     else{dmAdd(G.arm,_Pm,sh[0],sh[1],sh[2]);dmAdd(G.hand,_Pm,sk[0],sk[1],sk[2])}
     if(s<0&&gw){if(hi&&GUNH[gw]){dmAdd(GUNH[gw],_Pm,1,1,1);if(st.acc)for(const a in st.acc)if(st.acc[a]&&ACCG[gw+a])dmAdd(ACCG[gw+a],_Pm,1,1,1)}else{const gm=GUNM[gw]||GUNM[1];for(const[nm,c]of gm)dmAdd(CGEO[nm],_Pm,c[0],c[1],c[2])}}}}
 
@@ -3785,7 +3788,7 @@ function drawPeds(){
   for(const p of peds){if(!farOK(p.x,p.y+1,p.z,1.4,230*LOD)||!visSphere(p.x,p.y+1,p.z,1.4))continue;
     const sc=p.look.sc||1;addChar(p.x,p.y,p.z,p.yaw,{stag:p.stag>0?p.stag/.45:0,lean:p.stag>0?-p.stag*.7:0,roll:p.stag>0?Math.sin(p.stag*20)*.08:0,guard:p.fight&&!p.pk,ptype:p.ptype|0,phone:p.calling?1:0,kneel:(p.crip&&p.state!=='dead'&&p.state!=='ko')?1:0,ph:p.ph,sp:p.sp,fall:p.fall,aim:p.aim,gun:p.gun?(p.gunK||1):0,flash:p.flash>0?p.flash*2:0,punch:p.pk>0?1-p.pk/.28:0},p.look);if(p.stag>0)p.stag=Math.max(0,p.stag-1/60);
     bShadow.flat(p.x,p.y+.05,p.z,.5,.5,0,[0,0,0,p.state==='dead'?.25:.4])}
-  if(!P.car&&!P.hidden&&!CAM.fps){addChar(P.x,P.y-(P.sit?.42:0),P.z,P.yaw,{ptype:P.ptype|0,twist:P.punchT>0?Math.sin((1-P.punchT/P.punchD)*PI)*[.35,-.35,.15,-.5][P.ptype|0]:0,lean:P.punchT>0?Math.sin((1-P.punchT/P.punchD)*PI)*[.12,.12,-.1,-.12][P.ptype|0]:0,guard:P.wpn===0&&!P.car&&(game.t-(P.lastPunch||-9))<2.5,pose:P.sit?'sit':0,acc:P.wpn>0?P.acc[P.wpn]:null,ph:P.ph,sp:P.sp,fall:P.fallT,aim:P.aim>.5?1:0,ap:P.aim>.5?clamp(CAM.aimP||0,-.8,.9):0,gun:(P.wpn>0&&!P.punchT)?P.wpn:0,punch:P.punchT>0?1-P.punchT/(P.punchD||.28):0,jump:!P.ground&&P.vy!==0&&!P.ragdoll,flash:P.hitFlash>0?P.hitFlash*.8:0},P.look);
+  if(!P.car&&!P.hidden&&!CAM.fps){addChar(P.x,P.y-(P.sit?.42:0),P.z,P.yaw,{ptype:P.ptype|0,twist:P.punchT>0?Math.sin((1-P.punchT/P.punchD)*PI)*[.35,-.35,.15,-.5][P.ptype|0]:0,lean:P.punchT>0?Math.sin((1-P.punchT/P.punchD)*PI)*[.12,.12,-.1,-.12][P.ptype|0]:0,guard:P.wpn===0&&!P.car&&!P.sit&&P.sp<.95&&((game.t-(P.lastPunch||-9))<4||P.aim>.5),pose:P.sit?'sit':0,acc:P.wpn>0?P.acc[P.wpn]:null,ph:P.ph,sp:P.sp,fall:P.fallT,aim:P.aim>.5?1:0,ap:P.aim>.5?clamp(CAM.aimP||0,-.8,.9):0,gun:(P.wpn>0&&!P.punchT)?P.wpn:0,punch:P.punchT>0?1-P.punchT/(P.punchD||.28):0,jump:!P.ground&&P.vy!==0&&!P.ragdoll,flash:P.hitFlash>0?P.hitFlash*.8:0},P.look);
     bShadow.flat(P.x,P.y+.05,P.z,.55,.55,0,[0,0,0,.45])}
   for(const a of actors){if(abs(a.x-CAM.x)>110||abs(a.z-CAM.z)>110||!visSphere(a.x,a.y+1,a.z,1.5))continue;
     addChar(a.x,a.y,a.z,a.yaw,{ph:a.ph,sp:0,fall:0,dance:a.dance,pose:a.pose,gun:a.gun},a.look);bShadow.flat(a.x,a.y+.05,a.z,.5,.5,0,[0,0,0,.35])}
