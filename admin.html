@@ -29,6 +29,7 @@ input,select{background:#0d0f1a;color:var(--txt);border:1px solid var(--line);bo
 <div id="login"><div style="font-size:46px">🛡️</div><b style="font-size:20px">Espace réservé à BIGBOSS</b><input id="lp" placeholder="Pseudo" autocomplete="username"><input id="lpin" type="password" placeholder="Code PIN" autocomplete="current-password"><button class="p" id="lgo">Entrer</button><div class="mut" id="lmsg"></div></div>
 <main id="app">
  <div class="kpi" id="kpi"></div>
+ <div class="card" style="margin-bottom:14px;border-color:#39d98a66"><h2>🎁 Donner de l’argent dans Ville Folle 3D</h2><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="gP" placeholder="Pseudo du joueur" value="BIGBOSS" style="flex:1;min-width:140px"><input id="gN" type="number" min="1" placeholder="Montant $" value="10000" style="width:140px"><button class="g" id="gGo" style="font-weight:800">🎁 Envoyer</button></div><div class="mut" id="gMsg" style="margin-top:8px">Le joueur reçoit l’argent la prochaine fois qu’il ouvre Ville Folle 3D connecté à son compte.</div></div>
  <div class="grid"><div class="card"><h2>Visiteurs par jour (14 jours)</h2><div class="bars" id="bars"></div></div><div class="card"><h2>Appareils (7 jours)</h2><div id="ua"></div></div></div>
  <div class="grid"><div class="card"><h2>Jeux et pages les plus visités (7 jours)</h2><div id="pages"></div></div><div class="card"><h2>Bannis en ce moment</h2><div id="bans" class="scroll"></div></div></div>
  <div class="card"><div class="tabs"><button class="on" data-t="recent">🕑 Dernières visites</button><button data-t="players">👤 Joueurs inscrits</button><input id="q" placeholder="Rechercher un pseudo…" style="margin-left:auto;padding:6px 10px;font-size:14px"></div><div class="scroll" id="tbl"></div></div>
@@ -38,6 +39,8 @@ input,select{background:#0d0f1a;color:var(--txt);border:1px solid var(--line);bo
 'use strict';
 const URL='https://sbnkndyvmhmfyijilmqd.supabase.co',KEY='sb_publishable_aXvh-KEaBdyCWFpHaWI0IQ_g2rKlVAd',$=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+document.addEventListener('click',e=>{if(e.target.id!=='gGo')return;const p=$('gP').value.trim(),n=parseInt($('gN').value,10);if(!p||!(n>0)){$('gMsg').textContent='⚠️ Mets un pseudo et un montant';return}
+  $('gMsg').textContent='Envoi…';rpc('adm_gift',{p_pseudo:CR.p,p_pin:CR.pin,p_target:p,p_amount:n,p_reason:'Cadeau de BIGBOSS'}).then(r=>{$('gMsg').textContent=r&&r.ok?'✅ '+n.toLocaleString('fr-FR')+' $ envoyés à '+p+' ! Il les reçoit à sa prochaine connexion à Ville Folle 3D.':'❌ Erreur : '+(r&&(r.err||r.error||r.message)||'joueur introuvable ?')}).catch(()=>{$('gMsg').textContent='❌ Pas de connexion'})});
 async function rpc(fn,a){const r=await fetch(URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify(a)});return r.json()}
 let CR=null,D=null,tab='recent';
 function acct(){try{const a=JSON.parse(localStorage.getItem('piege-cu')||'null');return a&&a.p&&a.pin?a:null}catch(e){return null}}
