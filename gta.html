@@ -3601,12 +3601,12 @@ function copFoot(p,dt){if(p.war&&!p.hot){warStep(p,dt);return}
     const los=d<70&&losClear(p.x,p.z,px,pz);
     p.seen=los?(p.seen||0)+dt:Math.max(0,(p.seen||0)-dt*.5);if(los)p.lostT=0;else p.lostT=(p.lostT||0)+dt;
     want=atan2(dx,dz);const want2=mel?1.3:p.kind==='gang'?9:7;
-    if(d>want2||!los){sp=mel?(p.boss?4.6:4.2):p.kind==='gang'?4.2:4.6+(p.kind==='cop'?wantedLevel()*.3:0);if(d<(mel?1.2:4))sp=0}
+    if(d>want2||!los){sp=mel?(p.boss?4.6:4.2):p.kind==='gang'?4.2:4.9+(p.kind==='cop'?wantedLevel()*.35:0);if(d<(mel?1.2:4))sp=0}
     p.vx+=((dx/(d||1))*sp-p.vx)*min(1,dt*7);p.vz+=((dz/(d||1))*sp-p.vz)*min(1,dt*7);
     p.yaw+=angd(p.yaw,want)*min(1,dt*10);
     p.aim=los&&d<45?1:0;
     if(mel){if(d<2.1&&!P.car&&!P.dead){p.punchT=(p.punchT||0)-dt;if(p.punchT<=0){p.punchT=rnd(.75,1.2)*(p.boss?.85:1);p.pk=.28;hurtPlayer(p.boss?9:p.fight?4:6);sfx('hit');shake=max(shake,.3)}}}
-    else if(los&&d<45&&p.seen>.8){p.shootT-=dt;if(p.shootT<=0){p.shootT=rnd(1,2.1)*max(.4,1-.13*wantedLevel());cowShoot(p,px,pz,d)}}
+    else if(los&&d<45&&p.seen>.8){p.shootT-=dt;if(p.shootT<=0){p.shootT=rnd(.75,1.6)*max(.4,1-.13*wantedLevel());cowShoot(p,px,pz,d)}}
     // arrestation
     if(p.kind==='cop'&&d<2.1&&!P.car&&!P.dead){P.busted+=dt*1.0}
     if(p.lostT>14&&p.kind==='cop'&&d>80){p.gone=true}}
@@ -3625,12 +3625,12 @@ function shotBlocked(x0,y0,z0,x1,y1,z1,skipCar){
       else if(x>it.x0-.05&&x<it.x1+.05&&z>it.z0-.05&&z<it.z1+.05){best=t;break}}}
   return best<end?{x:x0+ux*best,y:y0+uy*best,z:z0+uz*best}:null}
 function cowShoot(p,px,pz,d){
-  const acc=clamp(.55-d/90,.07,.36)*(P.car?.8:1)*(wantedLevel()<=3?.62+.12*wantedLevel():.85+.2*wantedLevel());let hit=Math.random()<acc;
+  const acc=clamp(.62-d/85,.1,.44)*(P.car?.85:1)*(wantedLevel()<=3?.78+.12*wantedLevel():1+.18*wantedLevel());let hit=Math.random()<acc;
   let hx=px+(hit?0:rnd(-1.6,1.6)),hy=1.1,hz=pz+(hit?0:rnd(-1.6,1.6));const mx=p.x+sin(p.yaw)*.5,mz=p.z+cos(p.yaw)*.5;
   const bl=shotBlocked(mx,1.35,mz,hx,hy,hz,p.car||null);
   if(bl){hit=false;hx=bl.x;hy=bl.y;hz=bl.z;fxSpark(hx,hy,hz,3);fxDust(hx,hy,hz,2)}
   tracers.push({a:[mx,1.35,mz],b:[hx,hy,hz],t:0});fxSpark(mx,1.35,mz,2);gunSound(p.x,p.z,.7);
-  if(hit){if(P.car){const c=P.car;hurtCar(c,12+wantedLevel()*4);P.hp-=2.5+wantedLevel()*.8;P.hitFlash=.6;if(P.hp<=0)killPlayer()}else hurtPlayer(5+wantedLevel()*1.8)}}
+  if(hit){if(P.car){const c=P.car;hurtCar(c,16+wantedLevel()*5);P.hp-=3.2+wantedLevel()*1;P.hitFlash=.6;if(P.hp<=0)killPlayer()}else hurtPlayer(6.5+wantedLevel()*2.2)}}
 let gunSound=()=>{};
 function drawPeds(){
   DM.n=0;
@@ -3815,7 +3815,7 @@ function trafficUpdate(dt){
   game.tTraf=(game.tTraf||0)-dt;
   if(game.tTraf<=0){game.tTraf=.3;let n=0,nc=0;const inB=!!(P.car&&P.car.s.boat);for(const c of cars){if(c.mode==='ai')n++;if(c.mode==='cop'&&!!c.s.boat===inB)nc++}
     if(n<(game.maxAI||24))trafficSpawn();
-    const L=wantedLevel(),want=[0,2,4,5,10,13][L];if(L>=4)game.tTraf=.15;if(nc<want&&game.seenT<60+L*10){const c=copSpawn();if(c)c.hp=1000*(1+.22*L)}}
+    const L=wantedLevel(),want=[0,3,5,7,11,14][L];if(L>=4)game.tTraf=.15;if(nc<want&&game.seenT<60+L*10){const c=copSpawn();if(c)c.hp=1000*(1+.22*L)}}
   // retrait des voitures lointaines / bloquées
   for(let i=cars.length-1;i>=0;i--){const c=cars[i];if(c===P.car||c.keep)continue;const d=hyp(c.x-P.x,c.z-P.z);
     if(c.tmp&&d>170&&!visSphere(c.x,1,c.z,5)){cars.splice(i,1);continue}
@@ -4420,7 +4420,7 @@ function heliUpdate(dt){const L=wantedLevel(),want=game.state!=='play'||P.dead?0
     const fx=sin(h.yaw),fz=cos(h.yaw);h.pitch=lerp(h.pitch,clamp((h.vx*fx+h.vz*fz)*.012,-.25,.25),min(1,dt*3));h.roll=lerp(h.roll,clamp((h.vx*fz-h.vz*fx)*-.01,-.25,.25),min(1,dt*3));
     // tireur à bord (4 étoiles et plus ; à 3 étoiles il suit seulement)
     h.shootT-=dt;if(L>=4&&sees&&h.shootT<=0&&!P.dead){h.shootT=rnd(.8,1.5);const ox=h.x,oy=h.y+.8,oz=h.z,ex=tg.x+rnd(-1.6,1.6),ey=(tg.y||0)+1+rnd(-.6,.6),ez=tg.z+rnd(-1.6,1.6);
-      tracers.push({a:[ox,oy,oz],b:[ex,ey,ez],t:0});gunSound(ox,oz,.8);if(Math.random()<.32){if(P.car)hurtCar(P.car,45);else hurtPlayer(9)}}}}
+      tracers.push({a:[ox,oy,oz],b:[ex,ey,ez],t:0});gunSound(ox,oz,.8);if(Math.random()<.42){if(P.car)hurtCar(P.car,55);else hurtPlayer(11)}}}}
 function heliSeesAny(){for(const h of HELIS)if(heliSees(h))return true;return false}
 function drawApts(){const t=gtime.t;for(const a of APTS){if(abs(a.x-CAM.x)>90||abs(a.z-CAM.z)>90)continue;const own=P.homes.includes(a.id);bGlow.bill(a.x,2.4+sin(t*2)*.1,a.z,.85,own?[1,.85,.3,.9]:[.3,1,.45,.85])}}
 function drawHelis(){const night=ENV.night>.3,t=gtime.t;
@@ -4448,7 +4448,7 @@ function copsUpdate(dt){plateWatch(dt);heliUpdate(dt);
     if(!seen&&game.seenT>(hid?1:2)){if(out||hid){game.escT=(game.escT||0)+dt*(hid?1.6:1);if(game.escT>(L<=3?4+L*1.4:6+L*2)*(game.bankHeat?1.3:1)*(perk('lawyer')?.6:1)){game.wanted=0;game.bankHeat=false;game.escT=0;say('Tu as semé la police ! 😎',3)}}else game.escT=max(0,(game.escT||0)-dt*.5)}
     // tirs depuis les voitures (2 étoiles et plus)
     if(L>=2&&seen)for(const c of cars){if(!c.cop||c.mode!=='cop'||c.deployed)continue;const d=hyp(c.x-tx,c.z-tz);if(d>40||d<4){continue}
-      c.shT=(c.shT===undefined?rnd(.5,1.5):c.shT)-dt;if(c.shT>0)continue;c.shT=rnd(.8,1.6)/(1+.2*L);
+      c.shT=(c.shT===undefined?rnd(.5,1.5):c.shT)-dt;if(c.shT>0)continue;c.shT=rnd(.6,1.3)/(1+.2*L);
       if(losClear(c.x,c.z,tx,tz))cowShoot({x:c.x,z:c.z,yaw:atan2(tx-c.x,tz-c.z),car:c},tx,tz,d)}
     roadblockUpdate(dt,L,tx,tz);
   }else game.seenT=min(game.seenT+dt,99);
@@ -4460,7 +4460,7 @@ function copsUpdate(dt){plateWatch(dt);heliUpdate(dt);
   if(L>0&&game.tDep<=0){game.tDep=1.2;let nf=0;for(const p of peds)if(p.kind==='cop'&&!p.mp&&p.state!=='dead')nf++;
     for(const c of cars){if(!c.cop||c.mode!=='cop'||c.deployed||c.s.boat)continue;const d=hyp(c.x-tx,c.z-tz);
       if(d<26&&(!P.car||hyp(P.car.vx,P.car.vz)<4)&&hyp(c.vx,c.vz)<9&&nf<2+L*2){c.deployed=true;c.mode='idle';c.keep=false;
-        for(let i=0;i<(c.swat?4:L>=5?3:L>=3?2:1);i++){const s=i%2?1:-1,p=mkPed('cop',c.x+cos(c.yaw)*s*(c.s.W/2+.8+(i>1?1.2:0)),c.z-sin(c.yaw)*s*(c.s.W/2+.8)+(i>1?1.5:0));p.hp=(c.swat?110:60)+L*16;p.alert=10;p.state='walk';if(c.swat){p.gunK=2;p.swat=true}if(c.mil){p.look=milLook();p.gunK=2;p.hp=110+L*10}nf++}}}}
+        for(let i=0;i<(c.swat?4:L>=4?3:L>=2?2:1);i++){const s=i%2?1:-1,p=mkPed('cop',c.x+cos(c.yaw)*s*(c.s.W/2+.8+(i>1?1.2:0)),c.z-sin(c.yaw)*s*(c.s.W/2+.8)+(i>1?1.5:0));p.hp=(c.swat?140:80)+L*20;p.alert=10;p.state='walk';if(c.swat){p.gunK=2;p.swat=true}if(c.mil){p.look=milLook();p.gunK=2;p.hp=110+L*10}nf++}}}}
   if(L===0)for(const c of cars)if(c.mode==='cop'&&!c.hunt)copToPatrol(c);
   // les policiers à pied hors-jeu quand la recherche est finie : ils partent
   if(L===0){for(const p of peds)if(p.kind==='cop'&&!p.mp&&!p.leave){p.leave=true;p.gone=!visSphere(p.x,1,p.z,2)||hyp(p.x-P.x,p.z-P.z)>60}}
