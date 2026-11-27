@@ -682,6 +682,7 @@ vec3 H=normalize(uSunDir+V);float sp=pow(max(dot(n,H),0.0),uShin)*uSpec*step(0.0
 float fr=uSpec*pow(1.0-max(dot(n,V),0.0),4.0);
 vec3 R=reflect(-V,n);vec3 env=mix(uGnd*0.7,uSky*1.15,smoothstep(-0.15,0.55,R.y));
 c+=uSunC*sp*1.5+env*fr*0.6;
+if(uDet>0.5){float rim=pow(1.0-max(dot(n,V),0.0),3.0);c+=(uSky*0.22+uSunC*0.12*max(dot(-V,uSunDir),0.0))*rim*0.6;}
 float rk=max(uRefl,wetM*0.9);
 if(rk>0.0){// reflets du ciel (Ultra) : vernis des voitures, vitres, eau, flaques
   vec3 Rr=reflect(-V,n);float hz=smoothstep(-0.08,0.5,Rr.y);
@@ -3120,7 +3121,7 @@ const CGEO={
   arB:bxg(-.032,-1.15,-.01,.032,-.5,.08,1),arM:bxg(-.022,-.9,-.22,.022,-.8,-.01,1),arS:bxg(-.03,-.5,-.04,.03,-.28,.075,1),arO:bxg(-.02,-.9,.08,.02,-.6,.12,1),
   rlT:bxg(-.075,-1.35,-.03,.075,-.4,.12,1),rlC:bxg(-.095,-1.48,-.05,.095,-1.35,.14,1),rlG:bxg(-.03,-.72,-.16,.03,-.62,-.03,1)};
 // ---------- personnages détaillés (proches de la caméra) : formes lissées ----------
-function loftG(rings,seg,o){o=o||{};const m=new MB(),S=seg||8,pts=[];
+function loftG(rings,seg,o){o=o||{};const m=new MB(),S=Math.round((seg||8)*(GFX.ultra?1.6:1)),pts=[];
   for(const r of rings){const row=[];for(let j=0;j<=S;j++){const a=j/S*TAU;row.push([(r[3]||0)+cos(a)*r[1],r[0],(r[4]||0)+sin(a)*r[2]])}pts.push(row)}
   const emit=(a,b,c,na,nb,nc)=>{let ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
     const fx=uy*vz-uz*vy,fy=uz*vx-ux*vz,fz=ux*vy-uy*vx;
@@ -3138,6 +3139,8 @@ function loftG(rings,seg,o){o=o||{};const m=new MB(),S=seg||8,pts=[];
   for(let k=0;k<m.p.length/3;k++){const y=m.p[k*3+1],t=o.ao?clamp(.82+.18*sstep(rings[0][0],rings[rings.length-1][0],y),.7,1):1;m.c[k*3]=m.c[k*3+1]=m.c[k*3+2]=t}
   return toG(m)}
 const CGEOH=Object.assign({},CGEO,{
+  neck:loftG([[1.44,.058,.056],[1.53,.052,.05]],10,{capB:false,capT:false}),collar:loftG([[1.44,.1,.085],[1.49,.085,.07]],12,{capB:false,capT:false}),
+  belt:loftG([[.93,.218,.13],[.98,.215,.128]],12,{capB:false,capT:false}),
   torso:loftG([[.88,.185,.115],[.97,.205,.125],[1.12,.188,.115],[1.27,.222,.135],[1.36,.24,.135],[1.42,.228,.122],[1.47,.17,.1],[1.505,.085,.07],[1.53,.062,.058]],14,{ao:1}),
   pelvis:loftG([[.74,.19,.115],[.84,.225,.13],[.97,.21,.125]],12,{ao:1}),
   head:loftG([[1.48,.045,.05,0,0],[1.515,.068,.078,0,.012],[1.55,.088,.1,0,.018],[1.59,.102,.116,0,.014],[1.64,.11,.124,0,.007],[1.69,.113,.126,0,.002],[1.74,.104,.118,0,-.004],[1.775,.08,.094,0,-.007],[1.8,.042,.052,0,-.006],[1.81,.01,.012,0,-.005]],18,{}),
@@ -3305,7 +3308,7 @@ const PLAYER_LOOK={style:1,short:false,skin:hexc(0xe0ac69),shirt:hexc(0xe8541e),
 // st : ph (phase), sp (vitesse 0..1.3), aim (0/1), punch (0..1), fall (0..1), jump (0/1), gun (0/1), flash
 const PHONEG=(()=>{const m=new MB();m.box(-.025,-.4,-.05,.025,-.27,.03,[1,1,1],{ao:1});return toG(m)})();
 function addChar(x,y,z,yaw,st,L){
-  const hi=(x-CAM.x)*(x-CAM.x)+(z-CAM.z)*(z-CAM.z)<900,G=hi?CGEOH:CGEO;
+  const hi=(x-CAM.x)*(x-CAM.x)+(z-CAM.z)*(z-CAM.z)<(GFX.ultra?4900:900),G=hi?CGEOH:CGEO;
   const f=st.fall||0,jg=L.jog?1.5:1;let sw=Math.sin(st.ph)*.62*st.sp*jg,bob=Math.abs(Math.cos(st.ph))*.045*st.sp*jg;const k=L.sc||1,dn=st.dance||0;
   if(dn){bob=Math.abs(Math.sin(st.ph*1.0))*.09*dn;yaw+=Math.sin(st.ph*.5)*.35*dn}
   const kn=st.kneel?1:0,lean=kn?0:clamp((st.sp||0)-.45,0,.8)*.16;
@@ -3313,7 +3316,7 @@ function addChar(x,y,z,yaw,st,L){
   if(k!==1){for(const i of[0,1,2,4,5,6,8,9,10])_B[i]*=k}
   const fl=st.flash||0,tr=(c)=>fl>0?[c[0]+fl,c[1]*(1-fl*.5),c[2]*(1-fl*.5)]:c;
   const sk=tr(L.skin),sh=tr(L.shirt),pa=tr(L.pants);
-  dmAdd(G.torso,_B,sh[0],sh[1],sh[2]);dmAdd(G.pelvis,_B,pa[0],pa[1],pa[2]);
+  dmAdd(G.torso,_B,sh[0],sh[1],sh[2]);dmAdd(G.pelvis,_B,pa[0],pa[1],pa[2]);if(hi&&G.neck){dmAdd(G.neck,_B,sk[0]*.97,sk[1]*.95,sk[2]*.93);if(!L.dress){dmAdd(G.collar,_B,sh[0]*.82,sh[1]*.82,sh[2]*.82);dmAdd(G.belt,_B,.12,.1,.09)}}
   if(L.dress)dmAdd((L.dressLen||L.gown)?G.dress:G.skirt,_B,L.dress[0],L.dress[1],L.dress[2]);
   dmAdd(G.head,_B,sk[0],sk[1],sk[2]);if(hi){dmAdd(G.nose,_B,sk[0]*.95,sk[1]*.9,sk[2]*.88);dmAdd(G.eyeW,_B,.93,.92,.9);dmAdd(G.eyes,_B,.1,.07,.05);dmAdd(G.mouth,_B,sk[0]*.78,sk[1]*.5,sk[2]*.5);dmAdd(G.ears,_B,sk[0]*.96,sk[1]*.92,sk[2]*.9);dmAdd(G.brows,_B,L.hair[0]*.8,L.hair[1]*.8,L.hair[2]*.8);if(L.beard)dmAdd(G.beard,_B,L.hair[0],L.hair[1],L.hair[2])}
   if(hi&&L.jacket){const jc=tr(L.jacket);dmAdd(G.jacket,_B,jc[0],jc[1],jc[2]);dmAdd(G.jfront,_B,sh[0],sh[1],sh[2]);if(L.hood)dmAdd(G.hood,_B,jc[0],jc[1],jc[2])}
@@ -6609,7 +6612,10 @@ function gatherLights(){const n=ENV.night;PLIGHTS.n=0;PLIGHTS.p.fill(0);PLIGHTS.
   const cx=(CAM.x+CAM.tx)/2,cz=(CAM.z+CAM.tz)/2,L=[];
   for(const q of LAMPS){const d=abs(q[0]-cx)+abs(q[2]-cz);if(d<140)L.push([d,q[0],q[1],q[2],17,1,.78,.48,1.25])}
   for(const c of cars){if(c.mode==='parked'||c.mode==='wreck'||c.mode==='idle'||c.s.air)continue;const d=abs(c.x-cx)+abs(c.z-cz);if(d>110)continue;const fx=sin(c.yaw),fz=cos(c.yaw);
-    L.push([d-(c===P.car?200:0),c.x+fx*(c.s.L/2+6),c.y+1.2,c.z+fz*(c.s.L/2+6),c===P.car?15:10,1,.93,.78,c===P.car?1.5:.9])}
+    L.push([d-(c===P.car?200:0),c.x+fx*(c.s.L/2+6),c.y+1.2,c.z+fz*(c.s.L/2+6),c===P.car?(GFX.ultra?18:15):10,1,.93,.78,c===P.car?(GFX.ultra?2.1:1.5):.9]);
+    if(GFX.ultra){if(c===P.car)L.push([d-190,c.x+fx*(c.s.L/2+15),c.y+1.6,c.z+fz*(c.s.L/2+15),16,1,.93,.8,1.3]);
+      const inp=c.input||{},brk=(inp.brk>0&&(c.vf||0)>.5)||(c.mode==='ai'&&c.ai&&c.ai.stopT>0),rev=(c.vf||0)<-.5;
+      if(brk||rev)L.push([d-(c===P.car?180:20),c.x-fx*(c.s.L/2+1.2),c.y+.7,c.z-fz*(c.s.L/2+1.2),rev?6:7,rev?1:1,rev?1:.08,rev?1:.06,rev?.9:1.4])}}
   if(AIMP.ok&&hasAcc(P.wpn,'lamp')&&AIMP.t<40){const t=max(0,AIMP.t-1.2);L.push([-500,CAM.x+AIMP.f[0]*t,CAM.y+AIMP.f[1]*t+.3,CAM.z+AIMP.f[2]*t,11,1,.97,.85,2.2])}
   for(const c of cars)if(c.neon&&c.mode!=='wreck'&&abs(c.x-cx)+abs(c.z-cz)<90){const n=hexc(parseInt(c.neon.slice(1),16));L.push([abs(c.x-cx)+abs(c.z-cz)-60,c.x,c.y+.4,c.z,6,n[0],n[1],n[2],1.8])}
   for(const h of HELIS)if(!h.down&&!h.leave&&h.lx!==undefined)L.push([-450,h.lx,groundH(h.lx,h.lz)+3,h.lz,16,1,1,.9,2.6]);
