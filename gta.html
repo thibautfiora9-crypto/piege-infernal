@@ -636,7 +636,9 @@ const FS_LIT=`precision highp float;
 varying vec3 vCol;varying vec2 vUV;varying vec3 vWP;varying vec3 vN;
 uniform sampler2D uTex;uniform sampler2D uEmi;uniform float uEmiK;uniform vec2 uCells;uniform float uLitF;uniform float uAlpha;uniform vec3 uCam;uniform vec3 uFogC;uniform vec2 uFog;
 uniform vec3 uSunDir;uniform vec3 uSunC;uniform vec3 uSky;uniform vec3 uGnd;uniform float uSpec;uniform float uShin;
-uniform sampler2D uShadow;uniform mat4 uLVP;uniform float uShOn;uniform float uShPx;uniform float uShQ;
+uniform sampler2D uShadow;uniform mat4 uLVP;uniform float uShOn;uniform float uShPx;uniform float uShQ;uniform float uRefl;uniform float uWet;uniform float uDet;uniform float uWetK;
+float hsh(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float vno(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hsh(i),hsh(i+vec2(1,0)),f.x),mix(hsh(i+vec2(0,1)),hsh(i+vec2(1,1)),f.x),f.y);}
 uniform vec4 uPL[10];uniform vec3 uPLC[10];uniform float uPLn;
 float unpackD(vec4 c){return dot(c,vec4(1.0,1.0/255.0,1.0/65025.0,1.0/16581375.0));}
 void main(){vec4 t=vec4(1.0);
@@ -649,6 +651,15 @@ if(t.a<0.5)discard;
 vec3 c=vCol*t.rgb;
 #ifdef LIT
 {vec3 n=normalize(vN);vec3 V=normalize(uCam-vWP);if(dot(n,V)<0.0)n=-n;
+float wetM=0.0;
+if(uDet>0.5){// relief de surface (Ultra) : petites bosses selon la position dans le monde
+  float dc=length(uCam-vWP);float k=clamp(1.0-dc/60.0,0.0,1.0);
+  vec2 pp=abs(n.y)>0.6?vWP.xz:(abs(n.x)>abs(n.z)?vWP.zy:vWP.xy);
+  float a=vno(pp*2.3)+vno(pp*9.0)*0.5,bx=vno(pp*2.3+vec2(0.37,0.0))+vno(pp*9.0+vec2(0.11,0.0))*0.5,by=vno(pp*2.3+vec2(0.0,0.37))+vno(pp*9.0+vec2(0.0,0.11))*0.5;
+  vec3 t1=abs(n.y)>0.6?vec3(1,0,0):vec3(0,1,0),t2=normalize(cross(n,t1));t1=cross(t2,n);
+  n=normalize(n+(t1*(bx-a)+t2*(by-a))*0.55*k*(1.0-uRefl*0.8));
+  if(uWetK>0.5&&uWet>0.02&&n.y>0.5){float pd=smoothstep(0.52,0.62,vno(vWP.xz*0.22)*0.7+vno(vWP.xz*0.9)*0.3);wetM=uWet*(0.35+0.65*pd);n=normalize(mix(n,vec3(0,1,0),wetM));}
+}
 float nd=dot(n,uSunDir),df=max(nd,0.0);
 float sh=1.0;
 if(uShOn>0.5&&nd>0.0){vec4 lp=uLVP*vec4(vWP+n*0.08,1.0);vec3 q=lp.xyz/lp.w*0.5+0.5;
@@ -662,6 +673,13 @@ vec3 H=normalize(uSunDir+V);float sp=pow(max(dot(n,H),0.0),uShin)*uSpec*step(0.0
 float fr=uSpec*pow(1.0-max(dot(n,V),0.0),4.0);
 vec3 R=reflect(-V,n);vec3 env=mix(uGnd*0.7,uSky*1.15,smoothstep(-0.15,0.55,R.y));
 c+=uSunC*sp*1.5+env*fr*0.6;
+float rk=max(uRefl,wetM*0.9);
+if(rk>0.0){// reflets du ciel (Ultra) : vernis des voitures, vitres, eau, flaques
+  vec3 Rr=reflect(-V,n);float hz=smoothstep(-0.08,0.5,Rr.y);
+  vec3 skyR=mix(uGnd*0.55,uSky*1.3,hz);skyR=mix(skyR,uFogC*1.1,exp(-abs(Rr.y)*9.0)*0.6);
+  float F=0.04+0.96*pow(1.0-max(dot(n,V),0.0),5.0);
+  c=mix(c,skyR,clamp(F*rk*1.6+rk*0.18,0.0,0.9));
+  c+=uSunC*pow(max(dot(Rr,uSunDir),0.0),600.0)*7.0*rk*sh;}
 if(uPLn>0.5){vec3 acc=vec3(0.0);for(int i=0;i<10;i++){vec3 d=uPL[i].xyz-vWP;float r=uPL[i].w;float l=length(d);if(l<r){float a=1.0-l/r;a*=a;float nl=max(dot(n,d/l),0.0)*0.85+0.15;acc+=uPLC[i]*a*nl;}}c+=base*acc;}}
 #endif
 #ifdef EMI
@@ -743,7 +761,7 @@ function frameUniforms(p){
   if((l=u('uSky')))gl.uniform3fv(l,ENV.sky);
   if((l=u('uGnd')))gl.uniform3fv(l,ENV.gnd);
   if((l=u('uPL')))gl.uniform4fv(l,PLIGHTS.p);if((l=u('uPLC')))gl.uniform3fv(l,PLIGHTS.c);if((l=u('uPLn')))gl.uniform1f(l,PLIGHTS.n);
-  if((l=u('uShadow')))gl.uniform1i(l,2);if((l=u('uLVP')))gl.uniformMatrix4fv(l,false,SHD.lvp);if((l=u('uShOn')))gl.uniform1f(l,SHD.on?1:0);if((l=u('uShPx')))gl.uniform1f(l,1/SHD.size);if((l=u('uShQ')))gl.uniform1f(l,GFX.ultra?1:0)}
+  if((l=u('uShadow')))gl.uniform1i(l,2);if((l=u('uLVP')))gl.uniformMatrix4fv(l,false,SHD.lvp);if((l=u('uShOn')))gl.uniform1f(l,SHD.on?1:0);if((l=u('uShPx')))gl.uniform1f(l,1/SHD.size);if((l=u('uShQ')))gl.uniform1f(l,GFX.ultra?1:0);if((l=u('uDet')))gl.uniform1f(l,GFX.ultra?1:0);if((l=u('uWet')))gl.uniform1f(l,GFX.ultra?clamp((WX.kr||0)*1.2,0,1):0)}
 let frameId=0;
 function useMat(m){
   const p=getLitProg(m);
@@ -753,7 +771,7 @@ function useMat(m){
   if(m.tex){if(stTex!==m.tex){gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,m.tex);stTex=m.tex}if((l=p.L('uTex')))gl.uniform1i(l,0)}
   if(m.emi){gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,m.emi);if((l=p.L('uEmi')))gl.uniform1i(l,1);if((l=p.L('uEmiK')))gl.uniform1f(l,m.emiK);if((l=p.L('uCells')))gl.uniform2f(l,m.cells[0],m.cells[1]);if((l=p.L('uLitF')))gl.uniform1f(l,m.litF);gl.activeTexture(gl.TEXTURE0)}
   if((l=p.L('uAlpha')))gl.uniform1f(l,m.alpha);
-  if((l=p.L('uSpec')))gl.uniform1f(l,m.spec===undefined?.06:m.spec);if((l=p.L('uShin')))gl.uniform1f(l,m.shin||14);
+  if((l=p.L('uSpec')))gl.uniform1f(l,m.spec===undefined?.06:m.spec);if((l=p.L('uRefl')))gl.uniform1f(l,GFX.ultra?(m.refl||0):0);if((l=p.L('uWetK')))gl.uniform1f(l,m.wet?1:0);if((l=p.L('uShin')))gl.uniform1f(l,m.shin||14);
   setBlend(m.blend);setCull(m.cull);setDW(m.dw);setPoff(m.poff);
   return p}
 function drawMesh(mesh,mat,M){
@@ -1134,7 +1152,7 @@ const S={
 };
 for(let a=0;a<2;a++)for(let c=0;c<3;c++)S.tl[a][c]=new Stat(mkMat({lit:false,tint:[.1,.1,.1],fog:false}));
 // matières : eau et verre brillants, asphalte légèrement satiné
-Object.assign(S.sea.mat,{spec:1.2,shin:160});Object.assign(S.glass.mat,{spec:.75,shin:70});Object.assign(S.ground.mat,{spec:.14,shin:22});Object.assign(S.metal.mat,{spec:.5,shin:50});
+Object.assign(S.sea.mat,{spec:1.2,shin:160,refl:.75});Object.assign(S.glass.mat,{spec:.75,shin:70,refl:.55});Object.assign(S.ground.mat,{spec:.14,shin:22,refl:.04,wet:1});Object.assign(S.walk.mat,{wet:1});Object.assign(S.metal.mat,{spec:.5,shin:50,refl:.2});
 
 // ---------- aides de construction ----------
 const hx6=s=>hexc(parseInt(s.slice(1),16));
@@ -2559,8 +2577,8 @@ const VT={
   yacht:{L:13,W:4,vmax:24,acc:5,brake:6,steer:.36,wb:7,boat:1,price:300000,cols:['#f8f9fa','#111827','#1d3fbf'],name:'Yacht'}
 };
 const SHOPCARS=['moto','mini','sedan','pickup','suv','van','muscle','sport','motoS','limo','super','helip','yacht'];
-const paintMats={};function paintMat(hex,fin){const k=hex+(fin||'');if(!paintMats[k]){const t=hexc(parseInt(hex.slice(1),16));paintMats[k]=fin==='mat'?mkMat({tint:t,spec:.08,shin:8}):fin==='chrome'?mkMat({tint:t.map(v=>min(1,v*.75+.25)),spec:2.2,shin:160}):mkMat({tint:t,spec:.95,shin:90})}return paintMats[k]}
-const wreckMat=mkMat({tint:[.1,.1,.1],spec:.02}),detailMat=mkMat({spec:.45,shin:60});
+const paintMats={};function paintMat(hex,fin){const k=hex+(fin||'');if(!paintMats[k]){const t=hexc(parseInt(hex.slice(1),16));paintMats[k]=fin==='mat'?mkMat({tint:t,spec:.08,shin:8,refl:.03}):fin==='chrome'?mkMat({tint:t.map(v=>min(1,v*.75+.25)),spec:2.2,shin:160,refl:.85}):mkMat({tint:t,spec:.95,shin:90,refl:.32})}return paintMats[k]}
+const wreckMat=mkMat({tint:[.1,.1,.1],spec:.02}),detailMat=mkMat({spec:.45,shin:60,refl:.22});
 const copRedMat=mkMat({lit:false,tint:[1,.1,.1],fog:true}),copBlueMat=mkMat({lit:false,tint:[.1,.3,1],fog:true});
 const LBMESH=(()=>{const m=new MB();m.box(-.22,0,-.12,.22,.12,.12,[1,1,1],{ao:1});return new GMesh(m)})();
 const carGeos={};
